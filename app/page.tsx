@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AuthFlow } from "./auth/AuthFlow";
 
 export const metadata: Metadata = {
   title: "Ruutin | Calm routines for busy families",
@@ -232,16 +233,7 @@ export default function Home() {
                 your pace, your call.
               </p>
             </div>
-            <div className="br-sign-in-box" aria-label="Parent email sign-in">
-              <div className="br-sign-in-icon" aria-hidden="true">✦</div>
-              <div>
-                <strong>Parent sign-in</strong>
-                <p>One-time code · no password</p>
-              </div>
-              <a className="br-button br-button-light" href="#sign-in">
-                Sign in with email <span aria-hidden="true">↗</span>
-              </a>
-            </div>
+            <AuthFlow />
           </div>
           <p className="br-footer-note">
             Ruutin is for parents and caregivers. Set up what works for your household,

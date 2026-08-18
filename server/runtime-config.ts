@@ -84,6 +84,14 @@ export function loadServerConfig(
     throw new ServerConfigError(["EMAIL_FROM"]);
   }
 
+  // Authentication secrets must have enough entropy to protect short TACs
+  // and opaque sessions. Keep the error key-only so configured values never
+  // appear in logs or responses.
+  const weakSecrets = (["AUTH_HMAC_SECRET", "SESSION_SECRET"] as const).filter(
+    (key) => config[key].trim().length < 16,
+  );
+  if (weakSecrets.length > 0) throw new ServerConfigError(weakSecrets);
+
   return {
     EMAIL_API_URL: config.EMAIL_API_URL.trim(),
     EMAIL_API_KEY: config.EMAIL_API_KEY,

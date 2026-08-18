@@ -1,7 +1,7 @@
 # G01 security foundation evidence
 
-Status: implementation and local verification complete; saved Sites migration
-execution remains a release-gate check.
+Status: implementation, local verification, and saved Sites migration execution
+complete.
 
 The versioned D1 sequence is:
 
@@ -35,3 +35,18 @@ headers, neutral error mapping, and concurrent rate-limit accounting.
 
 No raw TAC, pairing code, session token, secret, or parent email is written to
 this evidence file.
+
+## Sites D1 verification
+
+- Saved Sites version: 10
+- Deployment: `appgdep_6a844f5e952c8191b8fae6c3e95a1289`
+- Completed: 2026-08-18 12:26 UTC
+- Binding: `DB`
+- Result: all 15 expected tables are visible in the deployed D1 database:
+  `auth_challenges`, `child_devices`, `child_profiles`, `household_users`,
+  `households`, `pairing_codes`, `point_ledger`, `rate_limit_buckets`,
+  `reward_requests`, `rewards`, `runtime_metadata`, `sessions`, `task_claims`,
+  `tasks`, and `users`.
+
+The Sites database overview reported no omitted or truncated identifiers. No
+production rows or authentication material were read.

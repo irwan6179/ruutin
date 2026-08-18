@@ -26,6 +26,31 @@ export type SendEmailOptions = Readonly<{
   timeoutMs?: number;
 }>;
 
+/** Injectable boundary used by auth routes; production uses `sendEmail`. */
+export interface EmailSender {
+  send(message: EmailMessage): Promise<void>;
+}
+
+/**
+ * Deterministic in-memory adapter for unit/integration tests. It deliberately
+ * stores messages only in the test process; production routes never construct
+ * this class. Tests can inspect the last message without making a network call
+ * or needing a real Resend credential.
+ */
+export class DeterministicEmailAdapter implements EmailSender {
+  readonly messages: EmailMessage[] = [];
+  readonly failure: EmailAdapterError | null;
+
+  constructor(options: { failure?: EmailFailureReason } = {}) {
+    this.failure = options.failure ? new EmailAdapterError(options.failure) : null;
+  }
+
+  async send(message: EmailMessage): Promise<void> {
+    if (this.failure) throw this.failure;
+    this.messages.push({ ...message });
+  }
+}
+
 export const DEFAULT_EMAIL_TIMEOUT_MS = 8_000;
 
 const EMAIL_ADDRESS_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -173,4 +198,14 @@ export async function sendEmail(
   } finally {
     clearTimeout(timeout);
   }
+}
+
+/** Create a production sender without exposing provider details to callers. */
+export function createEmailSender(
+  config: EmailProviderConfig,
+  options: SendEmailOptions = {},
+): EmailSender {
+  return {
+    send: (message) => sendEmail(config, message, options),
+  };
 }

@@ -3,7 +3,7 @@
 Development contract: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)  
 Deployment target: ChatGPT Sites exclusively  
 Final custom domain: `ruutin.irwan.cc` via Sites custom-domain support  
-Tracker state: G00–G01 complete; G02 parent TAC authentication next
+Tracker state: G02 code complete; live Sites email validation pending; G03 implementation next
 
 ## How to use this tracker
 
@@ -102,35 +102,35 @@ Tracker state: G00–G01 complete; G02 parent TAC authentication next
 
 ## G02 — Parent TAC authentication
 
-- [ ] **BR-020 — Implement TAC cryptography and lifecycle**  
+- [x] **BR-020 — Implement TAC cryptography and lifecycle**  
   Depends: BR-005, BR-011, BR-015. Deliver: secure six-digit generation, protected hash, ten-minute expiry, one use, five-attempt lock, prior-code invalidation.  
   Accept: no plaintext persistence/logging; tests cover expiry, reuse, attempts, replacement, concurrency, and safe comparison.
 
-- [ ] **BR-021 — Implement layered TAC request rate limits**  
+- [x] **BR-021 — Implement layered TAC request rate limits**  
   Depends: BR-020. Deliver: limits by normalized email and request source using Sites-supported storage/data.  
   Accept: repeated requests are bounded without account enumeration; policy/reset behavior is tested and documented.
 
-- [ ] **BR-022 — Implement transactional TAC email adapter**  
+- [x] **BR-022 — Implement transactional TAC email adapter**  
   Depends: BR-002, BR-020. Deliver: provider adapter, timeout/error handling, parent-appropriate copy.  
   Accept: credentials stay server-only; failures are sanitized; deterministic test adapter exists.
 
-- [ ] **BR-023 — Implement neutral TAC request route and UI**  
+- [x] **BR-023 — Implement neutral TAC request route and UI**  
   Depends: BR-021, BR-022. Deliver: mobile-first form and Sites server route.  
   Accept: valid/unknown emails receive indistinguishable public responses.
 
-- [ ] **BR-024 — Implement TAC verification and account creation**  
+- [x] **BR-024 — Implement TAC verification and account creation**  
   Depends: BR-020, BR-023. Deliver: verification route/UI and atomic user creation/update.  
   Accept: first success creates account; concurrent verification cannot consume twice or duplicate the user.
 
-- [ ] **BR-025 — Implement secure parent sessions**  
+- [x] **BR-025 — Implement secure parent sessions**  
   Depends: BR-024. Deliver: opaque token, hashed D1 storage, secure cookie, ~30-day expiry, rotation, last-seen throttling.  
   Accept: raw token exists only in cookie exchange; cookie is `Secure`, `HttpOnly`, `SameSite`; reload and second-device sign-in work.
 
-- [ ] **BR-026 — Implement sign-out and session revocation**  
+- [x] **BR-026 — Implement sign-out and session revocation**  
   Depends: BR-025. Deliver: server revocation and cookie clearing.  
   Accept: revoked token fails on its next request; client-side clearing is not the enforcement mechanism.
 
-- [ ] **BR-027 — Complete authentication security tests**  
+- [-] **BR-027 — Complete authentication security tests**  
   Depends: BR-020–BR-026. Deliver: route and end-to-end tests.  
   Accept: AC-01–AC-06 and AC-24 pass, including generic errors and rate limits.
 
@@ -432,12 +432,12 @@ Tracker state: G00–G01 complete; G02 parent TAC authentication next
 
 ## Source acceptance checklist
 
-- [ ] **AC-01** New parent can request and verify email TAC.
-- [ ] **AC-02** TAC expires after ten minutes.
-- [ ] **AC-03** TAC cannot be reused.
-- [ ] **AC-04** More than five incorrect TAC attempts are blocked.
-- [ ] **AC-05** Repeated TAC requests are rate limited.
-- [ ] **AC-06** Same parent on a second device sees the same household.
+- [ ] **AC-01** New parent can request and verify email TAC. *(Local deterministic flow passes; live Resend delivery pending.)*
+- [x] **AC-02** TAC expires after ten minutes.
+- [x] **AC-03** TAC cannot be reused.
+- [x] **AC-04** More than five incorrect TAC attempts are blocked.
+- [x] **AC-05** Repeated TAC requests are rate limited.
+- [x] **AC-06** Same parent on a second device sees the same household.
 - [ ] **AC-07** Parent can create multiple profiles.
 - [ ] **AC-08** Template selections create editable tasks.
 - [ ] **AC-09** Under-threshold profile cannot generate a pairing code.
@@ -455,7 +455,7 @@ Tracker state: G00–G01 complete; G02 parent TAC authentication next
 - [ ] **AC-21** Repeated reward approval cannot deduct twice.
 - [ ] **AC-22** Revoking a device removes access.
 - [ ] **AC-23** Cross-household identifiers expose no data.
-- [ ] **AC-24** Reload preserves sessions correctly.
+- [x] **AC-24** Reload preserves sessions correctly.
 - [ ] **AC-25** Foreground return refreshes current data.
 - [ ] **AC-26** Manifest and icons exist on Sites origin.
 - [ ] **AC-27** App works at 360 px without horizontal overflow.

@@ -1,6 +1,6 @@
 # Ruutin Development Specification
 
-Status: G00–G01 complete; G02 parent TAC authentication next  
+Status: G02 code complete; live Sites email validation pending; G03 implementation next  
 Source: supplied “Updated @Sites Build Prompt — Bintang Rumah”; product renamed to **Ruutin**  
 Companion tracker: [`../TASKS.md`](../TASKS.md)
 
@@ -134,9 +134,10 @@ Required Sites-hosted variables:
 Production must fail closed when required configuration is missing. No secret or derivative that enables authentication may appear in client bundles, HTML, logs, exports, or error responses.
 
 The typed boundary is `server/runtime-config.ts` plus the Sites runtime adapter
-in `server/config.ts`. `loadServerConfig` validates non-empty values, the
-email API URL, and the sender address without returning secret values in an
-error. `getServerConfig` uses strict validation for every future server route;
+in `server/config.ts`. `loadServerConfig` validates non-empty values, minimum
+length for authentication secrets, the email API URL, and the sender address
+without returning secret values in an error. `getServerConfig` uses strict
+validation for every future server route;
 the public landing page deliberately never resolves it. `scripts/scan-secrets.mjs`
 checks that `app/` does not import the boundary and that configured values do
 not appear in `dist/`.

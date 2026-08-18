@@ -27,6 +27,8 @@ export interface D1StatementLike {
 
 export interface D1DatabaseLike {
   prepare(query: string): D1StatementLike;
+  /** Cloudflare D1 batches are atomic. Test shims may omit this method. */
+  batch?(statements: readonly unknown[]): Promise<unknown[]>;
 }
 
 export type ParentMembership = {
@@ -150,16 +152,32 @@ async function readMemberships(
   );
 }
 
-/** Resolve parent scope solely from the secure cookie and D1 membership. */
-export async function resolveParentContext(
+/**
+ * Session identity before household onboarding. A newly verified parent has a
+ * valid account/session but no household membership yet; onboarding routes
+ * use this context to create the first household without inventing a browser
+ * supplied household id. `resolveParentContext` below remains membership-
+ * scoped for ordinary parent data routes.
+ */
+export type ParentSessionContext = {
+  kind: "parent_session";
+  sessionId: string;
+  tokenHash: string;
+  userId: string;
+  memberships: readonly ParentMembership[];
+  expiresAt: string;
+};
+
+export async function resolveParentSession(
   request: Request,
   db: D1DatabaseLike,
-  options: { sessionSecret: string; now?: Date } ,
-): Promise<ParentContext | null> {
+  options: { sessionSecret: string; now?: Date },
+): Promise<ParentSessionContext | null> {
   const rawToken = getCookie(request, PARENT_SESSION_COOKIE);
   if (!rawToken) return null;
   const tokenHash = await hashOpaqueToken(rawToken, options.sessionSecret);
-  const now = toUtcTimestamp(options.now ?? new Date());
+  const nowDate = options.now ?? new Date();
+  const now = toUtcTimestamp(nowDate);
   const session = await db
     .prepare(
       `SELECT id AS sessionId, user_id AS userId, token_hash AS tokenHash,
@@ -178,24 +196,53 @@ export async function resolveParentContext(
       expiresAt: string;
     }>();
   if (!session || !timingSafeEqual(session.tokenHash, tokenHash)) return null;
-
   const memberships = await readMemberships(db, session.userId);
-  if (memberships.length === 0) return null;
+  const context: ParentSessionContext = {
+    kind: "parent_session",
+    sessionId: session.sessionId,
+    tokenHash,
+    userId: session.userId,
+    memberships,
+    expiresAt: session.expiresAt,
+  };
+  await touchSessionIfDue(db, {
+    kind: "parent",
+    sessionId: context.sessionId,
+    tokenHash: context.tokenHash,
+    userId: context.userId,
+    householdId: memberships[0]?.householdId ?? "",
+    role: memberships[0]?.role ?? "parent",
+    memberships,
+    expiresAt: context.expiresAt,
+  }, { now: options.now });
+  return context;
+}
+
+/** Resolve parent scope solely from the secure cookie and D1 membership. */
+export async function resolveParentContext(
+  request: Request,
+  db: D1DatabaseLike,
+  options: { sessionSecret: string; now?: Date } ,
+): Promise<ParentContext | null> {
+  const session = await resolveParentSession(request, db, options);
+  if (!session || session.memberships.length === 0) return null;
 
   // MVP presents one household.  If a future UI supports switching, it must
   // add a server-maintained active-household choice rather than trusting a
   // URL/body household ID.  The context still returns every verified member.
-  const primary = memberships[0];
-  return {
+  const primary = session.memberships[0];
+  const context: ParentContext = {
     kind: "parent",
     sessionId: session.sessionId,
-    tokenHash,
+    tokenHash: session.tokenHash,
     userId: session.userId,
     householdId: primary.householdId,
     role: primary.role,
-    memberships,
+    memberships: session.memberships,
     expiresAt: session.expiresAt,
   };
+  // `resolveParentSession` already performed the throttled last-seen write.
+  return context;
 }
 
 export async function requireParentContext(
@@ -245,7 +292,7 @@ export async function resolveCompanionContext(
       emoji: string;
     }>();
   if (!device || !timingSafeEqual(device.tokenHash, tokenHash)) return null;
-  return {
+  const context: CompanionContext = {
     kind: "companion",
     deviceId: device.deviceId,
     tokenHash,
@@ -254,6 +301,8 @@ export async function resolveCompanionContext(
     profile: { nickname: device.nickname, emoji: device.emoji },
     expiresAt: device.expiresAt,
   };
+  await touchSessionIfDue(db, context, { now: options.now });
+  return context;
 }
 
 export async function requireCompanionContext(
@@ -287,6 +336,39 @@ export async function touchSessionIfDue(
     )
     .bind(now, context.kind === "parent" ? context.sessionId : context.deviceId, context.tokenHash, toUtcTimestamp(threshold))
     .run?.();
+}
+
+/**
+ * Revoke one parent session using only the presented cookie token. The token
+ * itself is never written to D1, returned in a response, or included in an
+ * error. A conditional update makes revocation idempotent and effective on
+ * the next request even when an old tab keeps its cookie.
+ */
+export async function revokeParentSession(
+  request: Request,
+  db: D1DatabaseLike,
+  options: { sessionSecret: string; now?: Date } ,
+): Promise<boolean> {
+  const rawToken = getCookie(request, PARENT_SESSION_COOKIE);
+  if (!rawToken) return false;
+  const tokenHash = await hashOpaqueToken(rawToken, options.sessionSecret);
+  const revokedAt = toUtcTimestamp(options.now ?? new Date());
+  const result = await db
+    .prepare(
+      `UPDATE sessions
+       SET revoked_at = ?
+       WHERE token_hash = ? AND revoked_at IS NULL
+         AND expires_at > ?`,
+    )
+    .bind(revokedAt, tokenHash, revokedAt)
+    .run?.();
+  if (typeof result === "object" && result !== null && "meta" in result) {
+    const changes = (result as { meta?: { changes?: unknown } }).meta?.changes;
+    return typeof changes === "number" ? changes > 0 : true;
+  }
+  // Some lightweight test shims do not expose D1's metadata. The statement
+  // still ran and the caller only needs the revocation to be best-effort.
+  return true;
 }
 
 export function serializeSessionCookie(

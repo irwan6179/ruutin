@@ -2,6 +2,7 @@ import { AuthorizationError } from "./auth-context";
 import { CsrfError, OriginError, jsonResponse } from "./http-security";
 import { RateLimitError } from "./rate-limit";
 import { ScopeError } from "./scoped-data";
+import { TacVerificationError } from "./tac";
 import { ValidationError } from "./validation";
 
 export type PublicError = {
@@ -23,6 +24,13 @@ export function toPublicError(error: unknown): PublicError {
   }
   if (error instanceof RateLimitError) {
     return { status: 429, code: "rate_limited", message: "Too many requests" };
+  }
+  if (error instanceof TacVerificationError) {
+    return {
+      status: 400,
+      code: "invalid_request",
+      message: "That code is invalid or has expired. Request a new code and try again.",
+    };
   }
   if (error instanceof ValidationError) {
     return { status: 400, code: "invalid_request", message: "Request is invalid" };
