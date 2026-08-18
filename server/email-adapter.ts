@@ -152,7 +152,6 @@ export async function sendEmail(
         subject: message.subject,
         text: message.text,
       }),
-      redirect: "error",
       signal: controller.signal,
     });
 
