@@ -9,7 +9,7 @@ import {
 const config = {
   EMAIL_API_URL: "https://api.resend.com/emails",
   EMAIL_API_KEY: "re_test_key",
-  EMAIL_FROM: "Bintang Rumah <noreply@example.test>",
+  EMAIL_FROM: "Ruutin <noreply@example.test>",
 };
 
 test("builds the Resend-compatible POST without exposing response data", async () => {

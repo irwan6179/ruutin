@@ -25,13 +25,13 @@ async function render() {
   );
 }
 
-test("server-renders the Bintang Rumah parent landing page", async () => {
+test("server-renders the Ruutin parent landing page", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Bintang Rumah \| Calm routines for busy families<\/title>/i);
+  assert.match(html, /<title>Ruutin \| Calm routines for busy families<\/title>/i);
   assert.match(html, /Small routines\./);
   assert.match(html, /Sign in with email/);
   assert.match(html, /Parents decide/);

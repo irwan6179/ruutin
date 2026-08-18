@@ -1,12 +1,12 @@
-# Bintang Rumah Development Specification
+# Ruutin Development Specification
 
-Status: G00 runtime preflight complete; G01 security foundation next  
-Source: supplied “Updated @Sites Build Prompt — Bintang Rumah”  
+Status: G00–G01 complete; G02 parent TAC authentication next  
+Source: supplied “Updated @Sites Build Prompt — Bintang Rumah”; product renamed to **Ruutin**  
 Companion tracker: [`../TASKS.md`](../TASKS.md)
 
 ## 1. Purpose
 
-Bintang Rumah is a public, mobile-first family routine and reward tracker. A parent manages the household, profiles, tasks, approvals, stars, rewards, and linked devices. An eligible family member may use a profile-scoped companion device to claim tasks and request rewards.
+Ruutin is a public, mobile-first family routine and reward tracker. Its name is a wordplay on the Bahasa Malaysia word “rutin.” A parent manages the household, profiles, tasks, approvals, stars, rewards, and linked devices. An eligible family member may use a profile-scoped companion device to claim tasks and request rewards.
 
 The product is marketed to parents and caregivers. It must not target children under 13 or below the applicable local age of digital consent. The MVP minimizes child data and gives parents control over consequential actions.
 
@@ -399,12 +399,18 @@ Companion navigation has exactly Today and Rewards. Parent and companion middlew
 ## 16. UI and interaction requirements
 
 - White or very light base with a soft purple accent
-- Calm, practical parent UI; cheerful but non-game-like companion UI
+- Joyful, playful, and practical UI: reassuring for parents and especially
+  cheerful for companions, without becoming game-like or distracting
 - Rounded cards, large readable type, large touch targets, clear icons and progress bars
 - Accessible contrast, visible focus states, semantic labels, keyboard support, reduced motion
 - Responsive from 360 px through desktop with no horizontal overflow
 - Safe-area inset support for installed mobile views
-- Minimal animation; no gambling, loot-box, virtual-currency-shop, public-social, or preschool-game treatment
+- Purposeful micro-animation makes interactions feel pleasurable: quick press,
+  completion, approval, progress, navigation, and success feedback should
+  confirm state and reward attention without delaying work
+- Motion must use transform/opacity where practical, remain brief and
+  interruptible, avoid layout shifts, and fully honor `prefers-reduced-motion`
+- No gambling, loot-box, virtual-currency-shop, public-social, or preschool-game treatment
 - Do not reproduce the reference screenshot’s subscription paywall
 
 ## 17. Synchronization and PWA behavior
@@ -413,11 +419,11 @@ The app is online-first. After successful mutations, refetch authoritative data.
 
 Required assets and metadata:
 
-- `manifest.webmanifest`: name **Bintang Rumah**, short name **Bintang**, standalone display, theme/background colors
+- `manifest.webmanifest`: name **Ruutin**, short name **Ruutin**, standalone display, theme/background colors
 - 192×192, 512×512, maskable, and Apple touch icons
 - Mobile viewport and safe-area metadata
 - Standalone-mode detection
-- Post-pairing message: “Save Bintang Rumah to this device’s home screen for easier access.”
+- Post-pairing message: “Save Ruutin to this device’s home screen for easier access.”
 - Guidance for Safari on iPhone and common Android browsers
 
 If the Sites gate confirms service-worker support, cache only immutable static assets. Never cache authenticated HTML, private API data, TAC/pairing responses, or mutations. A stale worker must not preserve access after revocation. If unsupported, ship install metadata/guidance without offline behavior.
@@ -477,6 +483,7 @@ Work in goal-sized batches listed in `TASKS.md`:
 | Service-worker support on saved/published Sites origin | Engineering | Resolved | Optional caching | `docs/evidence/BR-004-service-worker.md` |
 | Timezone defaults and household naming copy | Product | Pending before onboarding release | Onboarding | Approved copy/defaults |
 | Retention/deletion semantics and statutory wording | Product/legal | Pending before public release | Public launch | Reviewed copy and deletion test |
+| Sites custom domain `ruutin.irwan.cc` | Engineering | Attached; DNS/SSL validation pending | Public launch | `docs/evidence/SITES-custom-domain.md` |
 
 If the email gate fails, implementation pauses at that incompatibility. If the service-worker gate fails, development continues without offline caching. Neither result authorizes a non-Sites deployment.
 

@@ -3,7 +3,7 @@
 Date: 2026-08-18
 
 The root route is a server-rendered, mobile-first parent/caregiver entry for
-Bintang Rumah. It explains the parent-led routine model, shows a realistic
+Ruutin. It explains the parent-led routine model, shows a realistic
 routine overview, presents the privacy/data-minimization approach, and ends
 with a clear “Sign in with email” one-time-code CTA. Copy does not target
 children, request prohibited profile data, introduce payment/paywall treatment,

@@ -1,5 +1,5 @@
 /*
- * Disposable capability probe for Bintang Rumah.
+ * Disposable capability probe for Ruutin.
  *
  * Deliberately no fetch handler and no Cache Storage calls: authenticated HTML,
  * private API responses, TAC/pairing responses, and mutations always use the

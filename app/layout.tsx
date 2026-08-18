@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bintang Rumah | Calm routines for busy families",
+  title: "Ruutin | Calm routines for busy families",
   description:
     "A parent-first routine and reward space that helps families make everyday progress feel lighter.",
   icons: {

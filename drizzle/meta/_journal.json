@@ -8,6 +8,27 @@
       "when": 1787051626819,
       "tag": "0000_careless_colossus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787054311097,
+      "tag": "0001_cool_lake",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787054353095,
+      "tag": "0002_old_ben_parker",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787054353096,
+      "tag": "0003_g01_integrity",
+      "breakpoints": true
     }
   ]
 }

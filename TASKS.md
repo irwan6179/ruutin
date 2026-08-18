@@ -1,8 +1,9 @@
-# Bintang Rumah Task Tracker
+# Ruutin Task Tracker
 
 Development contract: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)  
 Deployment target: ChatGPT Sites exclusively  
-Tracker state: G00 complete; G01 security foundation next
+Final custom domain: `ruutin.irwan.cc` via Sites custom-domain support  
+Tracker state: G00–G01 complete; G02 parent TAC authentication next
 
 ## How to use this tracker
 
@@ -67,35 +68,35 @@ Tracker state: G00 complete; G01 security foundation next
 
 ## G01 — D1 and server security foundation
 
-- [ ] **BR-010 — Create identity and household migration**  
+- [x] **BR-010 — Create identity and household migration**  
   Depends: BR-003. Deliver: `users`, `households`, `household_users`, indexes, foreign keys, role checks.  
   Accept: unique normalized email and household/user membership are enforced in D1.
 
-- [ ] **BR-011 — Create authentication/session migration**  
+- [x] **BR-011 — Create authentication/session migration**  
   Depends: BR-010. Deliver: `auth_challenges`, `sessions`, expiry/lookup indexes and constraints.  
   Accept: no raw TAC/session field exists; token hashes are unique; migration tests pass.
 
-- [ ] **BR-012 — Create profiles/tasks/claims migration**  
+- [x] **BR-012 — Create profiles/tasks/claims migration**  
   Depends: BR-010. Deliver: `child_profiles`, `tasks`, `task_claims` and constraints/indexes.  
   Accept: stars are limited to 1–3 and duplicate approved task occurrences are database-protected.
 
-- [ ] **BR-013 — Create ledger/rewards migration**  
+- [x] **BR-013 — Create ledger/rewards migration**  
   Depends: BR-012. Deliver: `point_ledger`, `rewards`, `reward_requests`.  
   Accept: one source event cannot award/deduct twice; allowed types/statuses and positive reward cost are enforced.
 
-- [ ] **BR-014 — Create pairing/device migration**  
+- [x] **BR-014 — Create pairing/device migration**  
   Depends: BR-012. Deliver: `pairing_codes`, `child_devices` with expiry, lookup, uniqueness, revocation indexes.  
   Accept: no raw pairing/device token field exists and device token hashes are unique.
 
-- [ ] **BR-015 — Implement shared validation and data conventions**  
+- [x] **BR-015 — Implement shared validation and data conventions**  
   Depends: BR-010–BR-014. Deliver: IDs, UTC timestamps, IANA timezone/local date, email normalization, enums, schedule validation.  
   Accept: tests cover DST boundaries, invalid schedules, invalid stars/statuses, and normalized-email equivalence.
 
-- [ ] **BR-016 — Implement parent and companion authorization contexts**  
+- [x] **BR-016 — Implement parent and companion authorization contexts**  
   Depends: BR-011, BR-014. Deliver: separate server helpers resolving scope from secure cookies and D1.  
   Accept: expired/revoked sessions fail; companion context returns exactly one assigned profile and ignores browser scope IDs.
 
-- [ ] **BR-017 — Add scoped data access and HTTP security controls**  
+- [x] **BR-017 — Add scoped data access and HTTP security controls**  
   Depends: BR-015, BR-016. Deliver: household/profile-scoped queries, private/no-store defaults, CSRF/origin defense, sanitized errors/logging.  
   Accept: protected handlers cannot use unscoped mutation helpers; cross-household and sibling identifiers are rejected in tests.
 
@@ -363,9 +364,9 @@ Tracker state: G00 complete; G01 security foundation next
   Depends: BR-035, BR-055. Deliver: post-mutation, foreground, manual/pull refresh; optional low-frequency approval refresh.  
   Accept: no WebSockets/background queue; stale tabs converge; polling stops off approval screen.
 
-- [ ] **BR-094 — Apply calm responsive design system**  
-  Depends: functional screens. Deliver: light base, soft purple, cards, type, touch targets, icons, progress, safe areas.  
-  Accept: parent UI is trustworthy; companion UI is cheerful without prohibited styling.
+- [ ] **BR-094 — Apply joyful responsive design system and micro-interactions**  
+  Depends: functional screens. Deliver: light base, soft purple, cards, type, touch targets, icons, progress, safe areas, and purposeful press/completion/approval/navigation/success motion.  
+  Accept: interactions feel playful and pleasurable while the parent UI remains trustworthy; motion is brief, performant, and fully disabled or simplified by `prefers-reduced-motion`; companion UI is cheerful without prohibited styling.
 
 - [ ] **BR-095 — Complete accessibility pass**  
   Depends: BR-094. Deliver: semantics, labels, focus, keyboard, contrast, reduced motion, error announcements.  
@@ -467,7 +468,7 @@ Tracker state: G00 complete; G01 security foundation next
 Use one prompt per goal or a smaller coherent subset. Do not delegate several security-critical goals in one oversized run.
 
 ```text
-You are the coding delegate for Bintang Rumah in <absolute-repo-path>.
+You are the coding delegate for Ruutin in <absolute-repo-path>.
 
 Work only on task IDs: <BR-...>.
 Use docs/DEVELOPMENT.md as the implementation contract and TASKS.md as the tracker.

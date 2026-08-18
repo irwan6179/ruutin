@@ -1,7 +1,8 @@
-# Bintang Rumah
+# Ruutin
 
-Bintang Rumah is a parent-first routine and reward space for real homes. The
-public entry is intentionally calm, light, and mobile-first: parents can
+Ruutin is a parent-first routine and reward space for real homes. The name is a
+wordplay on the Bahasa Malaysia word “rutin.” The public entry is intentionally
+calm, light, and mobile-first: parents can
 understand the product, review the privacy approach, and enter the email
 one-time-code sign-in flow from one page.
 

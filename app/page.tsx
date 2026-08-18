@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Bintang Rumah | Calm routines for busy families",
+  title: "Ruutin | Calm routines for busy families",
   description:
     "A parent-first routine and reward space that helps families make everyday progress feel lighter.",
 };
@@ -47,12 +47,12 @@ export default function Home() {
       </a>
 
       <header className="br-header">
-        <a className="br-brand" href="#main-content" aria-label="Bintang Rumah home">
+        <a className="br-brand" href="#main-content" aria-label="Ruutin home">
           <span className="br-brand-mark" aria-hidden="true">
             <span>✦</span>
           </span>
           <span className="br-brand-name">
-            Bintang <strong>Rumah</strong>
+            <strong>Ruutin</strong>
           </span>
         </a>
 
@@ -77,7 +77,7 @@ export default function Home() {
               <em>More ease.</em>
             </h1>
             <p className="br-hero-description">
-              Bintang Rumah gives parents a warm, clear place to shape everyday routines,
+              Ruutin gives parents a warm, clear place to shape everyday routines,
               notice progress, and celebrate the things that keep a home moving.
             </p>
             <div className="br-hero-actions">
@@ -155,7 +155,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="br-trust-bar" aria-label="Bintang Rumah principles">
+        <section className="br-trust-bar" aria-label="Ruutin principles">
           <div className="br-container br-trust-inner">
             <p>Designed around the people who hold a home together.</p>
             <div className="br-trust-notes">
@@ -175,7 +175,7 @@ export default function Home() {
               Built for the <em>everyday</em> version of family life.
             </h2>
             <p>
-              Routines change. Plans wobble. Bintang Rumah keeps the useful part simple,
+              Routines change. Plans wobble. Ruutin keeps the useful part simple,
               so progress can feel encouraging instead of demanding.
             </p>
           </div>
@@ -207,7 +207,7 @@ export default function Home() {
                 Useful for families.<br /><em>Respectful by design.</em>
               </h2>
               <p>
-                You stay in charge of the household. Bintang Rumah is built around
+                You stay in charge of the household. Ruutin is built around
                 parent-selected information, broad settings, and clear control over
                 profiles, routines, rewards, and connected devices.
               </p>
@@ -244,7 +244,7 @@ export default function Home() {
             </div>
           </div>
           <p className="br-footer-note">
-            Bintang Rumah is for parents and caregivers. Set up what works for your household,
+            Ruutin is for parents and caregivers. Set up what works for your household,
             then let the small wins add up.
           </p>
         </section>
@@ -253,7 +253,7 @@ export default function Home() {
       <footer className="br-footer br-container">
         <a className="br-brand br-brand-footer" href="#main-content">
           <span className="br-brand-mark" aria-hidden="true"><span>✦</span></span>
-          <span className="br-brand-name">Bintang <strong>Rumah</strong></span>
+          <span className="br-brand-name"><strong>Ruutin</strong></span>
         </a>
         <p>Calmer routines for real homes.</p>
         <span className="br-footer-year">© 2026</span>
