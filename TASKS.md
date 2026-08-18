@@ -49,11 +49,11 @@ Tracker state: ready for execution; no application scaffold exists yet
   Depends: BR-001. Deliver: minimal server-only probe using Sites-hosted configuration, then remove or lock the probe.  
   Accept: a saved/published Sites runtime reaches the selected API without exposing credentials; redacted evidence is saved. If unavailable, mark `[!]` and stop—do not change host or auth method.
 
-- [ ] **BR-003 — Prove Sites D1 binding and migration workflow**  
+- [x] **BR-003 — Prove Sites D1 binding and migration workflow**  
   Depends: BR-001. Deliver: D1 binding, base migration, local and Sites environment workflow.  
   Accept: a Sites server route performs a harmless D1 read in local and saved-version environments; commands/results are recorded.
 
-- [ ] **BR-004 — Probe service-worker support on the Sites origin**  
+- [x] **BR-004 — Probe service-worker support on the Sites origin**  
   Depends: BR-001. Deliver: disposable registration probe and evidence.  
   Accept: support status is recorded. Unsupported means manifest/install guidance without caching, not a hosting change.
 

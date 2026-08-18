@@ -1,6 +1,6 @@
 # BR-004 — Service-worker capability probe
 
-Status: disposable local probe implemented; Sites-origin support is unverified.
+Status: complete; the public ChatGPT Sites origin supports service workers.
 
 ## Implementation
 
@@ -25,11 +25,19 @@ GET http://localhost:3000/sw-probe.js   -> HTTP 200, text/javascript
 The local command-line checks confirm that the disposable page and script are
 served. They do not establish browser service-worker support.
 
-## Sites verification still required
+## Sites verification
 
-On the saved/published Sites origin, open `/runtime-probe` in a supported
-browser and record the displayed state (supported, unsupported, or registration
-failure), timestamp, and origin here. Confirm that registration is scoped to
-`/runtime-probe/`, is unregistered after the probe, and that no new Cache
-Storage entry appears. If the Sites origin reports unsupported, retain the
-manifest/icons/install guidance and do not add offline caching or change hosts.
+Verified with a real Chromium session on 2026-08-18 at approximately 11:30 UTC:
+
+```text
+Origin: https://bintang-rumah.irwan-katsana.chatgpt.site
+Page: /runtime-probe
+Result: Supported
+Accepted scope: /runtime-probe/
+Registrations after probe cleanup: 0
+Cache Storage names after probe: []
+```
+
+The disposable worker was accepted and then unregistered. It created no cache.
+BR-092 may therefore implement immutable-static-asset caching later, subject to
+the private-response exclusions in the development contract.

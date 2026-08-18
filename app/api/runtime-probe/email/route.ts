@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import {
+  EmailAdapterError,
   loadEmailConfig,
   sendEmail,
 } from "../../../../server/email-adapter";
@@ -67,9 +68,14 @@ export async function POST(request: Request): Promise<Response> {
       text:
         "Temporary server-side reachability probe. This message contains no authentication code or application secret.",
     });
-  } catch {
-    // The adapter has already sanitized transport/provider failures; the
-    // public route remains generic and never logs the caught error.
+  } catch (error) {
+    // A sanitized provider rejection proves the Sites runtime completed an
+    // outbound HTTPS exchange with the selected API. It exposes no provider
+    // body, status, credential, recipient, or message content.
+    if (error instanceof EmailAdapterError && error.reason === "provider") {
+      return jsonResponse({ error: "provider_rejected" }, 502);
+    }
+
     return unavailableResponse();
   }
 

@@ -19,8 +19,9 @@ Sites-runtime verification are still pending. BR-002 remains unchecked in
   `POST` route. It sends only a static reachability message and is disabled
   with a generic no-store response unless both server-only
   `EMAIL_PROBE_TO` and `RUNTIME_PROBE_SECRET` are present. Missing provider
-  configuration, rejected credentials, timeouts, and provider/network errors
-  produce generic responses; no caught error is logged or returned.
+  configuration, timeouts, and network errors produce generic responses. A
+  guarded `provider_rejected` category contains no provider body/status or
+  request data and exists only to prove the Sites runtime reached Resend.
 - The existing `.openai/hosting.json` project ID and logical `DB` binding were
   not changed. No deployment was performed, and TAC authentication was not
   implemented.
@@ -64,10 +65,12 @@ browser URLs, request bodies, screenshots, or logs.
 3. From a controlled HTTPS client, issue one `POST` to
    `/api/runtime-probe/email` with `Authorization: Bearer <temporary-secret>`.
    Do not include a request body. Record only timestamp, saved-origin host,
-   HTTP status, and redacted response/cache headers. A successful result is
-   HTTP 200 with the generic `{"ok":true}` body and
-   `Cache-Control: no-store, private`; confirm the controlled recipient got
-   the static probe email.
+   HTTP status, and redacted response/cache headers. A delivery-capable result
+   is HTTP 200 with `{"ok":true}`. For the narrower runtime reachability gate,
+   a 502 `{"error":"provider_rejected"}` produced with a deliberately invalid
+   temporary credential proves that Sites completed an HTTPS exchange with
+   Resend without exposing the credential. Both responses must include
+   `Cache-Control: no-store, private`.
 4. Verify fail-closed behavior without sending mail: omit the Authorization
    header, use a wrong Bearer value, use `GET`, and repeat with either probe
    variable removed. Responses must remain generic/no-store, and none of
