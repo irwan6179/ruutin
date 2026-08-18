@@ -156,7 +156,6 @@ export async function sendEmail(
         subject: message.subject,
         text: message.text,
       }),
-      credentials: "omit",
       redirect: "error",
       signal: controller.signal,
     });

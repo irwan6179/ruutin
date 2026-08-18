@@ -41,7 +41,6 @@ test("builds the Resend-compatible POST without exposing response data", async (
   assert.equal(request.url, config.EMAIL_API_URL);
   assert.equal(request.init.method, "POST");
   assert.equal(request.init.redirect, "error");
-  assert.equal(request.init.credentials, "omit");
   assert.equal(request.init.headers instanceof Headers, false);
 
   const headers = new Headers(request.init.headers);
