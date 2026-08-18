@@ -24,6 +24,16 @@ import { countOnboardingRows, getTodayOverview } from "./today";
 import { deriveOnboardingState } from "./onboarding";
 import { listDevicesForParent, renameDeviceForParent, revokeDeviceForParent } from "./devices";
 import { ValidationError } from "./validation";
+import {
+  archiveTaskForParent,
+  createTaskForParent,
+  createTasksForParentBulk,
+  getTaskForParent,
+  listTaskOccurrencesForParent,
+  listTasksForParent,
+  reorderTasksForParent,
+  updateTaskForParent,
+} from "./tasks";
 
 export type ParentRouteDependencies = Readonly<{
   db: D1DatabaseLike;
@@ -228,6 +238,116 @@ export async function handleParentDevices(
       await renameDeviceForParent(dependencies.db, context, deviceId, body.deviceLabel);
     }
     return jsonResponse({ ok: true }, { status: 200 }, { private: true });
+  } catch (error) {
+    return parentRequestError(error);
+  }
+}
+
+export async function handleParentTasks(
+  request: Request,
+  dependencies: ParentRouteDependencies,
+): Promise<Response> {
+  try {
+    const context = await requireParent(request, dependencies);
+    const method = request.method.toUpperCase();
+    if (method === "GET") {
+      const url = new URL(request.url);
+      const profileId = url.searchParams.get("profileId");
+      if (!profileId) throw new ValidationError("profileId", "profileId is required");
+      if (url.searchParams.get("view") === "management") {
+        const [tasks, occurrenceView] = await Promise.all([
+          listTasksForParent(dependencies.db, context, profileId),
+          listTaskOccurrencesForParent(dependencies.db, context, profileId, { now: dependencies.now }),
+        ]);
+        const byId = new Map(occurrenceView.occurrences.map((occurrence) => [occurrence.id, occurrence]));
+        const managementTasks = tasks.map((task) => byId.get(task.id) ?? {
+          ...task,
+          dueDate: occurrenceView.localDate,
+          // Management lists all active tasks so parents can edit/reorder
+          // future schedules too. A future task is not a due occurrence and
+          // must not be presented as an actionable "To do" item today.
+          state: "not_due" as const,
+          claimId: null,
+          submittedAt: null,
+        });
+        return jsonResponse({ tasks: managementTasks, occurrences: occurrenceView.occurrences, localDate: occurrenceView.localDate }, { status: 200 }, { private: true });
+      }
+      const view = await listTaskOccurrencesForParent(dependencies.db, context, profileId, {
+        now: dependencies.now,
+        localDate: url.searchParams.get("localDate") ?? undefined,
+      });
+      return jsonResponse({ tasks: view.occurrences, occurrences: view.occurrences, localDate: view.localDate }, { status: 200 }, { private: true });
+    }
+    if (method !== "POST") return jsonResponse({ error: "method_not_allowed", message: "Method not allowed" }, { status: 405, headers: { Allow: "GET, POST" } });
+    assertCsrf(request);
+    const body = await readBody(request);
+    onlyKeys(body, ["profileId", "title", "emoji", "stars", "schedule"]);
+    const task = await createTaskForParent(dependencies.db, context, {
+      profileId: body.profileId,
+      title: body.title,
+      emoji: body.emoji,
+      stars: body.stars,
+      schedule: body.schedule,
+    }, { now: dependencies.now });
+    return jsonResponse({ task }, { status: 201 }, { private: true });
+  } catch (error) {
+    return parentRequestError(error);
+  }
+}
+
+export async function handleParentTask(
+  request: Request,
+  dependencies: ParentRouteDependencies,
+  taskId: string,
+): Promise<Response> {
+  try {
+    const context = await requireParent(request, dependencies);
+    const method = request.method.toUpperCase();
+    if (method === "GET") {
+      return jsonResponse({ task: await getTaskForParent(dependencies.db, context, taskId) }, { status: 200 }, { private: true });
+    }
+    if (!["PATCH", "DELETE"].includes(method)) return jsonResponse({ error: "method_not_allowed", message: "Method not allowed" }, { status: 405, headers: { Allow: "GET, PATCH, DELETE" } });
+    assertCsrf(request);
+    if (method === "DELETE") {
+      return jsonResponse({ task: await archiveTaskForParent(dependencies.db, context, taskId, { now: dependencies.now }) }, { status: 200 }, { private: true });
+    }
+    const body = await readBody(request);
+    onlyKeys(body, ["title", "emoji", "stars", "schedule", "archived"]);
+    return jsonResponse({ task: await updateTaskForParent(dependencies.db, context, taskId, body, { now: dependencies.now }) }, { status: 200 }, { private: true });
+  } catch (error) {
+    return parentRequestError(error);
+  }
+}
+
+export async function handleParentTaskReorder(
+  request: Request,
+  dependencies: ParentRouteDependencies,
+): Promise<Response> {
+  try {
+    const context = await requireParent(request, dependencies);
+    if (request.method.toUpperCase() !== "POST") return jsonResponse({ error: "method_not_allowed", message: "Method not allowed" }, { status: 405, headers: { Allow: "POST" } });
+    assertCsrf(request);
+    const body = await readBody(request);
+    onlyKeys(body, ["profileId", "taskIds"]);
+    const tasks = await reorderTasksForParent(dependencies.db, context, body.profileId, body.taskIds);
+    return jsonResponse({ tasks }, { status: 200 }, { private: true });
+  } catch (error) {
+    return parentRequestError(error);
+  }
+}
+
+export async function handleParentTaskBulk(
+  request: Request,
+  dependencies: ParentRouteDependencies,
+): Promise<Response> {
+  try {
+    const context = await requireParent(request, dependencies);
+    if (request.method.toUpperCase() !== "POST") return jsonResponse({ error: "method_not_allowed", message: "Method not allowed" }, { status: 405, headers: { Allow: "POST" } });
+    assertCsrf(request);
+    const body = await readBody(request);
+    onlyKeys(body, ["profileId", "drafts"]);
+    const tasks = await createTasksForParentBulk(dependencies.db, context, body.profileId, body.drafts, { now: dependencies.now });
+    return jsonResponse({ tasks }, { status: 201 }, { private: true });
   } catch (error) {
     return parentRequestError(error);
   }

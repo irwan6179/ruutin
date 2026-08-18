@@ -39,6 +39,33 @@ export type ParentDevice = {
   revokedAt: string | null;
 };
 
+export type TaskSchedule =
+  | { type: "daily" }
+  | { type: "weekdays"; days: ReadonlyArray<number> }
+  | { type: "one_off"; localDate: string };
+
+export type ParentTask = {
+  id: string;
+  householdId: string;
+  profileId: string;
+  title: string;
+  emoji: string;
+  stars: number;
+  schedule: TaskSchedule;
+  position: number;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TaskOccurrence = ParentTask & {
+  dueDate: string;
+  /** `not_due` is management-view-only; due occurrences use the three task states. */
+  state: "todo" | "waiting" | "completed" | "not_due";
+  claimId: string | null;
+  submittedAt: string | null;
+};
+
 export type OnboardingState = {
   activeStep: "household" | "profile" | "tasks" | "review" | "rewards" | "pairing";
   completedSteps: readonly string[];

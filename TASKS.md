@@ -164,7 +164,7 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
   Depends: BR-033. Deliver: profile list/detail and task/device/pairing entry points.  
   Accept: archived profiles and ineligible pairing states are clear.
 
-- [-] **BR-037 — Test onboarding/profile privacy and authorization**
+- [x] **BR-037 — Test onboarding/profile privacy and authorization**
   Depends: BR-030–BR-036. Deliver: integration, E2E, accessibility tests.  
   Accept: AC-07 passes; age/eligibility mapping has unit tests; prohibited data is neither requested nor returned. Pairing-route enforcement of AC-09 is completed in BR-058.
 
@@ -174,35 +174,35 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 
 ## G04 — Template-first tasks and schedules
 
-- [ ] **BR-040 — Encode version-controlled routine templates**  
+- [x] **BR-040 — Encode version-controlled routine templates**
   Depends: BR-001. Deliver: typed static data for all eight categories and every supplied starter task/default.  
   Accept: templates are absent from D1; schema/snapshot tests catch lost or invalid content.
 
-- [ ] **BR-041 — Build category and suggested-task picker**  
+- [x] **BR-041 — Build category and suggested-task picker**
   Depends: BR-040. Deliver: category selection, toggles, review step.  
   Accept: blank custom form is not first; selections create editable drafts.
 
-- [ ] **BR-042 — Implement task CRUD, archive, and reorder routes**  
+- [x] **BR-042 — Implement task CRUD, archive, and reorder routes**
   Depends: BR-012, BR-015, BR-017, BR-033. Deliver: household-scoped Sites server mutations.  
   Accept: title/schedule/stars validate server-side; positions are deterministic; foreign mutations fail.
 
-- [ ] **BR-043 — Build task editing/custom task UI**  
+- [x] **BR-043 — Build task editing/custom task UI**
   Depends: BR-041, BR-042. Deliver: wording, supported schedules, 1–3 stars, archive, reorder.  
   Accept: unsupported recurrence/reminders/timers are absent; touch and keyboard interactions work.
 
-- [ ] **BR-044 — Implement household-local due-task calculation**  
+- [x] **BR-044 — Implement household-local due-task calculation**
   Depends: BR-015, BR-042. Deliver: due-date service for daily, selected weekdays, one-off date.  
   Accept: tests cover timezone midnight, DST, weekdays, one-off dates, archived tasks.
 
-- [ ] **BR-045 — Implement occurrence/progress reads**  
+- [-] **BR-045 — Implement occurrence/progress reads**
   Depends: BR-044. Deliver: parent and profile-scoped queries combining tasks with claim/completion states.  
-  Accept: To do/Waiting/Completed is consistent and companion reads leak no siblings.
+  Accept: To do/Waiting/Completed is consistent and companion reads leak no siblings. *(Parent due/management reads are implemented; companion routes do not exist until G05, so companion isolation is not yet proven.)*
 
-- [ ] **BR-046 — Integrate task setup into Family/onboarding**  
+- [x] **BR-046 — Integrate task setup into Family/onboarding**
   Depends: BR-034, BR-043, BR-045. Deliver: complete task management flow.  
   Accept: selections persist as editable D1 tasks and appear on correct local dates.
 
-- [ ] **BR-047 — Test templates, schedules, and authorization**  
+- [x] **BR-047 — Test templates, schedules, and authorization**
   Depends: BR-040–BR-046. Deliver: unit/integration/E2E tests.  
   Accept: AC-08 passes; malformed schedules and foreign identifiers cannot be stored/read.
 
@@ -438,8 +438,8 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 - [x] **AC-04** More than five incorrect TAC attempts are blocked.
 - [x] **AC-05** Repeated TAC requests are rate limited.
 - [x] **AC-06** Same parent on a second device sees the same household.
-- [ ] **AC-07** Parent can create multiple profiles.
-- [ ] **AC-08** Template selections create editable tasks.
+- [x] **AC-07** Parent can create multiple profiles.
+- [x] **AC-08** Template selections create editable tasks.
 - [ ] **AC-09** Under-threshold profile cannot generate a pairing code.
 - [ ] **AC-10** Pairing code expires after ten minutes.
 - [ ] **AC-11** Pairing code is one-time use.

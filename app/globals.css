@@ -132,6 +132,57 @@ body {
 .ruutin-checkbox { display: flex; align-items: flex-start; gap: 9px; margin-top: 4px; font-weight: 560 !important; line-height: 1.45; }
 .ruutin-checkbox input { width: 17px; height: 17px; flex: 0 0 17px; margin: 1px 0 0; accent-color: var(--br-purple); }
 .ruutin-form-error { margin: 0; color: #a44f62; font-size: 12px; }
+.ruutin-form-success { margin: 0; color: #3e785f; font-size: 12px; font-weight: 650; }
+.ruutin-task-manager { display: grid; gap: 18px; }
+.ruutin-task-manager.is-compact { margin: -10px 0 6px; padding: 18px; box-shadow: none; }
+.ruutin-task-manager h3, .ruutin-task-edit-card h3 { margin: 0; color: var(--br-plum); font-size: 17px; letter-spacing: -.04em; }
+.ruutin-task-profile-picker { display: grid; gap: 7px; max-width: 320px; }
+.ruutin-task-profile-picker label { color: #4f4560; font-size: 12px; font-weight: 700; }
+.ruutin-task-profile-picker select { min-height: 43px; padding: 9px 12px; border: 1px solid #dfd4e8; border-radius: 12px; color: var(--br-ink); background: #fff; font: inherit; }
+.ruutin-category-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.ruutin-category-chip { display: inline-flex; min-height: 42px; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid #e1d5ea; border-radius: 14px; color: #665876; background: #fffaff; cursor: pointer; font: inherit; font-size: 11px; font-weight: 680; transition: transform 160ms ease, border-color 160ms ease, background 160ms ease; }
+.ruutin-category-chip:hover { border-color: #b99bd4; background: #f7f0fc; transform: translateY(-1px); }
+.ruutin-category-chip.is-selected { border-color: #a582c8; color: var(--br-deep-purple); background: #f0e7fa; box-shadow: 0 4px 12px rgb(84 56 129 / .08); }
+.ruutin-suggestion-panel { display: grid; gap: 13px; padding: 16px; border: 1px solid #e7dcf0; border-radius: 18px; background: #fcf9fe; animation: ruutin-card-in 180ms ease-out both; }
+.ruutin-review-panel { display: grid; gap: 16px; padding: 16px; border: 1px solid #d8c6e9; border-radius: 18px; background: #fffaff; box-shadow: 0 8px 22px rgb(84 56 129 / .07); animation: ruutin-card-in 180ms ease-out both; }
+.ruutin-review-draft { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid #eee6f3; }
+.ruutin-review-source { margin: 0; color: var(--br-purple); font-size: 11px; font-weight: 740; letter-spacing: .04em; text-transform: uppercase; }
+.ruutin-suggestion-list { display: grid; gap: 1px; }
+.ruutin-suggestion-row { display: flex; min-width: 0; align-items: center; gap: 9px; padding: 10px 0; border-top: 1px solid #eee6f3; cursor: pointer; }
+.ruutin-suggestion-row input { width: 17px; height: 17px; flex: 0 0 17px; accent-color: var(--br-purple); }
+.ruutin-suggestion-row > span:nth-child(3) { display: grid; min-width: 0; gap: 3px; }
+.ruutin-suggestion-row strong { overflow: hidden; color: var(--br-ink); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.ruutin-suggestion-row small { color: #8f829b; font-size: 10px; }
+.ruutin-task-list { display: grid; gap: 11px; }
+.ruutin-task-card { display: grid; gap: 15px; padding: 17px; border-radius: 18px; }
+.ruutin-task-card-top { display: flex; min-width: 0; align-items: center; gap: 10px; }
+.ruutin-task-card-top > div { min-width: 0; }
+.ruutin-task-card h3 { margin: 0; overflow: hidden; color: var(--br-ink); font-size: 14px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.ruutin-task-card p { margin: 4px 0 0; color: #94879e; font-size: 11px; }
+/* WCAG AA: the neutral state label stays readable on its lilac badge at small text sizes. */
+.ruutin-task-state { margin-left: auto; padding: 5px 8px; border-radius: 99px; color: #6a5a73; background: #f0eaf4; font-size: 10px; font-weight: 720; white-space: nowrap; }
+.ruutin-task-state.completed { color: #3e785f; background: #e8f4ed; }
+/* Keep the amber waiting state AA-readable too; labels are intentionally compact. */
+.ruutin-task-state.waiting { color: #86633b; background: #fbf1df; }
+.ruutin-task-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ruutin-task-actions .ruutin-button { min-height: 37px; padding: 8px 12px; font-size: 11px; }
+.ruutin-task-reorder { display: inline-flex; gap: 5px; margin-left: auto; }
+.ruutin-icon-button { display: inline-grid; width: 36px; height: 36px; place-items: center; border: 1px solid #dfd3e9; border-radius: 11px; color: var(--br-deep-purple); background: #fffaff; cursor: pointer; font: inherit; font-weight: 750; transition: transform 140ms ease, background 140ms ease; }
+.ruutin-icon-button:hover { background: #f3ebfa; transform: translateY(-1px); }
+.ruutin-icon-button:disabled { cursor: not-allowed; opacity: .35; transform: none; }
+.ruutin-task-edit-card { display: grid; gap: 11px; padding: 18px; border-radius: 18px; animation: ruutin-card-in 180ms ease-out both; }
+.ruutin-task-editor { max-width: 560px; }
+.ruutin-task-editor-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.ruutin-task-editor-row > div { display: grid; gap: 8px; }
+.ruutin-day-picker { margin: 0; padding: 0; border: 0; }
+.ruutin-day-picker legend { margin-bottom: 8px; color: #4f4560; font-size: 12px; font-weight: 700; }
+.ruutin-day-picker > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.ruutin-day-chip { position: relative; display: inline-flex; min-height: 38px; align-items: center; cursor: pointer; }
+.ruutin-day-chip input { position: absolute; opacity: 0; }
+.ruutin-day-chip span { display: inline-grid; min-width: 42px; min-height: 38px; padding: 7px; place-items: center; border: 1px solid #dfd3e9; border-radius: 11px; color: #796b85; background: #fffaff; font-size: 11px; font-weight: 700; }
+.ruutin-day-chip input:checked + span { border-color: #a582c8; color: var(--br-deep-purple); background: #f0e7fa; }
+.ruutin-day-chip input:focus-visible + span { outline: 3px solid #b998df; outline-offset: 3px; }
+.ruutin-onboarding-task-step { display: grid; gap: 15px; }
 .ruutin-empty-panel { display: grid; max-width: 580px; gap: 13px; }
 .ruutin-empty-panel p { margin: 0; color: var(--br-muted); font-size: 14px; line-height: 1.6; }
 .ruutin-settings-list { display: grid; padding: 4px 22px; }
@@ -161,7 +212,7 @@ body {
 .ruutin-onboarding-card > .ruutin-form { max-width: 500px; }
 .ruutin-boundary-step { display: grid; max-width: 590px; gap: 13px; }
 .ruutin-boundary-step > p:not(.ruutin-eyebrow) { margin: 0; color: var(--br-muted); font-size: 14px; line-height: 1.65; }
-.ruutin-boundary-note { display: grid; gap: 5px; padding: 14px; border-radius: 14px; color: #6e5b82; background: #f5effa; font-size: 12px; line-height: 1.45; }
+.ruutin-boundary-note { display: grid; gap: 5px; padding: 14px; border-radius: 14px; color: #5d4b70; background: #f5effa; font-size: 12px; line-height: 1.45; }
 .ruutin-boundary-note strong { color: var(--br-deep-purple); }
 .ruutin-onboarding-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #9b8fa6; font-size: 11px; }
 .ruutin-bottom-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: 30; display: grid; grid-template-columns: repeat(4, 1fr); min-height: 70px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid rgb(224 214 235 / .95); background: rgb(255 253 255 / .96); box-shadow: 0 -10px 28px rgb(82 57 116 / .08); backdrop-filter: blur(14px); }

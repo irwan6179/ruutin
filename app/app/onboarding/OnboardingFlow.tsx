@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { AGE_BAND_OPTIONS, COMPANION_CONSENT_COPY, type HouseholdRecord, type OnboardingState, type ParentProfile } from "../profile-contracts";
+import { TaskManager } from "../family/TaskManager";
 
 type Props = {
   initialState: OnboardingState;
@@ -49,6 +50,7 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
   const [consentConfirmed, setConsentConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [taskCount, setTaskCount] = useState(initialState.completedSteps.includes("tasks") ? 1 : 0);
 
   const currentIndex = steps.findIndex(([value]) => value === state.activeStep);
   const progress = Math.round(((currentIndex + 1) / steps.length) * 100);
@@ -94,7 +96,13 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
   }
 
   function continueBoundary() {
-    if (state.activeStep === "tasks") goTo("review");
+    if (state.activeStep === "tasks") {
+      if (taskCount < 1) {
+        setError("Choose at least one routine before reviewing your setup.");
+        return;
+      }
+      goTo("review");
+    }
     else if (state.activeStep === "review") goTo("rewards");
     else if (state.activeStep === "rewards") goTo("pairing");
     else if (state.activeStep === "pairing") window.location.assign("/app/today");
@@ -106,7 +114,7 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
         <p className="ruutin-eyebrow">A calm setup, one step at a time</p>
         <h1 id="onboarding-title">Make Ruutin feel like your home.</h1>
         <p>We only ask for the essentials. You can pause and come back at any point.</p>
-        <div className="ruutin-onboarding-progress" aria-label={`Step ${currentIndex + 1} of ${steps.length}`}><span style={{ width: `${progress}%` }} /></div>
+        <div className="ruutin-onboarding-progress" role="progressbar" aria-label={`Setup progress: step ${currentIndex + 1} of ${steps.length}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span aria-hidden="true" style={{ width: `${progress}%` }} /></div>
         <p className="ruutin-progress-label">Step {currentIndex + 1} of {steps.length} · {steps[currentIndex]?.[1]}</p>
       </section>
       <ol className="ruutin-step-list" aria-label="Setup steps">
@@ -133,11 +141,16 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
             <button className="ruutin-button" disabled={busy} type="submit">{busy ? "Saving…" : "Save profile"} <span aria-hidden="true">↗</span></button>
           </form>
         )}
-        {["tasks", "review", "rewards", "pairing"].includes(state.activeStep) && (
+        {state.activeStep === "tasks" && (
+          <div className="ruutin-onboarding-task-step">
+            <TaskManager initialProfiles={profiles} initialProfileId={selectedProfile?.id} compact onTasksChange={setTaskCount} />
+            <button className="ruutin-button" type="button" disabled={taskCount < 1} onClick={continueBoundary}>Review routines <span aria-hidden="true">↗</span></button>
+          </div>
+        )}
+        {["review", "rewards", "pairing"].includes(state.activeStep) && (
           <div className="ruutin-boundary-step">
             <p className="ruutin-eyebrow">Step {currentIndex + 1}</p>
             <h2>{steps[currentIndex]?.[1]}</h2>
-            {state.activeStep === "tasks" && <><p>Routine suggestions will be ready here next. Your household and profile are safely saved, so you can resume without starting over.</p><div className="ruutin-boundary-note"><strong>Next up</strong><span>Choose categories, suggested routines, schedules, and one-to-three-star values.</span></div></>}
             {state.activeStep === "review" && <><p>Review will bring your routines together in one clear summary before anything starts.</p><div className="ruutin-boundary-note"><strong>{household?.name ?? "Your household"}</strong><span>{selectedProfile ? `${selectedProfile.emoji} ${selectedProfile.nickname} is ready for a routine plan.` : "Your profile is ready for a routine plan."}</span></div></>}
             {state.activeStep === "rewards" && <><p>Pick a meaningful reward when the reward catalogue is ready. Ruutin keeps this parent-controlled and grounded in real family life.</p><div className="ruutin-boundary-note"><strong>Nothing is a purchase</strong><span>Stars are progress markers, not money or a shop balance.</span></div></>}
             {state.activeStep === "pairing" && <><p>Pairing is optional and only appears for an eligible, active profile. The secure pairing flow will be added in the companion milestone.</p><div className="ruutin-boundary-note"><strong>{canPair ? "An eligible profile is ready" : "No pairing yet"}</strong><span>{canPair ? "You can return to Family when the companion flow is available." : "Under 13 or unconfirmed profiles stay parent-managed."}</span></div></>}

@@ -7,7 +7,9 @@ import {
   requiresCompanionConsent,
   type ParentDevice,
   type ParentProfile,
+  type ParentTask,
 } from "../profile-contracts";
+import { TaskManager } from "./TaskManager";
 
 type EditValues = {
   nickname: string;
@@ -26,9 +28,13 @@ async function getCsrf(): Promise<string> {
 export function FamilyManager({
   initialProfiles,
   initialDevices,
+  initialTasks = [],
+  initialLocalDate = "",
 }: {
   initialProfiles: ParentProfile[];
   initialDevices: ParentDevice[];
+  initialTasks?: ParentTask[];
+  initialLocalDate?: string;
 }) {
   const [profiles, setProfiles] = useState(initialProfiles);
   const [devices] = useState(initialDevices);
@@ -188,7 +194,7 @@ export function FamilyManager({
         })}
         {profiles.length === 0 && <p className="ruutin-empty-state">Your first profile will appear here after setup.</p>}
       </section>
-      <section className="ruutin-card" id="tasks" aria-labelledby="task-entry-title"><p className="ruutin-eyebrow">Routine setup</p><h2 id="task-entry-title">Tasks &amp; schedules</h2><p className="ruutin-muted-note">Start from a suggested category, then tune wording, timing, and one-to-three-star values. The template picker is coming in the next setup step.</p></section>
+      <TaskManager initialProfiles={profiles} initialTasks={initialTasks} initialLocalDate={initialLocalDate} />
       <section className="ruutin-card" id="devices" aria-labelledby="devices-title"><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Linked devices</p><h2 id="devices-title">Companion access</h2></div><span className="ruutin-count-pill">{devices.length}</span></div><p className="ruutin-muted-note">Pairing and device controls are parent-only. This foundation shows linked-device status without creating a pairing challenge yet.</p>{devices.length === 0 ? <p className="ruutin-empty-state">No devices linked.</p> : <ul className="ruutin-simple-list">{devices.map((device) => <li key={device.id}><span className="ruutin-avatar small" aria-hidden="true">{device.profileEmoji}</span><span><strong>{device.deviceLabel}</strong><small>{device.profileNickname} · linked {new Date(device.createdAt).toLocaleDateString()}</small></span><span className={device.revokedAt ? "ruutin-state-note" : "ruutin-state-note good"}>{device.revokedAt ? "Revoked" : "Linked"}</span></li>)}</ul>}</section>
       {error && <p className="ruutin-form-error" role="alert" aria-live="polite">{error}</p>}
     </div>

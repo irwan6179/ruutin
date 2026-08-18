@@ -2,6 +2,7 @@ import type { D1DatabaseLike, ParentContext } from "./auth-context";
 import { localDateFor } from "./validation";
 import { getParentHousehold } from "./households";
 import { listProfilesForParent, type ParentProfile } from "./profiles";
+import { listTaskOccurrencesForParent } from "./tasks";
 
 export type TodayProfileCard = ParentProfile & {
   taskCount: number;
@@ -41,22 +42,10 @@ export async function getTodayOverview(
   const profiles = await listProfilesForParent(db, context);
   const cards: TodayProfileCard[] = [];
   for (const profile of profiles) {
-    const [taskCount, completedTaskCount, pendingClaimCount, balance, activeReward] = await Promise.all([
-      firstNumber(
-        db,
-        `SELECT count(*) AS value FROM tasks
-         WHERE household_id = ? AND child_profile_id = ? AND archived_at IS NULL`,
-        household.id,
-        profile.id,
-      ),
-      firstNumber(
-        db,
-        `SELECT count(*) AS value FROM task_claims
-         WHERE household_id = ? AND child_profile_id = ? AND due_date = ? AND status = 'approved'`,
-        household.id,
-        profile.id,
-        localDate,
-      ),
+    const [taskView, pendingClaimCount, balance, activeReward] = await Promise.all([
+      profile.archivedAt
+        ? Promise.resolve({ localDate, occurrences: [] as never[] })
+        : listTaskOccurrencesForParent(db, context, profile.id, { now: options.now }),
       firstNumber(
         db,
         `SELECT count(*) AS value FROM task_claims
@@ -83,8 +72,8 @@ export async function getTodayOverview(
     ]);
     cards.push({
       ...profile,
-      taskCount,
-      completedTaskCount,
+      taskCount: taskView.occurrences.length,
+      completedTaskCount: taskView.occurrences.filter((task) => task.state === "completed").length,
       pendingClaimCount,
       balance,
       activeReward: activeReward ?? null,

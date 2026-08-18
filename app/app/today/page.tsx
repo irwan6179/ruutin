@@ -29,7 +29,7 @@ export default async function TodayPage() {
                   <div><h2>{profile.nickname}</h2><p>{profile.archivedAt ? "Archived" : `${progress}% of today’s rhythm`}</p></div>
                   <span className="ruutin-balance" aria-label={`${profile.balance} stars`}>{profile.balance} ✦</span>
                 </div>
-                <div className="ruutin-progress" aria-label={`${progress}% complete`}><span style={{ width: `${progress}%` }} /></div>
+                <div className="ruutin-progress" role="progressbar" aria-label={`${profile.nickname}'s routine progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span aria-hidden="true" style={{ width: `${progress}%` }} /></div>
                 <div className="ruutin-card-meta"><span>{profile.completedTaskCount} of {profile.taskCount} routines</span><span>{profile.pendingClaimCount ? `${profile.pendingClaimCount} waiting` : "Nothing waiting"}</span></div>
                 {profile.activeReward ? <p className="ruutin-reward-note">{profile.activeReward.emoji} {profile.activeReward.title} · {profile.activeReward.starCost} stars</p> : <p className="ruutin-muted-note">No active reward yet</p>}
               </article>

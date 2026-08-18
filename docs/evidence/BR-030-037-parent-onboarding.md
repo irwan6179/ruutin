@@ -1,6 +1,6 @@
 # BR-030–BR-037 — Parent shell, onboarding, and profiles
 
-Status: G03 foundation implemented locally; BR-034 and BR-037 remain partial until later-step persistence and browser E2E/accessibility/360px viewport evidence are run.
+Status: G03 foundation implemented and its profile/privacy browser checks pass. BR-034 remains partial until later onboarding milestones provide every durable step.
 
 ## Delivered
 
@@ -16,5 +16,8 @@ Status: G03 foundation implemented locally; BR-034 and BR-037 remain partial unt
 - `npx tsx --test tests/g03-parent.test.ts` — 6 passing tests covering eligibility mapping, under-13 behavior, explicit confirmation, one-household creation, server timezone validation, multiple profiles, update/foreign-scope/archive state, onboarding resume boundaries, unauthorized access, private responses, prohibited-field rejection, and client semantic/source contracts.
 - `npm run quality` — passing locally after G03 changes; this is not a substitute for browser E2E, automated a11y, or a real 360px viewport run.
 - `npm run db:generate` — no schema changes; existing G01 tables are sufficient.
+- Signed-in Playwright verification at 360×800: parent Today and Family had no horizontal overflow; the four-destination navigation exposed the correct active state; the skip link received visible keyboard focus; parent profile edit, under-13 eligibility handling, and creation of a second profile persisted through the real routes.
+- Reduced-motion emulation reported `1e-05s` card animation and transition durations, with the media query active.
+- Axe WCAG A/AA/2.1 AA checks passed for Family, onboarding, Rewards, Settings, and Today after semantic progress-bar and contrast fixes. The browser console reported zero errors and zero warnings.
 
 No secrets, TACs, pairing codes, session tokens, exact birth dates, or raw profile identifiers are recorded here.
