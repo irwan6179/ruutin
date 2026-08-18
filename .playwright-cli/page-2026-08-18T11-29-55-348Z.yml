@@ -1,6 +1,0 @@
-- main [ref=e2]:
-  - heading "Service-worker capability probe" [level=1] [ref=e3]
-  - paragraph [ref=e4]: This disposable check only tests whether the current Sites origin accepts a service worker. It does not cache pages, API responses, or authenticated data.
-  - paragraph [ref=e5]:
-    - strong [ref=e6]: checking
-    - text: — Checking this origin…
