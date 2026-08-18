@@ -2,7 +2,7 @@
 
 Development contract: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)  
 Deployment target: ChatGPT Sites exclusively  
-Tracker state: ready for execution; no application scaffold exists yet
+Tracker state: G00 complete; G01 security foundation next
 
 ## How to use this tracker
 
@@ -37,7 +37,7 @@ Tracker state: ready for execution; no application scaffold exists yet
 
 ## G00 — Sites runtime preflight and project foundation
 
-- [ ] **BR-000 — Maintain requirements and decision records**  
+- [x] **BR-000 — Maintain requirements and decision records**  
   Depends: none. Deliver: keep the development contract and tracker current; create `docs/evidence/`.  
   Accept: unresolved release decisions have owners/status and no source requirement is silently dropped.
 
@@ -45,7 +45,7 @@ Tracker state: ready for execution; no application scaffold exists yet
   Depends: BR-000. Deliver: Sites-generated framework scaffold, local scripts, lint/type/test configuration, `.gitignore`, and root README.  
   Accept: Sites preview/build works; framework and commands are recorded in the development contract. No alternate-host adapter exists.
 
-- [ ] **BR-002 — Prove server-side email API reachability in Sites**  
+- [x] **BR-002 — Prove server-side email API reachability in Sites**  
   Depends: BR-001. Deliver: minimal server-only probe using Sites-hosted configuration, then remove or lock the probe.  
   Accept: a saved/published Sites runtime reaches the selected API without exposing credentials; redacted evidence is saved. If unavailable, mark `[!]` and stop—do not change host or auth method.
 

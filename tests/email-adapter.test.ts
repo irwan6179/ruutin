@@ -5,10 +5,6 @@ import {
   loadEmailConfig,
   sendEmail,
 } from "../server/email-adapter";
-import {
-  hasBearerProbeSecret,
-  readEmailProbeConfig,
-} from "../server/email-probe";
 
 const config = {
   EMAIL_API_URL: "https://api.resend.com/emails",
@@ -112,50 +108,4 @@ test("maps an aborted fetch to a timeout without retaining the cause", async () 
       error.reason === "timeout" &&
       error.message === "Email delivery failed",
   );
-});
-
-test("fails closed when either temporary probe variable is absent", () => {
-  assert.equal(
-    readEmailProbeConfig({ EMAIL_PROBE_TO: "probe@example.test" }),
-    null,
-  );
-  assert.equal(
-    readEmailProbeConfig({ RUNTIME_PROBE_SECRET: "probe-secret" }),
-    null,
-  );
-  assert.deepEqual(
-    readEmailProbeConfig({
-      EMAIL_PROBE_TO: " probe@example.test ",
-      RUNTIME_PROBE_SECRET: " probe-secret ",
-    }),
-    {
-      EMAIL_PROBE_TO: "probe@example.test",
-      RUNTIME_PROBE_SECRET: "probe-secret",
-    },
-  );
-});
-
-test("requires the exact Bearer probe secret", () => {
-  const request = (authorization?: string) =>
-    new Request("https://example.test/api/runtime-probe/email", {
-      headers: authorization ? { authorization } : undefined,
-    });
-
-  assert.equal(
-    hasBearerProbeSecret(request("Bearer probe-secret"), "probe-secret"),
-    true,
-  );
-  assert.equal(
-    hasBearerProbeSecret(request("bearer probe-secret"), "probe-secret"),
-    true,
-  );
-  assert.equal(
-    hasBearerProbeSecret(request("Bearer wrong"), "probe-secret"),
-    false,
-  );
-  assert.equal(
-    hasBearerProbeSecret(request("Bearer probe-secret extra"), "probe-secret"),
-    false,
-  );
-  assert.equal(hasBearerProbeSecret(request(), "probe-secret"), false);
 });

@@ -1,6 +1,6 @@
 # Bintang Rumah Development Specification
 
-Status: scaffold and public entry baseline  
+Status: G00 runtime preflight complete; G01 security foundation next  
 Source: supplied “Updated @Sites Build Prompt — Bintang Rumah”  
 Companion tracker: [`../TASKS.md`](../TASKS.md)
 
@@ -469,14 +469,14 @@ Work in goal-sized batches listed in `TASKS.md`:
 
 ## 22. Decisions required before public release
 
-| Decision | Owner | Blocks | Evidence |
-| --- | --- | --- | --- |
-| Sites-generated project/framework and supported server APIs | Engineering | Implementation | Scaffold and saved-version smoke test |
-| Resend transactional email credentials, verified sender, and secure Sites server-side reachability | Engineering | Parent auth | Redacted result from Sites server route |
-| Applicable age-of-digital-consent policy and age-band copy | Product/legal | Pairing | Written policy and UI/server tests |
-| Service-worker support on saved/published Sites origin | Engineering | Optional caching | Registration/cache evidence |
-| Timezone defaults and household naming copy | Product | Onboarding | Approved copy/defaults |
-| Retention/deletion semantics and statutory wording | Product/legal | Public launch | Reviewed copy and deletion test |
+| Decision | Owner | Status | Blocks | Evidence |
+| --- | --- | --- | --- | --- |
+| Sites-generated project/framework and supported server APIs | Engineering | Resolved | Implementation | Scaffold and saved-version smoke test |
+| Resend transactional email credentials, verified sender, and secure Sites server-side reachability | Engineering | Reachability resolved; production credential/sender pending | Parent auth | `docs/evidence/BR-002-email.md` |
+| Applicable age-of-digital-consent policy and age-band copy | Product/legal | Pending before pairing release | Pairing | Written policy and UI/server tests |
+| Service-worker support on saved/published Sites origin | Engineering | Resolved | Optional caching | `docs/evidence/BR-004-service-worker.md` |
+| Timezone defaults and household naming copy | Product | Pending before onboarding release | Onboarding | Approved copy/defaults |
+| Retention/deletion semantics and statutory wording | Product/legal | Pending before public release | Public launch | Reviewed copy and deletion test |
 
 If the email gate fails, implementation pauses at that incompatibility. If the service-worker gate fails, development continues without offline caching. Neither result authorizes a non-Sites deployment.
 
