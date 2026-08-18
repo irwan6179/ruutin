@@ -170,6 +170,21 @@ export async function sendEmail(
       throw new EmailAdapterError("timeout");
     }
 
+    // Temporary BR-002 runtime diagnostic. Fetch failures do not include the
+    // Authorization header or request body, and this is intentionally logged
+    // only on the server so Sites Worker logs can identify an incompatible
+    // request option without weakening the public response.
+    console.error("email_provider_transport_error", {
+      name:
+        typeof error === "object" && error !== null && "name" in error
+          ? String((error as { name?: unknown }).name)
+          : "unknown",
+      message:
+        typeof error === "object" && error !== null && "message" in error
+          ? String((error as { message?: unknown }).message)
+          : "unknown",
+    });
+
     throw new EmailAdapterError("network");
   } finally {
     clearTimeout(timeout);
