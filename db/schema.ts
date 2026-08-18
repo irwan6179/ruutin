@@ -490,12 +490,12 @@ export const rewardRequests = sqliteTable(
       columns: [table.householdId, table.rewardId],
       foreignColumns: [rewards.householdId, rewards.id],
       name: "reward_requests_reward_scope_fk",
-    }).onDelete("restrict"),
+    }).onDelete("cascade"),
     foreignKey({
       columns: [table.householdId, table.requestedByDeviceId],
       foreignColumns: [childDevices.householdId, childDevices.id],
       name: "reward_requests_device_scope_fk",
-    }).onDelete("restrict"),
+    }).onDelete("cascade"),
     foreignKey({
       columns: [table.resolvedByUserId],
       foreignColumns: [users.id],

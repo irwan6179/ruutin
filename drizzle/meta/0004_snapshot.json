@@ -1,0 +1,1738 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "34f59748-1018-4832-b1d3-8bade426e45f",
+  "prevId": "04752e7b-fc25-45a9-aeb5-c258b7416d2e",
+  "tables": {
+    "auth_challenges": {
+      "name": "auth_challenges",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email_normalized": {
+          "name": "email_normalized",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "code_hash": {
+          "name": "code_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "consumed_at": {
+          "name": "consumed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "locked_at": {
+          "name": "locked_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "auth_challenges_active_lookup_idx": {
+          "name": "auth_challenges_active_lookup_idx",
+          "columns": [
+            "email_normalized",
+            "purpose",
+            "expires_at",
+            "consumed_at",
+            "locked_at"
+          ],
+          "isUnique": false
+        },
+        "auth_challenges_expiry_idx": {
+          "name": "auth_challenges_expiry_idx",
+          "columns": [
+            "expires_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "auth_challenges_code_hash_non_empty": {
+          "name": "auth_challenges_code_hash_non_empty",
+          "value": "length(\"auth_challenges\".\"code_hash\") > 0"
+        },
+        "auth_challenges_purpose_check": {
+          "name": "auth_challenges_purpose_check",
+          "value": "\"auth_challenges\".\"purpose\" IN ('sign_in', 'delete_household')"
+        },
+        "auth_challenges_attempt_count_check": {
+          "name": "auth_challenges_attempt_count_check",
+          "value": "\"auth_challenges\".\"attempt_count\" BETWEEN 0 AND 5"
+        }
+      }
+    },
+    "child_devices": {
+      "name": "child_devices",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "household_id": {
+          "name": "household_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_profile_id": {
+          "name": "child_profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "device_label": {
+          "name": "device_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "child_devices_token_hash_unique": {
+          "name": "child_devices_token_hash_unique",
+          "columns": [
+            "token_hash"
+          ],
+          "isUnique": true
+        },
+        "child_devices_household_id_unique": {
+          "name": "child_devices_household_id_unique",
+          "columns": [
+            "household_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "child_devices_profile_idx": {
+          "name": "child_devices_profile_idx",
+          "columns": [
+            "household_id",
+            "child_profile_id"
+          ],
+          "isUnique": false
+        },
+        "child_devices_active_idx": {
+          "name": "child_devices_active_idx",
+          "columns": [
+            "token_hash",
+            "expires_at",
+            "revoked_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "child_devices_profile_scope_fk": {
+          "name": "child_devices_profile_scope_fk",
+          "tableFrom": "child_devices",
+          "tableTo": "child_profiles",
+          "columnsFrom": [
+            "household_id",
+            "child_profile_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "child_devices_label_non_empty": {
+          "name": "child_devices_label_non_empty",
+          "value": "length(trim(\"child_devices\".\"device_label\")) > 0"
+        },
+        "child_devices_token_hash_non_empty": {
+          "name": "child_devices_token_hash_non_empty",
+          "value": "length(\"child_devices\".\"token_hash\") > 0"
+        }
+      }
+    },
+    "child_profiles": {
+      "name": "child_profiles",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "household_id": {
+          "name": "household_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nickname": {
+          "name": "nickname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "emoji": {
+          "name": "emoji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "age_band": {
+          "name": "age_band",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "companion_access_eligible": {
+          "name": "companion_access_eligible",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "active_reward_id": {
+          "name": "active_reward_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "child_profiles_household_id_unique": {
+          "name": "child_profiles_household_id_unique",
+          "columns": [
+            "household_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "child_profiles_household_idx": {
+          "name": "child_profiles_household_idx",
+          "columns": [
+            "household_id",
+            "archived_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "child_profiles_household_fk": {
+          "name": "child_profiles_household_fk",
+          "tableFrom": "child_profiles",
+          "tableTo": "households",
+          "columnsFrom": [
+            "household_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "child_profiles_nickname_non_empty": {
+          "name": "child_profiles_nickname_non_empty",
+          "value": "length(trim(\"child_profiles\".\"nickname\")) > 0"
+        },
+        "child_profiles_age_band_check": {
+          "name": "child_profiles_age_band_check",
+          "value": "\"child_profiles\".\"age_band\" IS NULL OR \"child_profiles\".\"age_band\" IN ('under_13', '13_15', '16_17', '18_plus', 'not_provided')"
+        },
+        "child_profiles_eligibility_check": {
+          "name": "child_profiles_eligibility_check",
+          "value": "\"child_profiles\".\"companion_access_eligible\" IN (0, 1)"
+        }
+      }
+    },
+    "household_users": {
+      "name": "household_users",
+      "columns": {
+        "household_id": {
+          "name": "household_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "household_users_membership_unique": {
+          "name": "household_users_membership_unique",
+          "columns": [
+            "household_id",
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "household_users_user_idx": {
+          "name": "household_users_user_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "household_users_household_fk": {
+          "name": "household_users_household_fk",
+          "tableFrom": "household_users",
+          "tableTo": "households",
+          "columnsFrom": [
+            "household_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "household_users_user_fk": {
+          "name": "household_users_user_fk",
+          "tableFrom": "household_users",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "household_users_role_check": {
+          "name": "household_users_role_check",
+          "value": "\"household_users\".\"role\" IN ('parent', 'caregiver')"
+        }
+      }
+    },
+    "households": {
+      "name": "households",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "households_name_non_empty": {
+          "name": "households_name_non_empty",
+          "value": "length(trim(\"households\".\"name\")) > 0"
+        },
+        "households_timezone_non_empty": {
+          "name": "households_timezone_non_empty",
+          "value": "length(trim(\"households\".\"timezone\")) > 0"
+        }
+      }
+    },
+    "pairing_codes": {
+      "name": "pairing_codes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "household_id": {
+          "name": "household_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_profile_id": {
+          "name": "child_profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "code_hash": {
+          "name": "code_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "attempt_count": {
+          "name": "attempt_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "consumed_at": {
+          "name": "consumed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cancelled_at": {
+          "name": "cancelled_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "locked_at": {
+          "name": "locked_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "pairing_codes_code_hash_unique": {
+          "name": "pairing_codes_code_hash_unique",
+          "columns": [
+            "code_hash"
+          ],
+          "isUnique": true
+        },
+        "pairing_codes_token_hash_unique": {
+          "name": "pairing_codes_token_hash_unique",
+          "columns": [
+            "token_hash"
+          ],
+          "isUnique": true
+        },
+        "pairing_codes_active_lookup_idx": {
+          "name": "pairing_codes_active_lookup_idx",
+          "columns": [
+            "code_hash",
+            "expires_at",
+            "consumed_at",
+            "cancelled_at",
+            "locked_at"
+          ],
+          "isUnique": false
+        },
+        "pairing_codes_profile_idx": {
+          "name": "pairing_codes_profile_idx",
+          "columns": [
+            "household_id",
+            "child_profile_id"
+          ],
+          "isUnique": false
+        },
+        "pairing_codes_expiry_idx": {
+          "name": "pairing_codes_expiry_idx",
+          "columns": [
+            "expires_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "pairing_codes_profile_scope_fk": {
+          "name": "pairing_codes_profile_scope_fk",
+          "tableFrom": "pairing_codes",
+          "tableTo": "child_profiles",
+          "columnsFrom": [
+            "household_id",
+            "child_profile_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pairing_codes_created_by_user_fk": {
+          "name": "pairing_codes_created_by_user_fk",
+          "tableFrom": "pairing_codes",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "pairing_codes_code_hash_non_empty": {
+          "name": "pairing_codes_code_hash_non_empty",
+          "value": "length(\"pairing_codes\".\"code_hash\") > 0"
+        },
+        "pairing_codes_token_hash_non_empty": {
+          "name": "pairing_codes_token_hash_non_empty",
+          "value": "length(\"pairing_codes\".\"token_hash\") > 0"
+        },
+        "pairing_codes_attempt_count_check": {
+          "name": "pairing_codes_attempt_count_check",
+          "value": "\"pairing_codes\".\"attempt_count\" BETWEEN 0 AND 5"
+        }
+      }
+    },
+    "point_ledger": {
+      "name": "point_ledger",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "household_id": {
+          "name": "household_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_profile_id": {
+          "name": "child_profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stars_delta": {
+          "name": "stars_delta",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_type": {
+          "name": "source_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "actor_user_id": {
+          "name": "actor_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "local_date": {
+          "name": "local_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "point_ledger_source_unique": {
+          "name": "point_ledger_source_unique",
+          "columns": [
+            "source_type",
+            "source_id"
+          ],
+          "isUnique": true
+        },
+        "point_ledger_profile_date_idx": {
+          "name": "point_ledger_profile_date_idx",
+          "columns": [
+            "household_id",
+            "child_profile_id",
+            "local_date"
+          ],
+          "isUnique": false
+        },
+        "point_ledger_profile_created_idx": {
+          "name": "point_ledger_profile_created_idx",
+          "columns": [
+            "household_id",
+            "child_profile_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "point_ledger_profile_scope_fk": {
+          "name": "point_ledger_profile_scope_fk",
+          "tableFrom": "point_ledger",
+          "tableTo": "child_profiles",
+          "columnsFrom": [
+            "household_id",
+            "child_profile_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "point_ledger_actor_fk": {
+          "name": "point_ledger_actor_fk",
+          "tableFrom": "point_ledger",
+          "tableTo": "users",
+          "columnsFrom": [
+            "actor_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "point_ledger_event_type_check": {
+          "name": "point_ledger_event_type_check",
+          "value": "\"point_ledger\".\"event_type\" IN ('task_approved', 'parent_completed_task', 'task_reversed', 'reward_redeemed', 'manual_adjustment')"
+        },
+        "point_ledger_delta_non_zero": {
+          "name": "point_ledger_delta_non_zero",
+          "value": "\"point_ledger\".\"stars_delta\" <> 0"
+        },
+        "point_ledger_source_non_empty": {
+          "name": "point_ledger_source_non_empty",
+          "value": "length(trim(\"point_ledger\".\"source_id\")) > 0"
+        },
+        "point_ledger_local_date_check": {
+          "name": "point_ledger_local_date_check",
+          "value": "\"point_ledger\".\"local_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'"
+        }
+      }
+    },
+    "rate_limit_buckets": {
+      "name": "rate_limit_buckets",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "window_started_at": {
+          "name": "window_started_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "count": {
+          "name": "count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "rate_limit_buckets_expiry_idx": {
+          "name": "rate_limit_buckets_expiry_idx",
+          "columns": [
+            "expires_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "rate_limit_buckets_count_check": {
+          "name": "rate_limit_buckets_count_check",
+          "value": "\"rate_limit_buckets\".\"count\" >= 0"
+        }
+      }
+    },
+    "reward_requests": {
+      "name": "reward_requests",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "household_id": {
+          "name": "household_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_profile_id": {
+          "name": "child_profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reward_id": {
+          "name": "reward_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "requested_by_device_id": {
+          "name": "requested_by_device_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "requested_at": {
+          "name": "requested_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "resolved_by_user_id": {
+          "name": "resolved_by_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "reward_requests_pending_unique": {
+          "name": "reward_requests_pending_unique",
+          "columns": [
+            "household_id",
+            "child_profile_id",
+            "reward_id"
+          ],
+          "isUnique": true,
+          "where": "\"reward_requests\".\"status\" = 'pending'"
+        },
+        "reward_requests_pending_parent_idx": {
+          "name": "reward_requests_pending_parent_idx",
+          "columns": [
+            "household_id",
+            "status",
+            "requested_at"
+          ],
+          "isUnique": false
+        },
+        "reward_requests_profile_idx": {
+          "name": "reward_requests_profile_idx",
+          "columns": [
+            "household_id",
+            "child_profile_id",
+            "requested_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "reward_requests_profile_scope_fk": {
+          "name": "reward_requests_profile_scope_fk",
+          "tableFrom": "reward_requests",
+          "tableTo": "child_profiles",
+          "columnsFrom": [
+            "household_id",
+            "child_profile_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "reward_requests_reward_scope_fk": {
+          "name": "reward_requests_reward_scope_fk",
+          "tableFrom": "reward_requests",
+          "tableTo": "rewards",
+          "columnsFrom": [
+            "household_id",
+            "reward_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "reward_requests_device_scope_fk": {
+          "name": "reward_requests_device_scope_fk",
+          "tableFrom": "reward_requests",
+          "tableTo": "child_devices",
+          "columnsFrom": [
+            "household_id",
+            "requested_by_device_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "reward_requests_resolved_by_user_fk": {
+          "name": "reward_requests_resolved_by_user_fk",
+          "tableFrom": "reward_requests",
+          "tableTo": "users",
+          "columnsFrom": [
+            "resolved_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "reward_requests_status_check": {
+          "name": "reward_requests_status_check",
+          "value": "\"reward_requests\".\"status\" IN ('pending', 'approved', 'rejected')"
+        },
+        "reward_requests_state_fields_check": {
+          "name": "reward_requests_state_fields_check",
+          "value": "(\"reward_requests\".\"status\" = 'pending' AND \"reward_requests\".\"resolved_at\" IS NULL AND \"reward_requests\".\"resolved_by_user_id\" IS NULL) OR (\"reward_requests\".\"status\" IN ('approved', 'rejected') AND \"reward_requests\".\"resolved_at\" IS NOT NULL)"
+        }
+      }
+    },
+    "rewards": {
+      "name": "rewards",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "household_id": {
+          "name": "household_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_profile_id": {
+          "name": "child_profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "emoji": {
+          "name": "emoji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "star_cost": {
+          "name": "star_cost",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "rewards_household_id_unique": {
+          "name": "rewards_household_id_unique",
+          "columns": [
+            "household_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "rewards_active_profile_idx": {
+          "name": "rewards_active_profile_idx",
+          "columns": [
+            "household_id",
+            "child_profile_id",
+            "archived_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "rewards_profile_scope_fk": {
+          "name": "rewards_profile_scope_fk",
+          "tableFrom": "rewards",
+          "tableTo": "child_profiles",
+          "columnsFrom": [
+            "household_id",
+            "child_profile_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "rewards_title_non_empty": {
+          "name": "rewards_title_non_empty",
+          "value": "length(trim(\"rewards\".\"title\")) > 0"
+        },
+        "rewards_star_cost_positive": {
+          "name": "rewards_star_cost_positive",
+          "value": "\"rewards\".\"star_cost\" > 0"
+        }
+      }
+    },
+    "runtime_metadata": {
+      "name": "runtime_metadata",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "sessions": {
+      "name": "sessions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revoked_at": {
+          "name": "revoked_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "sessions_token_hash_unique": {
+          "name": "sessions_token_hash_unique",
+          "columns": [
+            "token_hash"
+          ],
+          "isUnique": true
+        },
+        "sessions_user_idx": {
+          "name": "sessions_user_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "sessions_expiry_idx": {
+          "name": "sessions_expiry_idx",
+          "columns": [
+            "expires_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "sessions_user_fk": {
+          "name": "sessions_user_fk",
+          "tableFrom": "sessions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "sessions_token_hash_non_empty": {
+          "name": "sessions_token_hash_non_empty",
+          "value": "length(\"sessions\".\"token_hash\") > 0"
+        }
+      }
+    },
+    "task_claims": {
+      "name": "task_claims",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "household_id": {
+          "name": "household_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_profile_id": {
+          "name": "child_profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "due_date": {
+          "name": "due_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "submitted_by_type": {
+          "name": "submitted_by_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "submitted_by_device_id": {
+          "name": "submitted_by_device_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "submitted_at": {
+          "name": "submitted_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "resolved_by_user_id": {
+          "name": "resolved_by_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "task_claims_active_occurrence_unique": {
+          "name": "task_claims_active_occurrence_unique",
+          "columns": [
+            "household_id",
+            "child_profile_id",
+            "task_id",
+            "due_date"
+          ],
+          "isUnique": true,
+          "where": "\"task_claims\".\"status\" IN ('pending', 'approved')"
+        },
+        "task_claims_profile_due_idx": {
+          "name": "task_claims_profile_due_idx",
+          "columns": [
+            "household_id",
+            "child_profile_id",
+            "due_date"
+          ],
+          "isUnique": false
+        },
+        "task_claims_pending_parent_idx": {
+          "name": "task_claims_pending_parent_idx",
+          "columns": [
+            "household_id",
+            "status",
+            "submitted_at"
+          ],
+          "isUnique": false
+        },
+        "task_claims_task_idx": {
+          "name": "task_claims_task_idx",
+          "columns": [
+            "household_id",
+            "task_id",
+            "due_date"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "task_claims_profile_scope_fk": {
+          "name": "task_claims_profile_scope_fk",
+          "tableFrom": "task_claims",
+          "tableTo": "child_profiles",
+          "columnsFrom": [
+            "household_id",
+            "child_profile_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "task_claims_task_scope_fk": {
+          "name": "task_claims_task_scope_fk",
+          "tableFrom": "task_claims",
+          "tableTo": "tasks",
+          "columnsFrom": [
+            "household_id",
+            "task_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "task_claims_device_fk": {
+          "name": "task_claims_device_fk",
+          "tableFrom": "task_claims",
+          "tableTo": "child_devices",
+          "columnsFrom": [
+            "submitted_by_device_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "task_claims_resolved_by_user_fk": {
+          "name": "task_claims_resolved_by_user_fk",
+          "tableFrom": "task_claims",
+          "tableTo": "users",
+          "columnsFrom": [
+            "resolved_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "task_claims_submitter_check": {
+          "name": "task_claims_submitter_check",
+          "value": "(\"task_claims\".\"submitted_by_type\" = 'companion' AND \"task_claims\".\"submitted_by_device_id\" IS NOT NULL) OR (\"task_claims\".\"submitted_by_type\" = 'parent' AND \"task_claims\".\"submitted_by_device_id\" IS NULL)"
+        },
+        "task_claims_status_check": {
+          "name": "task_claims_status_check",
+          "value": "\"task_claims\".\"status\" IN ('pending', 'approved', 'rejected')"
+        },
+        "task_claims_state_fields_check": {
+          "name": "task_claims_state_fields_check",
+          "value": "(\"task_claims\".\"status\" = 'pending' AND \"task_claims\".\"resolved_at\" IS NULL AND \"task_claims\".\"resolved_by_user_id\" IS NULL) OR (\"task_claims\".\"status\" IN ('approved', 'rejected') AND \"task_claims\".\"resolved_at\" IS NOT NULL)"
+        },
+        "task_claims_due_date_check": {
+          "name": "task_claims_due_date_check",
+          "value": "\"task_claims\".\"due_date\" GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'"
+        }
+      }
+    },
+    "tasks": {
+      "name": "tasks",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "household_id": {
+          "name": "household_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "child_profile_id": {
+          "name": "child_profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "emoji": {
+          "name": "emoji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stars": {
+          "name": "stars",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "schedule_type": {
+          "name": "schedule_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "schedule_data": {
+          "name": "schedule_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "tasks_household_id_unique": {
+          "name": "tasks_household_id_unique",
+          "columns": [
+            "household_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "tasks_active_position_unique": {
+          "name": "tasks_active_position_unique",
+          "columns": [
+            "household_id",
+            "child_profile_id",
+            "position"
+          ],
+          "isUnique": true,
+          "where": "\"tasks\".\"archived_at\" IS NULL"
+        },
+        "tasks_profile_idx": {
+          "name": "tasks_profile_idx",
+          "columns": [
+            "household_id",
+            "child_profile_id",
+            "archived_at",
+            "position"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "tasks_profile_scope_fk": {
+          "name": "tasks_profile_scope_fk",
+          "tableFrom": "tasks",
+          "tableTo": "child_profiles",
+          "columnsFrom": [
+            "household_id",
+            "child_profile_id"
+          ],
+          "columnsTo": [
+            "household_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "tasks_title_non_empty": {
+          "name": "tasks_title_non_empty",
+          "value": "length(trim(\"tasks\".\"title\")) > 0"
+        },
+        "tasks_stars_check": {
+          "name": "tasks_stars_check",
+          "value": "\"tasks\".\"stars\" BETWEEN 1 AND 3"
+        },
+        "tasks_schedule_type_check": {
+          "name": "tasks_schedule_type_check",
+          "value": "\"tasks\".\"schedule_type\" IN ('daily', 'weekdays', 'one_off')"
+        },
+        "tasks_schedule_json_check": {
+          "name": "tasks_schedule_json_check",
+          "value": "json_valid(\"tasks\".\"schedule_data\")"
+        },
+        "tasks_position_check": {
+          "name": "tasks_position_check",
+          "value": "\"tasks\".\"position\" >= 0"
+        }
+      }
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email_normalized": {
+          "name": "email_normalized",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "users_email_normalized_unique": {
+          "name": "users_email_normalized_unique",
+          "columns": [
+            "email_normalized"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "users_email_non_empty": {
+          "name": "users_email_non_empty",
+          "value": "length(trim(\"users\".\"email\")) > 0"
+        },
+        "users_email_normalized_non_empty": {
+          "name": "users_email_normalized_non_empty",
+          "value": "length(trim(\"users\".\"email_normalized\")) > 0"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}
