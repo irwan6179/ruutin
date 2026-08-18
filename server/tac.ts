@@ -12,13 +12,14 @@ import { hashOpaqueToken, timingSafeEqual } from "./auth-context";
 import { createId, normalizeEmail, normalizeEmailFields, toUtcTimestamp, ValidationError } from "./validation";
 
 export const TAC_PURPOSE = "sign_in" as const;
+export const DELETE_HOUSEHOLD_TAC_PURPOSE = "delete_household" as const;
 export const TAC_DIGITS = 6;
 export const TAC_TTL_MS = 10 * 60 * 1000;
 export const TAC_MAX_ATTEMPTS = 5;
 export const TAC_EXPIRY_MS = TAC_TTL_MS;
 export const MAX_TAC_ATTEMPTS = TAC_MAX_ATTEMPTS;
 
-export type TacPurpose = typeof TAC_PURPOSE;
+export type TacPurpose = typeof TAC_PURPOSE | typeof DELETE_HOUSEHOLD_TAC_PURPOSE;
 
 export type TacChallenge = {
   id: string;
@@ -63,6 +64,10 @@ type HashOptions = Readonly<{
   challengeId?: string;
   purpose?: string;
 }>;
+
+function isTacPurpose(value: unknown): value is TacPurpose {
+  return value === TAC_PURPOSE || value === DELETE_HOUSEHOLD_TAC_PURPOSE;
+}
 
 function assertHmacSecret(secret: string): void {
   if (typeof secret !== "string" || secret.trim().length < 16) {
@@ -173,6 +178,7 @@ async function replaceActiveChallenge(
     id: string;
     emailNormalized: string;
     codeHash: string;
+    purpose: TacPurpose;
     expiresAt: string;
     createdAt: string;
   },
@@ -182,11 +188,11 @@ async function replaceActiveChallenge(
       `UPDATE auth_challenges
        SET consumed_at = ?
        WHERE email_normalized = ? AND purpose = ?
-         AND consumed_at IS NULL AND locked_at IS NULL`,
+         AND consumed_at IS NULL`,
     ),
     values.createdAt,
     values.emailNormalized,
-    TAC_PURPOSE,
+    values.purpose,
   );
   const insertion = bindStatement(
     db.prepare(
@@ -198,7 +204,7 @@ async function replaceActiveChallenge(
     values.id,
     values.emailNormalized,
     values.codeHash,
-    TAC_PURPOSE,
+    values.purpose,
     values.expiresAt,
     values.createdAt,
   );
@@ -216,6 +222,7 @@ export type CreateTacChallengeOptions = Readonly<{
   ttlMs?: number;
   id?: string;
   code?: string;
+  purpose?: TacPurpose;
 }>;
 
 /**
@@ -240,10 +247,12 @@ export async function createTacChallenge(
   const id = options.id ?? createId();
   const code = options.code ?? generateTacCode();
   normalizeTacCode(code);
+  const purpose = options.purpose ?? TAC_PURPOSE;
+  if (!isTacPurpose(purpose)) throw new ValidationError("purpose", "challenge purpose is invalid");
   const codeHash = await hashTac(code, emailNormalized, {
     secret,
     challengeId: id,
-    purpose: TAC_PURPOSE,
+    purpose,
   });
 
   await withReplacementLock(db, () =>
@@ -251,6 +260,7 @@ export async function createTacChallenge(
       id,
       emailNormalized,
       codeHash,
+      purpose,
       expiresAt,
       createdAt,
     }),
@@ -261,7 +271,7 @@ export async function createTacChallenge(
     emailNormalized,
     code,
     codeHash,
-    purpose: TAC_PURPOSE,
+    purpose,
     expiresAt,
     createdAt,
   };
@@ -284,6 +294,7 @@ type ActiveChallengeRow = {
 async function readNewestChallenge(
   db: D1DatabaseLike,
   emailNormalized: string,
+  purpose: TacPurpose = TAC_PURPOSE,
 ): Promise<ActiveChallengeRow | null> {
   return db
     .prepare(
@@ -293,10 +304,11 @@ async function readNewestChallenge(
               created_at AS createdAt
        FROM auth_challenges
        WHERE email_normalized = ? AND purpose = ?
+         AND consumed_at IS NULL
        ORDER BY created_at DESC, id DESC
        LIMIT 1`,
     )
-    .bind(emailNormalized, TAC_PURPOSE)
+    .bind(emailNormalized, purpose)
     .first<ActiveChallengeRow>();
 }
 
@@ -306,6 +318,7 @@ async function registerFailedAttempt(
   db: D1DatabaseLike,
   challengeId: string,
   now: string,
+  purpose: TacPurpose = TAC_PURPOSE,
 ): Promise<UpdatedAttemptRow | null> {
   return db
     .prepare(
@@ -320,7 +333,7 @@ async function registerFailedAttempt(
          AND expires_at > ? AND attempt_count < ?
        RETURNING id, attempt_count AS attemptCount, locked_at AS lockedAt`,
     )
-    .bind(TAC_MAX_ATTEMPTS, now, challengeId, TAC_PURPOSE, now, TAC_MAX_ATTEMPTS)
+    .bind(TAC_MAX_ATTEMPTS, now, challengeId, purpose, now, TAC_MAX_ATTEMPTS)
     .first<UpdatedAttemptRow>();
 }
 
@@ -328,6 +341,7 @@ async function consumeChallenge(
   db: D1DatabaseLike,
   challengeId: string,
   now: string,
+  purpose: TacPurpose = TAC_PURPOSE,
 ): Promise<boolean> {
   const row = await db
     .prepare(
@@ -338,7 +352,7 @@ async function consumeChallenge(
          AND expires_at > ? AND attempt_count < ?
        RETURNING id`,
     )
-    .bind(now, challengeId, TAC_PURPOSE, now, TAC_MAX_ATTEMPTS)
+    .bind(now, challengeId, purpose, now, TAC_MAX_ATTEMPTS)
     .first<{ id: string }>();
   return row?.id === challengeId;
 }
@@ -470,6 +484,11 @@ export type VerifyTacOptions = Readonly<{
   userId?: string;
 }>;
 
+export type VerifyOneTimeTacOptions = Readonly<{
+  now?: Date;
+  purpose: TacPurpose;
+}>;
+
 const verificationLocks = new WeakMap<D1DatabaseLike, Map<string, Promise<void>>>();
 
 async function withVerificationLock<T>(
@@ -517,7 +536,7 @@ export async function verifyTac(
   const now = toUtcTimestamp(nowDate);
 
   return withVerificationLock(db, emailNormalized, async () => {
-    const challenge = await readNewestChallenge(db, emailNormalized);
+    const challenge = await readNewestChallenge(db, emailNormalized, TAC_PURPOSE);
     if (!challenge) throw new TacVerificationError("invalid");
     if (challenge.consumedAt) throw new TacVerificationError("consumed");
     if (challenge.lockedAt || challenge.attemptCount >= TAC_MAX_ATTEMPTS) {
@@ -531,7 +550,7 @@ export async function verifyTac(
       purpose: TAC_PURPOSE,
     });
     if (!timingSafeEqual(challenge.codeHash, expectedHash)) {
-      const updated = await registerFailedAttempt(db, challenge.id, now);
+      const updated = await registerFailedAttempt(db, challenge.id, now, TAC_PURPOSE);
       if (!updated || updated.attemptCount >= TAC_MAX_ATTEMPTS) {
         throw new TacVerificationError("locked");
       }
@@ -573,6 +592,59 @@ export async function verifyTac(
 }
 
 export const verifyAuthChallenge = verifyTac;
+
+/**
+ * Verify and consume a purpose-bound TAC without creating a sign-in session.
+ * This is used for destructive actions after the parent has already proved
+ * their identity. The conditional update is the one-use boundary across D1
+ * isolates; the in-process lock only avoids duplicate work on one instance.
+ */
+export async function verifyOneTimeTac(
+  db: D1DatabaseLike,
+  email: unknown,
+  code: unknown,
+  secret: string,
+  options: VerifyOneTimeTacOptions,
+): Promise<Readonly<{ challengeId: string; emailNormalized: string; purpose: TacPurpose; consumedAt: string }>> {
+  if (!isTacPurpose(options.purpose)) throw new ValidationError("purpose", "challenge purpose is invalid");
+  const emailNormalized = normalizeEmail(email);
+  const normalizedCode = normalizeTacCode(code);
+  const nowDate = options.now ?? new Date();
+  const now = toUtcTimestamp(nowDate);
+
+  return withVerificationLock(db, `${options.purpose}:${emailNormalized}`, async () => {
+    const challenge = await readNewestChallenge(db, emailNormalized, options.purpose);
+    if (!challenge) throw new TacVerificationError("invalid");
+    if (challenge.consumedAt) throw new TacVerificationError("consumed");
+    if (challenge.lockedAt || challenge.attemptCount >= TAC_MAX_ATTEMPTS) {
+      throw new TacVerificationError("locked");
+    }
+    if (challenge.expiresAt <= now) throw new TacVerificationError("expired");
+
+    const expectedHash = await hashTac(normalizedCode, emailNormalized, {
+      secret,
+      challengeId: challenge.id,
+      purpose: options.purpose,
+    });
+    if (!timingSafeEqual(challenge.codeHash, expectedHash)) {
+      const updated = await registerFailedAttempt(db, challenge.id, now, options.purpose);
+      if (!updated || updated.attemptCount >= TAC_MAX_ATTEMPTS) {
+        throw new TacVerificationError("locked");
+      }
+      throw new TacVerificationError("invalid");
+    }
+
+    if (!(await consumeChallenge(db, challenge.id, now, options.purpose))) {
+      throw new TacVerificationError("already_used");
+    }
+    return {
+      challengeId: challenge.id,
+      emailNormalized,
+      purpose: options.purpose,
+      consumedAt: now,
+    };
+  });
+}
 
 /** Session tokens are longer than the TAC and have no meaningful structure. */
 export function createSessionToken(): string {

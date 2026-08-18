@@ -94,28 +94,39 @@ export async function enforceTacRequestLimits(
     emailPolicy?: RateLimitPolicy;
     emailSourcePolicy?: RateLimitPolicy;
     sourcePolicy?: RateLimitPolicy;
+    namespace?: string;
   } = {},
 ): Promise<void> {
   const now = options.now ?? new Date();
   const emailPolicy = options.emailPolicy ?? TAC_EMAIL_POLICY;
   const emailSourcePolicy = options.emailSourcePolicy ?? TAC_EMAIL_SOURCE_POLICY;
   const sourcePolicy = options.sourcePolicy ?? TAC_SOURCE_POLICY;
+  const namespace = options.namespace?.trim();
+  const identityKey = namespace
+    ? rateLimitKey(`${namespace}-email-tac-identity`, emailNormalized)
+    : rateLimitKey("email-tac-identity", emailNormalized);
+  const emailSourceKey = namespace
+    ? rateLimitKey(`${namespace}-email-tac`, emailNormalized, requestSource)
+    : emailRateLimitKey(emailNormalized, requestSource);
+  const sourceKey = namespace
+    ? rateLimitKey(`${namespace}-source-tac`, requestSource)
+    : sourceRateLimitKey(requestSource);
   const decisions = await Promise.all([
     consumeRateLimit(
       dependencies.rateLimitStore,
-      rateLimitKey("email-tac-identity", emailNormalized),
+      identityKey,
       emailPolicy,
       { now },
     ),
     consumeRateLimit(
       dependencies.rateLimitStore,
-      emailRateLimitKey(emailNormalized, requestSource),
+      emailSourceKey,
       emailSourcePolicy,
       { now },
     ),
     consumeRateLimit(
       dependencies.rateLimitStore,
-      sourceRateLimitKey(requestSource),
+      sourceKey,
       sourcePolicy,
       { now },
     ),

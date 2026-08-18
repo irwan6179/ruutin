@@ -11,6 +11,7 @@ import {
   RewardStateError,
 } from "./rewards";
 import { TacVerificationError } from "./tac";
+import { DeletionAtomicityError, DeletionReauthError } from "./settings";
 import { ValidationError } from "./validation";
 
 export type PublicError = {
@@ -28,6 +29,9 @@ export function toPublicError(error: unknown): PublicError {
     return { status: 404, code: "not_found", message: "Resource not found" };
   }
   if (error instanceof CsrfError || error instanceof OriginError) {
+    return { status: 403, code: "forbidden", message: "Request could not be verified" };
+  }
+  if (error instanceof DeletionReauthError) {
     return { status: 403, code: "forbidden", message: "Request could not be verified" };
   }
   if (error instanceof RateLimitError) {
@@ -64,6 +68,9 @@ export function toPublicError(error: unknown): PublicError {
   }
   if (error instanceof RewardAtomicityError) {
     return { status: 503, code: "server_error", message: "Rewards are temporarily unavailable" };
+  }
+  if (error instanceof DeletionAtomicityError) {
+    return { status: 503, code: "server_error", message: "Household deletion is temporarily unavailable" };
   }
   if (error instanceof ValidationError) {
     return { status: 400, code: "invalid_request", message: "Request is invalid" };

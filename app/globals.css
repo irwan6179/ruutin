@@ -197,6 +197,19 @@ body {
 .ruutin-settings-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 11px; color: #7958a7; background: #f0e7fa; }
 .ruutin-settings-note { display: grid; gap: 11px; max-width: 580px; }
 .ruutin-settings-note p { margin: 0; color: var(--br-muted); font-size: 13px; line-height: 1.5; }
+.ruutin-settings-panel { display: grid; max-width: 700px; gap: 14px; }
+.ruutin-settings-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; }
+.ruutin-settings-section-heading h2 { margin: 0; color: var(--br-plum); font-size: 21px; letter-spacing: -.045em; }
+.ruutin-settings-section-heading .ruutin-eyebrow { margin-bottom: 5px; }
+.ruutin-settings-value { margin: 0; color: var(--br-ink); font-size: 14px; font-weight: 680; overflow-wrap: anywhere; }
+.ruutin-settings-copy { margin: 0; color: var(--br-muted); font-size: 13px; line-height: 1.6; }
+.ruutin-settings-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.ruutin-settings-export { display: grid; gap: 12px; padding-top: 14px; border-top: 1px solid #eee6f3; }
+.ruutin-settings-export strong { color: var(--br-ink); font-size: 13px; }
+.ruutin-settings-export p { margin: 5px 0 0; color: var(--br-muted); font-size: 12px; line-height: 1.55; }
+.ruutin-settings-danger { border-color: #ecd8dd; background: #fffafb; }
+.ruutin-button.danger { color: #fffaff; background: #9b5364; box-shadow: 0 6px 14px rgb(155 83 100 / .14); }
+.ruutin-button.danger:hover { background: #874454; box-shadow: 0 8px 18px rgb(155 83 100 / .2); }
 .ruutin-signout-control { display: grid; justify-items: start; gap: 8px; }
 .ruutin-loading-card, .ruutin-error-card { display: grid; max-width: 620px; gap: 10px; margin-top: 32px; }
 .ruutin-loading-card h1, .ruutin-error-card h1 { margin: 0; color: var(--br-plum); font-size: clamp(26px, 5vw, 38px); letter-spacing: -.055em; }
@@ -333,6 +346,10 @@ body {
   .ruutin-public-shell { padding: 42px 24px; }
   .companion-header { padding-inline: 0; }
   .ruutin-pairing-challenge-top { flex-wrap: nowrap; }
+}
+
+@media (min-width: 560px) {
+  .ruutin-settings-export { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
 }
 
 @media (min-width: 1020px) {

@@ -318,31 +318,31 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 
 ## G08 — Settings, export, deletion, and privacy
 
-- [ ] **BR-080 — Build Settings screen**  
+- [x] **BR-080 — Build Settings screen**
   Depends: BR-030. Deliver: email, timezone, privacy, export, delete, sign-out.  
   Accept: parent email never reaches companion routes; timezone implications are explained.
 
-- [ ] **BR-081 — Implement timezone update behavior**  
+- [x] **BR-081 — Implement timezone update behavior**
   Depends: BR-044, BR-080. Deliver: validated IANA mutation and occurrence policy.  
   Accept: historical ledger local dates remain unchanged; due behavior is deterministic/tested.
 
-- [ ] **BR-082 — Implement household JSON export**  
+- [x] **BR-082 — Implement household JSON export**
   Depends: BR-017, BR-080. Deliver: allowed household application data and safe device metadata.  
   Accept: no challenge/session/device/pairing hashes, raw tokens, secrets, or foreign rows; private/no-store response.
 
-- [ ] **BR-083 — Require fresh authentication for deletion**  
+- [x] **BR-083 — Require fresh authentication for deletion**
   Depends: BR-020, BR-025, BR-080. Deliver: recent-session check or purpose-bound fresh TAC.  
   Accept: stale session cannot delete; challenge remains generic, expiring, one-time, rate-limited.
 
-- [ ] **BR-084 — Implement permanent household deletion**  
+- [x] **BR-084 — Implement permanent household deletion**
   Depends: BR-082, BR-083. Deliver: strong confirmation, reviewed cascade/order, all parent/device session revocation.  
   Accept: no household application data remains; sessions fail next request; failure rolls back safely.
 
-- [ ] **BR-085 — Add privacy and deletion copy**  
+- [x] **BR-085 — Add privacy and deletion copy**
   Depends: BR-032, BR-080. Deliver: data minimization, eligibility, export, permanent-deletion information.  
   Accept: approved policy is accurate and no child-directed marketing is introduced.
 
-- [ ] **BR-086 — Test settings/export/deletion isolation**  
+- [x] **BR-086 — Test settings/export/deletion isolation**
   Depends: BR-080–BR-085. Deliver: schema, authorization, E2E, retained-token tests.  
   Accept: export contains only allowed classes; deletion/revocation works after reload.
 
