@@ -2,6 +2,7 @@ import { AuthorizationError } from "./auth-context";
 import { CsrfError, OriginError, jsonResponse } from "./http-security";
 import { RateLimitError } from "./rate-limit";
 import { ScopeError } from "./scoped-data";
+import { PairingAtomicityError, PairingVerificationError } from "./pairing";
 import { TacVerificationError } from "./tac";
 import { ValidationError } from "./validation";
 
@@ -31,6 +32,16 @@ export function toPublicError(error: unknown): PublicError {
       code: "invalid_request",
       message: "That code is invalid or has expired. Request a new code and try again.",
     };
+  }
+  if (error instanceof PairingVerificationError) {
+    return {
+      status: 400,
+      code: "invalid_request",
+      message: "That pairing request is invalid or has expired. Ask the parent for a new one.",
+    };
+  }
+  if (error instanceof PairingAtomicityError) {
+    return { status: 503, code: "server_error", message: "Pairing is temporarily unavailable" };
   }
   if (error instanceof ValidationError) {
     return { status: 400, code: "invalid_request", message: "Request is invalid" };

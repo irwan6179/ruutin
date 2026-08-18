@@ -5,5 +5,9 @@ import type { ParentRouteDependencies } from "../../../server/parent-routes";
 export function parentRouteDependencies(): ParentRouteDependencies {
   const config = getServerConfig();
   if (!config) throw new Error("Server configuration is unavailable");
-  return { db: getD1(), sessionSecret: config.SESSION_SECRET };
+  return {
+    db: getD1(),
+    sessionSecret: config.SESSION_SECRET,
+    authHmacSecret: config.AUTH_HMAC_SECRET,
+  };
 }

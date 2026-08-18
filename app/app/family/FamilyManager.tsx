@@ -10,6 +10,7 @@ import {
   type ParentTask,
 } from "../profile-contracts";
 import { TaskManager } from "./TaskManager";
+import { PairingManager } from "./PairingManager";
 
 type EditValues = {
   nickname: string;
@@ -30,14 +31,15 @@ export function FamilyManager({
   initialDevices,
   initialTasks = [],
   initialLocalDate = "",
+  initialTimezone = "UTC",
 }: {
   initialProfiles: ParentProfile[];
   initialDevices: ParentDevice[];
   initialTasks?: ParentTask[];
   initialLocalDate?: string;
+  initialTimezone?: string;
 }) {
   const [profiles, setProfiles] = useState(initialProfiles);
-  const [devices] = useState(initialDevices);
   const [showForm, setShowForm] = useState(false);
   const [nickname, setNickname] = useState("");
   const [emoji, setEmoji] = useState("🌿");
@@ -189,13 +191,13 @@ export function FamilyManager({
                 <div className="ruutin-family-actions"><button className="ruutin-button" type="submit" disabled={isSaving}>{isSaving ? "Saving…" : "Save changes"} <span aria-hidden="true">↗</span></button><button className="ruutin-text-button" type="button" disabled={isSaving} onClick={stopEditing}>Cancel</button></div>
                 {editError && <p className="ruutin-form-error" role="alert" aria-live="polite">{editError}</p>}
               </fieldset>
-            </form> : <div className="ruutin-family-actions"><a className="ruutin-button secondary" href="#tasks">Tasks &amp; schedules</a><button className="ruutin-button secondary" type="button" aria-expanded={isEditing} onClick={() => startEditing(profile)}>Edit profile</button>{profile.companionAccessEligible === 1 && !profile.archivedAt ? <button className="ruutin-button secondary" type="button" disabled>Pair companion soon</button> : <span className="ruutin-state-note">Pairing unavailable for this profile</span>}{!profile.archivedAt && <button className="ruutin-text-button danger" type="button" disabled={archiveBusyId === profile.id} onClick={() => archive(profile.id)}>{archiveBusyId === profile.id ? "Archiving…" : "Archive"}</button>}</div>}
+            </form> : <div className="ruutin-family-actions"><a className="ruutin-button secondary" href="#tasks">Tasks &amp; schedules</a><button className="ruutin-button secondary" type="button" aria-expanded={isEditing} onClick={() => startEditing(profile)}>Edit profile</button>{profile.companionAccessEligible === 1 && !profile.archivedAt ? <a className="ruutin-button secondary" href="#pairing">Pair companion</a> : <span className="ruutin-state-note">Pairing unavailable for this profile</span>}{!profile.archivedAt && <button className="ruutin-text-button danger" type="button" disabled={archiveBusyId === profile.id} onClick={() => archive(profile.id)}>{archiveBusyId === profile.id ? "Archiving…" : "Archive"}</button>}</div>}
           </article>;
         })}
         {profiles.length === 0 && <p className="ruutin-empty-state">Your first profile will appear here after setup.</p>}
       </section>
       <TaskManager initialProfiles={profiles} initialTasks={initialTasks} initialLocalDate={initialLocalDate} />
-      <section className="ruutin-card" id="devices" aria-labelledby="devices-title"><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Linked devices</p><h2 id="devices-title">Companion access</h2></div><span className="ruutin-count-pill">{devices.length}</span></div><p className="ruutin-muted-note">Pairing and device controls are parent-only. This foundation shows linked-device status without creating a pairing challenge yet.</p>{devices.length === 0 ? <p className="ruutin-empty-state">No devices linked.</p> : <ul className="ruutin-simple-list">{devices.map((device) => <li key={device.id}><span className="ruutin-avatar small" aria-hidden="true">{device.profileEmoji}</span><span><strong>{device.deviceLabel}</strong><small>{device.profileNickname} · linked {new Date(device.createdAt).toLocaleDateString()}</small></span><span className={device.revokedAt ? "ruutin-state-note" : "ruutin-state-note good"}>{device.revokedAt ? "Revoked" : "Linked"}</span></li>)}</ul>}</section>
+      <PairingManager profiles={profiles} initialDevices={initialDevices} timezone={initialTimezone} />
       {error && <p className="ruutin-form-error" role="alert" aria-live="polite">{error}</p>}
     </div>
   );

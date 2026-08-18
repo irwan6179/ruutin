@@ -17,5 +17,5 @@ export default async function FamilyPage() {
   const [profiles, devices, household] = await Promise.all([listProfilesForParent(db, parent), listDevicesForParent(db, parent), getParentHousehold(db, parent)]);
   const firstProfile = profiles.find((profile) => !profile.archivedAt);
   const tasks = firstProfile ? await listTasksForParent(db, parent, firstProfile.id) : [];
-  return <FamilyManager initialProfiles={profiles} initialDevices={devices} initialTasks={tasks} initialLocalDate={localDateFor(new Date(), household.timezone)} />;
+  return <FamilyManager initialProfiles={profiles} initialDevices={devices} initialTasks={tasks} initialLocalDate={localDateFor(new Date(), household.timezone)} initialTimezone={household.timezone} />;
 }

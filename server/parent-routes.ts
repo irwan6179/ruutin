@@ -23,6 +23,11 @@ import {
 import { countOnboardingRows, getTodayOverview } from "./today";
 import { deriveOnboardingState } from "./onboarding";
 import { listDevicesForParent, renameDeviceForParent, revokeDeviceForParent } from "./devices";
+import {
+  cancelPairingChallenge,
+  createPairingChallenge,
+  getActivePairingChallengeForParent,
+} from "./pairing";
 import { ValidationError } from "./validation";
 import {
   archiveTaskForParent,
@@ -38,6 +43,8 @@ import {
 export type ParentRouteDependencies = Readonly<{
   db: D1DatabaseLike;
   sessionSecret: string;
+  /** Separate auth HMAC used for pairing/TAC material. Tests may omit it. */
+  authHmacSecret?: string;
   now?: Date;
 }>;
 
@@ -238,6 +245,74 @@ export async function handleParentDevices(
       await renameDeviceForParent(dependencies.db, context, deviceId, body.deviceLabel);
     }
     return jsonResponse({ ok: true }, { status: 200 }, { private: true });
+  } catch (error) {
+    return parentRequestError(error);
+  }
+}
+
+function pairingSecret(dependencies: ParentRouteDependencies): string {
+  // Production always supplies AUTH_HMAC_SECRET.  Falling back to the session
+  // secret keeps framework-free route tests useful without weakening the
+  // deployed configuration boundary (parentRouteDependencies supplies both).
+  return dependencies.authHmacSecret ?? dependencies.sessionSecret;
+}
+
+export async function handleParentPairing(
+  request: Request,
+  dependencies: ParentRouteDependencies,
+  challengeId?: string,
+): Promise<Response> {
+  try {
+    const context = await requireParent(request, dependencies);
+    const method = request.method.toUpperCase();
+    if (method === "GET") {
+      const profileId = new URL(request.url).searchParams.get("profileId");
+      if (!profileId) throw new ValidationError("profileId", "profileId is required");
+      const challenge = await getActivePairingChallengeForParent(
+        dependencies.db,
+        context,
+        profileId,
+        { now: dependencies.now },
+      );
+      return jsonResponse({ challenge }, { status: 200 }, { private: true });
+    }
+    if (method === "POST") {
+      assertCsrf(request);
+      const body = await readBody(request);
+      onlyKeys(body, ["profileId"]);
+      const challenge = await createPairingChallenge(
+        dependencies.db,
+        context,
+        body.profileId,
+        pairingSecret(dependencies),
+        { now: dependencies.now },
+      );
+      const origin = new URL(request.url).origin;
+      return jsonResponse(
+        {
+          challenge: {
+            id: challenge.id,
+            profileId: challenge.profileId,
+            code: challenge.code,
+            token: challenge.pairingToken,
+            pairingUrl: `${origin}/pair?token=${encodeURIComponent(challenge.pairingToken)}`,
+            expiresAt: challenge.expiresAt,
+          },
+        },
+        { status: 201 },
+        { private: true },
+      );
+    }
+    if (method === "DELETE") {
+      assertCsrf(request);
+      if (!challengeId) throw new ValidationError("challengeId", "challengeId is required");
+      await cancelPairingChallenge(dependencies.db, context, challengeId, { now: dependencies.now });
+      return jsonResponse({ ok: true }, { status: 200 }, { private: true });
+    }
+    return jsonResponse(
+      { error: "method_not_allowed", message: "Method not allowed" },
+      { status: 405, headers: { Allow: "GET, POST, DELETE" } },
+    );
   } catch (error) {
     return parentRequestError(error);
   }

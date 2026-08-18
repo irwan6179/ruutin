@@ -279,6 +279,7 @@ export async function resolveCompanionContext(
          AND (d.expires_at IS NULL OR d.expires_at > ?)
          AND p.archived_at IS NULL
          AND p.companion_access_eligible = 1
+         AND (p.age_band IS NULL OR p.age_band <> 'under_13')
        LIMIT 1`,
     )
     .bind(tokenHash, now)

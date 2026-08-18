@@ -194,9 +194,9 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
   Depends: BR-015, BR-042. Deliver: due-date service for daily, selected weekdays, one-off date.  
   Accept: tests cover timezone midnight, DST, weekdays, one-off dates, archived tasks.
 
-- [-] **BR-045 — Implement occurrence/progress reads**
+- [x] **BR-045 — Implement occurrence/progress reads**
   Depends: BR-044. Deliver: parent and profile-scoped queries combining tasks with claim/completion states.  
-  Accept: To do/Waiting/Completed is consistent and companion reads leak no siblings. *(Parent due/management reads are implemented; companion routes do not exist until G05, so companion isolation is not yet proven.)*
+  Accept: To do/Waiting/Completed is consistent and companion reads leak no siblings.
 
 - [x] **BR-046 — Integrate task setup into Family/onboarding**
   Depends: BR-034, BR-043, BR-045. Deliver: complete task management flow.  
@@ -208,39 +208,39 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 
 ## G05 — Companion pairing and linked devices
 
-- [ ] **BR-050 — Implement pairing challenge lifecycle**  
+- [x] **BR-050 — Implement pairing challenge lifecycle**
   Depends: BR-014, BR-015, BR-020. Deliver: six-digit code plus high-entropy URL token, protected storage, ten-minute expiry, cancellation/replacement, one use, five-attempt limit.  
   Accept: plaintext never enters D1/logs; lifecycle and concurrency tests pass.
 
-- [ ] **BR-051 — Enforce eligibility and parent-owned challenge creation**  
+- [x] **BR-051 — Enforce eligibility and parent-owned challenge creation**
   Depends: BR-032, BR-033, BR-050. Deliver: Sites server route and Family action.  
   Accept: ineligible, archived, foreign, or unconfirmed profiles cannot generate codes through direct route calls.
 
-- [ ] **BR-052 — Generate QR/pairing URL and countdown UI**  
+- [x] **BR-052 — Generate QR/pairing URL and countdown UI**
   Depends: BR-051. Deliver: QR, manual code, ten-minute countdown, cancel/regenerate.  
   Accept: server expiry is authoritative; QR contains no ongoing credential.
 
-- [ ] **BR-053 — Build `/pair` validation and profile confirmation**  
+- [x] **BR-053 — Build `/pair` validation and profile confirmation**
   Depends: BR-050. Deliver: manual/URL entry, nickname+emoji confirmation, generic errors.  
   Accept: no sibling/household/parent data is disclosed; attempt limits apply.
 
-- [ ] **BR-054 — Create profile-scoped companion session**  
+- [x] **BR-054 — Create profile-scoped companion session**
   Depends: BR-016, BR-053. Deliver: atomic challenge consumption/device creation and secure cookie.  
   Accept: token is long/random and hash-only in D1; one challenge creates at most one device; session cannot switch profiles.
 
-- [ ] **BR-055 — Build companion shell and two-destination navigation**  
+- [x] **BR-055 — Build companion shell and two-destination navigation**
   Depends: BR-054. Deliver: Today and Rewards only, greeting, install-guidance hook.  
   Accept: parent settings/profile switching are absent; routes require active device context.
 
-- [ ] **BR-056 — Build linked-device management**  
+- [x] **BR-056 — Build linked-device management**
   Depends: BR-036, BR-054. Deliver: label/profile/linked/last-active/revoked display, rename, revoke, replacement.  
   Accept: actions are parent/household-scoped and last-active writes are throttled.
 
-- [ ] **BR-057 — Enforce server-side device revocation**  
+- [x] **BR-057 — Enforce server-side device revocation**
   Depends: BR-054, BR-056. Deliver: revocation check on every companion request and private/no-store responses.  
   Accept: revoked device fails on next request despite retained cookie/open tab/guessed URL.
 
-- [ ] **BR-058 — Test pairing, isolation, and revocation**  
+- [x] **BR-058 — Test pairing, isolation, and revocation**
   Depends: BR-050–BR-057. Deliver: concurrency, route authorization, E2E tests.  
   Accept: AC-09–AC-14 and AC-22 pass.
 
@@ -440,12 +440,12 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 - [x] **AC-06** Same parent on a second device sees the same household.
 - [x] **AC-07** Parent can create multiple profiles.
 - [x] **AC-08** Template selections create editable tasks.
-- [ ] **AC-09** Under-threshold profile cannot generate a pairing code.
-- [ ] **AC-10** Pairing code expires after ten minutes.
-- [ ] **AC-11** Pairing code is one-time use.
-- [ ] **AC-12** Linked device sees only its assigned profile.
-- [ ] **AC-13** Companion cannot read sibling information.
-- [ ] **AC-14** Companion cannot call parent-only routes.
+- [x] **AC-09** Under-threshold profile cannot generate a pairing code.
+- [x] **AC-10** Pairing code expires after ten minutes.
+- [x] **AC-11** Pairing code is one-time use.
+- [x] **AC-12** Linked device sees only its assigned profile.
+- [x] **AC-13** Companion cannot read sibling information.
+- [x] **AC-14** Companion cannot call parent-only routes.
 - [ ] **AC-15** Companion can submit a completion claim.
 - [ ] **AC-16** Duplicate claims do not create duplicate stars.
 - [ ] **AC-17** Parent approval creates exactly one ledger entry.
@@ -453,7 +453,7 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 - [ ] **AC-19** Rejection creates no stars.
 - [ ] **AC-20** Redemption cannot produce a negative balance.
 - [ ] **AC-21** Repeated reward approval cannot deduct twice.
-- [ ] **AC-22** Revoking a device removes access.
+- [x] **AC-22** Revoking a device removes access.
 - [ ] **AC-23** Cross-household identifiers expose no data.
 - [x] **AC-24** Reload preserves sessions correctly.
 - [ ] **AC-25** Foreground return refreshes current data.
