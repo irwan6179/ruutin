@@ -79,6 +79,7 @@ function submittedLabel(value: string, timezone: string): string {
 export function TodayManager({ initialOverview }: { initialOverview: TodayData }) {
   const [overview, setOverview] = useState(initialOverview);
   const [busyKey, setBusyKey] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [reverseClaimId, setReverseClaimId] = useState("");
@@ -124,6 +125,14 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
     setOverview(payload.overview);
   }
 
+  async function refreshManually() {
+    if (busyKey || refreshing) return;
+    setRefreshing(true); setError("");
+    try { await refresh(); setNotice("Today is up to date."); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Could not refresh today."); }
+    finally { setRefreshing(false); }
+  }
+
   async function act(key: string, action: () => Promise<void>, success: string, afterSuccess?: () => void) {
     if (busyKey) return;
     setBusyKey(key); setError(""); setNotice("");
@@ -142,8 +151,7 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
   return (
     <div className="ruutin-page-stack">
       <section className="ruutin-page-heading" aria-labelledby="today-title">
-        <p className="ruutin-eyebrow">{overview.household.name} · {overview.localDate}</p>
-        <h1 id="today-title">A little progress, together.</h1>
+        <div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">{overview.household.name} · {overview.localDate}</p><h1 id="today-title">A little progress, together.</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={Boolean(busyKey) || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div>
         <p>Here&apos;s the gentle overview for today. You stay in charge of every approval.</p>
       </section>
       {overview.profiles.length === 0 ? <p className="ruutin-empty-state">Add a profile to begin a shared rhythm.</p> : (

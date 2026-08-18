@@ -348,35 +348,35 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 
 ## G09 — PWA, synchronization, final onboarding, design, accessibility
 
-- [ ] **BR-090 — Create manifest and icon set**  
+- [x] **BR-090 — Create manifest and icon set**  
   Depends: BR-001. Deliver: required name/short name/display/theme/background, 192, 512, maskable, Apple touch assets, viewport metadata.  
   Accept: assets load on Sites origin and manifest validation passes.
 
-- [ ] **BR-091 — Implement install/standalone guidance**  
+- [x] **BR-091 — Implement install/standalone guidance**  
   Depends: BR-055, BR-090. Deliver: required post-pairing message, standalone detection, iPhone Safari/Android guidance.  
   Accept: exact message appears after pairing and guidance can be reopened.
 
-- [ ] **BR-092 — Implement service worker only if Sites gate passed**  
+- [x] **BR-092 — Implement service worker only if Sites gate passed**  
   Depends: BR-004, BR-090. Deliver: immutable-static-only cache or documented no-worker decision.  
   Accept: authenticated HTML, API, TAC, pairing, mutations never enter cache; old workers cannot preserve revoked access.
 
-- [ ] **BR-093 — Implement authoritative refetch strategy**  
+- [x] **BR-093 — Implement authoritative refetch strategy**  
   Depends: BR-035, BR-055. Deliver: post-mutation, foreground, manual/pull refresh; optional low-frequency approval refresh.  
   Accept: no WebSockets/background queue; stale tabs converge; polling stops off approval screen.
 
-- [ ] **BR-094 — Apply joyful responsive design system and micro-interactions**  
+- [x] **BR-094 — Apply joyful responsive design system and micro-interactions**  
   Depends: functional screens. Deliver: light base, soft purple, cards, type, touch targets, icons, progress, safe areas, and purposeful press/completion/approval/navigation/success motion.  
   Accept: interactions feel playful and pleasurable while the parent UI remains trustworthy; motion is brief, performant, and fully disabled or simplified by `prefers-reduced-motion`; companion UI is cheerful without prohibited styling.
 
-- [ ] **BR-095 — Complete accessibility pass**  
+- [x] **BR-095 — Complete accessibility pass**  
   Depends: BR-094. Deliver: semantics, labels, focus, keyboard, contrast, reduced motion, error announcements.  
   Accept: automated checks and documented manual keyboard/screen-reader checks pass.
 
-- [ ] **BR-096 — Verify 360 px through desktop**  
+- [x] **BR-096 — Verify 360 px through desktop**  
   Depends: BR-094, BR-095. Deliver: responsive evidence for auth/onboarding/parent/companion/pairing states.  
   Accept: no horizontal overflow at 360 px; nav/dialogs honor safe areas.
 
-- [ ] **BR-097 — Audit caching and foreground behavior**  
+- [x] **BR-097 — Audit caching and foreground behavior**  
   Depends: BR-092, BR-093. Deliver: Sites-origin network/cache evidence.  
   Accept: AC-25 and AC-28 pass; revoked open tabs cannot recover private cache data.
 
@@ -456,10 +456,10 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 - [x] **AC-22** Revoking a device removes access.
 - [ ] **AC-23** Cross-household identifiers expose no data.
 - [x] **AC-24** Reload preserves sessions correctly.
-- [ ] **AC-25** Foreground return refreshes current data.
+- [x] **AC-25** Foreground return refreshes current data.
 - [ ] **AC-26** Manifest and icons exist on Sites origin.
-- [ ] **AC-27** App works at 360 px without horizontal overflow.
-- [ ] **AC-28** No private API response is in service-worker cache.
+- [x] **AC-27** App works at 360 px without horizontal overflow.
+- [x] **AC-28** No private API response is in service-worker cache.
 - [ ] **AC-29** No application secret appears in browser code.
 - [ ] **AC-30** No R2 storage or upload feature exists.
 

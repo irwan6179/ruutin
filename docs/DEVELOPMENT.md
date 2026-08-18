@@ -427,7 +427,14 @@ Required assets and metadata:
 - Post-pairing message: “Save Ruutin to this device’s home screen for easier access.”
 - Guidance for Safari on iPhone and common Android browsers
 
-If the Sites gate confirms service-worker support, cache only immutable static assets. Never cache authenticated HTML, private API data, TAC/pairing responses, or mutations. A stale worker must not preserve access after revocation. If unsupported, ship install metadata/guidance without offline behavior.
+The current Sites probe confirms that the origin accepts service-worker
+registration, but Ruutin deliberately does not ship an application service
+worker or offline cache. The disposable `/runtime-probe/` worker is scoped,
+has no fetch/cache behavior, and unregisters after the check. This keeps
+authenticated HTML, private API data, TAC/pairing responses, and mutations on
+the normal private network path; no stale app worker can preserve access after
+revocation. Revisit immutable-static caching only as a separately verified
+Sites capability decision.
 
 ## 18. Data export and deletion
 

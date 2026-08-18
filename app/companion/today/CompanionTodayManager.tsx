@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { InstallGuidance } from "../InstallGuidance";
 
 type CompanionTask = {
   id: string;
@@ -25,6 +26,7 @@ export function CompanionTodayManager({ initialToday }: { initialToday: TodayDat
   const [today, setToday] = useState(initialToday);
   const [selectedTask, setSelectedTask] = useState<CompanionTask | null>(null);
   const [busy, setBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const confirmRef = useRef<HTMLButtonElement>(null);
   const returnFocusRef = useRef<HTMLButtonElement>(null);
@@ -54,6 +56,14 @@ export function CompanionTodayManager({ initialToday }: { initialToday: TodayDat
     const rewardsPayload = await rewardsResponse.json().catch(() => ({})) as { rewards?: { balance: number; activeReward: TodayData["activeReward"] } };
     if (!todayResponse.ok || !todayPayload.today || !rewardsResponse.ok || !rewardsPayload.rewards) throw new Error("Your routine could not be refreshed yet.");
     setToday({ ...todayPayload.today, balance: rewardsPayload.rewards.balance, activeReward: rewardsPayload.rewards.activeReward });
+  }
+
+  async function refreshManually() {
+    if (busy || refreshing) return;
+    setRefreshing(true); setError("");
+    try { await refreshToday(); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Your routine could not be refreshed yet."); }
+    finally { setRefreshing(false); }
   }
 
   useEffect(() => {
@@ -100,14 +110,10 @@ export function CompanionTodayManager({ initialToday }: { initialToday: TodayDat
   return (
     <div className="ruutin-page-stack companion-page-stack">
       <section className="ruutin-page-heading" aria-labelledby="companion-today-title">
-        <p className="ruutin-eyebrow">{today.localDate} · your space</p>
-        <h1 id="companion-today-title">Hi {today.profile.nickname} {today.profile.emoji}</h1>
+        <div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">{today.localDate} · your space</p><h1 id="companion-today-title">Hi {today.profile.nickname} {today.profile.emoji}</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={busy || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div>
         <p>Here&apos;s your gentle list for today. Your parent reviews each routine when you&apos;re ready.</p>
       </section>
-      <section className="ruutin-card companion-install-note" aria-label="Install guidance">
-        <strong>Make it easy to return</strong>
-        <p>Save Ruutin to this device&apos;s home screen for easier access.</p>
-      </section>
+      <InstallGuidance />
       <section className="ruutin-card companion-today-balance" aria-label="Star balance">
         <div><span className="ruutin-eyebrow">Your stars</span><strong>{today.balance} ✦</strong></div>
         {today.activeReward ? <p>{today.activeReward.emoji} {today.activeReward.title} · {today.activeReward.starCost} stars</p> : <p>Your parent can add a reward goal when it feels right.</p>}

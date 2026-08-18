@@ -70,6 +70,9 @@ body {
 .ruutin-app-main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
 .ruutin-page-stack { display: grid; gap: 24px; padding: 18px 0 32px; }
 .ruutin-page-heading { max-width: 700px; padding: 18px 0 3px; }
+.ruutin-page-heading-top { display: flex; min-width: 0; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.ruutin-page-heading-top > div { min-width: 0; }
+.ruutin-page-heading-top .ruutin-button { flex: 0 0 auto; margin-top: 2px; }
 .ruutin-page-heading h1, .ruutin-onboarding-header h1 { margin: 0; color: var(--br-plum); font-size: clamp(31px, 6vw, 50px); font-weight: 600; letter-spacing: -0.065em; line-height: 1.05; }
 .ruutin-page-heading p:not(.ruutin-eyebrow), .ruutin-onboarding-header > p:not(.ruutin-eyebrow) { max-width: 610px; margin: 12px 0 0; color: var(--br-muted); font-size: 15px; line-height: 1.6; }
 .ruutin-eyebrow { margin: 0 0 9px; color: var(--br-purple); font-size: 11px; font-weight: 740; letter-spacing: .12em; line-height: 1.25; text-transform: uppercase; }
@@ -244,6 +247,10 @@ body {
 .companion-install-note { display: grid; gap: 5px; border-color: #decfed; background: #fbf8fd; }
 .companion-install-note strong { color: var(--br-deep-purple); font-size: 13px; }
 .companion-install-note p { margin: 0; color: var(--br-muted); font-size: 12px; }
+.ruutin-install-heading { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 12px; }
+.ruutin-install-heading .ruutin-text-button { flex: 0 0 auto; }
+.ruutin-install-details { display: grid; gap: 4px; padding-top: 6px; border-top: 1px solid #e9def1; }
+.ruutin-install-details p { line-height: 1.5; }
 .companion-today-balance { display: flex; min-width: 0; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-color: #decfed; background: linear-gradient(135deg, #f7f0fc, #fff); }
 .companion-today-balance > div { display: grid; gap: 3px; }
 .companion-today-balance strong { color: var(--br-deep-purple); font-size: 25px; letter-spacing: -.05em; }

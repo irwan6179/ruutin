@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Reward = {
   id: string;
@@ -51,6 +51,7 @@ export function CompanionRewardsManager({ initialRewards, initialRequests }: { i
   const [rewards, setRewards] = useState(initialRewards);
   const [requests, setRequests] = useState(initialRequests);
   const [busy, setBusy] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const pendingByReward = useMemo(() => new Map(requests.filter((request) => request.status === "pending").map((request) => [request.rewardId, request])), [requests]);
@@ -69,6 +70,23 @@ export function CompanionRewardsManager({ initialRewards, initialRequests }: { i
     setRewards(rewardsPayload.rewards); setRequests(requestsPayload.requests);
   }
 
+  useEffect(() => {
+    function refreshWhenVisible() {
+      if (document.visibilityState !== "visible" || busy) return;
+      void refresh().catch(() => undefined);
+    }
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => document.removeEventListener("visibilitychange", refreshWhenVisible);
+  }, [busy]);
+
+  async function refreshManually() {
+    if (busy || refreshing) return;
+    setRefreshing(true); setError("");
+    try { await refresh(); setNotice("Rewards are up to date."); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Could not refresh rewards."); }
+    finally { setRefreshing(false); }
+  }
+
   async function askFor(reward: Reward) {
     if (busy || pendingByReward.has(reward.id)) return;
     setBusy(reward.id); setError(""); setNotice("");
@@ -79,7 +97,7 @@ export function CompanionRewardsManager({ initialRewards, initialRequests }: { i
 
   return (
     <div className="ruutin-page-stack companion-page-stack">
-      <section className="ruutin-page-heading" aria-labelledby="companion-rewards-title"><p className="ruutin-eyebrow">A little something to look forward to</p><h1 id="companion-rewards-title">Rewards</h1><p>Your parent chooses the ideas and reviews each request. There is no rush — this is just a gentle way to notice progress.</p></section>
+      <section className="ruutin-page-heading" aria-labelledby="companion-rewards-title"><div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">A little something to look forward to</p><h1 id="companion-rewards-title">Rewards</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={Boolean(busy) || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div><p>Your parent chooses the ideas and reviews each request. There is no rush — this is just a gentle way to notice progress.</p></section>
       <section className="ruutin-card companion-balance-card" aria-label="Star balance"><span className="ruutin-eyebrow">Your stars</span><strong>{rewards.balance} ✦</strong>{rewards.activeReward ? <><p>{rewards.activeReward.emoji} {rewards.activeReward.title} · {rewards.activeReward.starCost} stars</p><div className="ruutin-progress" role="progressbar" aria-label={`Progress towards ${rewards.activeReward.title}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span aria-hidden="true" style={{ width: `${progress}%` }} /></div><div className="ruutin-card-meta"><span>{progress}% of the goal</span><span>{remaining > 0 ? `${remaining} more to go` : "Ready to ask"}</span></div></> : <p>No active goal yet. Your parent can add one when it feels right.</p>}</section>
       <section aria-labelledby="reward-list-title"><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Parent-selected</p><h2 id="reward-list-title">Reward ideas</h2></div><span className="ruutin-count-pill">{rewards.rewards.length}</span></div>{rewards.rewards.length === 0 ? <p className="ruutin-empty-state">Your parent can add a reward when the time feels right.</p> : <div className="ruutin-reward-catalogue companion-reward-catalogue">{rewards.rewards.map((reward) => { const pending = pendingByReward.get(reward.id); return <article className={`ruutin-card ruutin-reward-card${reward.isActive ? " is-active" : ""}`} key={reward.id}><div className="ruutin-profile-card-top"><span className="ruutin-avatar" aria-hidden="true">{reward.emoji}</span><div><h3>{reward.title}</h3><p>{reward.starCost} {reward.starCost === 1 ? "star" : "stars"} needed{reward.isActive ? " · active goal" : ""}</p></div></div>{pending ? <p className="ruutin-form-success" role="status">Waiting for parent review</p> : <button className="ruutin-button secondary" type="button" disabled={Boolean(busy)} onClick={() => void askFor(reward)}>{busy === reward.id ? "Sending…" : "Ask parent"} <span aria-hidden="true">↗</span></button>}</article>; })}</div>}</section>
       <section className="ruutin-card ruutin-queue-card" aria-labelledby="companion-request-history-title"><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Your requests</p><h2 id="companion-request-history-title">A clear record</h2></div><span className="ruutin-count-pill">{history.length}</span></div>{history.length === 0 ? <p className="ruutin-empty-state">Requests you make will stay here with their outcome.</p> : <ul className="ruutin-simple-list">{history.map((request) => { const reward = rewards.rewards.find((item) => item.id === request.rewardId); return <li key={request.id}><span className="ruutin-avatar small" aria-hidden="true">{reward?.emoji ?? "✦"}</span><span><strong>{reward?.title ?? "Reward idea"}</strong><small>{dateLabel(request.resolvedAt ?? request.requestedAt)}</small></span><span className={`ruutin-state-note ${request.status === "approved" ? "good" : ""}`}>{statusLabel(request.status)}</span></li>; })}</ul>}</section>
