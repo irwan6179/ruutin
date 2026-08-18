@@ -15,7 +15,13 @@ export type ParentDevice = {
 };
 
 function scopedHousehold(context: ParentContext): string {
-  if (!context.memberships.some((membership) => membership.householdId === context.householdId)) throw new ScopeError();
+  if (
+    context.role !== "parent" ||
+    !context.memberships.some(
+      (membership) =>
+        membership.householdId === context.householdId && membership.role === "parent",
+    )
+  ) throw new ScopeError();
   return context.householdId;
 }
 

@@ -16,7 +16,13 @@ export class ScopeError extends Error {
 }
 
 function parentHousehold(context: ParentContext, householdId = context.householdId): string {
-  if (!context.memberships.some((membership) => membership.householdId === householdId)) {
+  if (
+    context.role !== "parent" ||
+    !context.memberships.some(
+      (membership) =>
+        membership.householdId === householdId && membership.role === "parent",
+    )
+  ) {
     throw new ScopeError();
   }
   return householdId;

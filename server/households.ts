@@ -45,10 +45,23 @@ function membershipHouseholdIds(context: ParentContext | ParentSessionContext): 
   return context.memberships.map((membership) => membership.householdId);
 }
 
+function assertParentOwner(context: ParentContext): void {
+  if (
+    context.role !== "parent" ||
+    !context.memberships.some(
+      (membership) =>
+        membership.householdId === context.householdId && membership.role === "parent",
+    )
+  ) {
+    throw new ScopeError();
+  }
+}
+
 export async function getParentHousehold(
   db: D1DatabaseLike,
   context: ParentContext,
 ): Promise<HouseholdRecord> {
+  assertParentOwner(context);
   const result = await db
     .prepare(
       `SELECT id, name, timezone, created_at AS createdAt

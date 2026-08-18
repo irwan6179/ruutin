@@ -4,6 +4,7 @@ import { getParentHousehold } from "./households";
 import { listProfilesForParent, type ParentProfile } from "./profiles";
 import { listTaskOccurrencesForParent, type TaskOccurrence } from "./tasks";
 import { listPendingRewardRequestsForParent, type RewardRequestView } from "./rewards";
+import { ScopeError } from "./scoped-data";
 
 export type TodayProfileCard = ParentProfile & {
   taskCount: number;
@@ -113,6 +114,15 @@ export async function countOnboardingRows(
   db: D1DatabaseLike,
   context: ParentContext,
 ): Promise<{ taskCount: number; rewardCount: number }> {
+  if (
+    context.role !== "parent" ||
+    !context.memberships.some(
+      (membership) =>
+        membership.householdId === context.householdId && membership.role === "parent",
+    )
+  ) {
+    throw new ScopeError();
+  }
   const [tasks, rewards] = await Promise.all([
     firstNumber(db, "SELECT count(*) AS value FROM tasks WHERE household_id = ? AND archived_at IS NULL", context.householdId),
     firstNumber(db, "SELECT count(*) AS value FROM rewards WHERE household_id = ? AND archived_at IS NULL", context.householdId),

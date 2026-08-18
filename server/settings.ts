@@ -80,7 +80,13 @@ export type HouseholdExport = Readonly<{
 type UserEmailRow = { email: string; emailNormalized: string };
 
 function assertParentOwner(context: ParentContext): void {
-  if (context.role !== "parent") throw new DeletionReauthError();
+  if (
+    context.role !== "parent" ||
+    !context.memberships.some(
+      (membership) =>
+        membership.householdId === context.householdId && membership.role === "parent",
+    )
+  ) throw new DeletionReauthError();
 }
 
 async function getParentEmail(
