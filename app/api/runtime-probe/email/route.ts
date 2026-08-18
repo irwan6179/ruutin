@@ -46,7 +46,7 @@ export async function POST(request: Request): Promise<Response> {
   // A missing temporary recipient or probe secret disables the route and
   // prevents even an attempted provider call.
   if (!probeConfig) {
-    return unavailableResponse();
+    return jsonResponse({ error: "probe_disabled" }, 503);
   }
 
   if (!hasBearerProbeSecret(request, probeConfig.RUNTIME_PROBE_SECRET)) {
@@ -58,7 +58,7 @@ export async function POST(request: Request): Promise<Response> {
     emailConfig = loadEmailConfig(runtimeEnv);
   } catch {
     // Keep configuration state and provider details out of the response.
-    return unavailableResponse();
+    return jsonResponse({ error: "configuration_unavailable" }, 503);
   }
 
   try {
@@ -74,6 +74,13 @@ export async function POST(request: Request): Promise<Response> {
     // body, status, credential, recipient, or message content.
     if (error instanceof EmailAdapterError && error.reason === "provider") {
       return jsonResponse({ error: "provider_rejected" }, 502);
+    }
+
+    if (
+      error instanceof EmailAdapterError &&
+      (error.reason === "network" || error.reason === "timeout")
+    ) {
+      return jsonResponse({ error: "transport_unavailable" }, 503);
     }
 
     return unavailableResponse();
