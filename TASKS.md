@@ -284,35 +284,35 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 
 ## G07 — Rewards and redemption
 
-- [ ] **BR-070 — Encode static suggested reward templates**  
+- [x] **BR-070 — Encode static suggested reward templates**
   Depends: BR-001. Deliver: all five suggestions as typed version-controlled data.  
   Accept: templates are not D1 seed rows and values/content match the source.
 
-- [ ] **BR-071 — Implement reward CRUD and five-active limit**  
+- [x] **BR-071 — Implement reward CRUD and five-active limit**
   Depends: BR-013, BR-017, BR-033. Deliver: household/profile-scoped routes.  
   Accept: positive costs validate server-side; concurrent creation cannot exceed five active rewards per profile.
 
-- [ ] **BR-072 — Build parent reward catalogue/template picker**  
+- [x] **BR-072 — Build parent reward catalogue/template picker**
   Depends: BR-070, BR-071. Deliver: create/edit/archive and active-goal selection.  
   Accept: active reward belongs to same profile; archived goals are handled.
 
-- [ ] **BR-073 — Build companion reward views**  
+- [x] **BR-073 — Build companion reward views**
   Depends: BR-055, BR-060, BR-072. Deliver: active/other rewards, balance, progress, remaining, status/history.  
   Accept: only assigned-profile data returns; UI avoids gambling/shop framing.
 
-- [ ] **BR-074 — Implement profile-scoped reward requests**  
+- [x] **BR-074 — Implement profile-scoped reward requests**
   Depends: BR-073. Deliver: companion request and duplicate-pending protection.  
   Accept: reward belongs to assigned profile; requests do not deduct stars.
 
-- [ ] **BR-075 — Implement transactional reward decisions**  
+- [x] **BR-075 — Implement transactional reward decisions**
   Depends: BR-060, BR-074. Deliver: approve/reject and exactly-one negative ledger entry.  
   Accept: ownership/pending/balance checks occur in transaction; concurrency cannot double-deduct or go negative.
 
-- [ ] **BR-076 — Integrate pending requests and history**  
+- [x] **BR-076 — Integrate pending requests and history**
   Depends: BR-035, BR-075. Deliver: parent Today/Rewards queues and history.  
   Accept: actions refetch balances and stale decisions do not show false success.
 
-- [ ] **BR-077 — Test reward limits/isolation/idempotency**  
+- [x] **BR-077 — Test reward limits/isolation/idempotency**
   Depends: BR-070–BR-076. Deliver: integration/concurrency/E2E tests.  
   Accept: AC-20–AC-21 pass; rejection has no ledger effect; prohibited mechanics are absent.
 
@@ -451,8 +451,8 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 - [x] **AC-17** Parent approval creates exactly one ledger entry.
 - [x] **AC-18** Repeated approval does not create more stars.
 - [x] **AC-19** Rejection creates no stars.
-- [ ] **AC-20** Redemption cannot produce a negative balance.
-- [ ] **AC-21** Repeated reward approval cannot deduct twice.
+- [x] **AC-20** Redemption cannot produce a negative balance.
+- [x] **AC-21** Repeated reward approval cannot deduct twice.
 - [x] **AC-22** Revoking a device removes access.
 - [ ] **AC-23** Cross-household identifiers expose no data.
 - [x] **AC-24** Reload preserves sessions correctly.

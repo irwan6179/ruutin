@@ -30,6 +30,17 @@ type TodayData = {
     submittedAt: string;
     dueDate: string;
   }>;
+  pendingRewardRequests: Array<{
+    id: string;
+    profileId: string;
+    status: "pending" | "approved" | "rejected";
+    requestedAt: string;
+    nickname: string;
+    profileEmoji: string;
+    rewardTitle: string;
+    rewardEmoji: string;
+    starCost: number;
+  }>;
 };
 
 async function getCsrf(): Promise<string> {
@@ -174,6 +185,10 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
       <section className="ruutin-card ruutin-queue-card" aria-labelledby="queue-title">
         <div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Parent review</p><h2 id="queue-title">Waiting for you</h2></div><span className="ruutin-count-pill">{overview.pendingClaims.length}</span></div>
         {overview.pendingClaims.length === 0 ? <p className="ruutin-empty-state">No approvals waiting. The queue will appear here when a routine is submitted.</p> : <ul className="ruutin-simple-list">{overview.pendingClaims.map((claim) => <li className="ruutin-claim-row" key={claim.id}><span className="ruutin-avatar small" aria-hidden="true">{claim.emoji}</span><span><strong>{claim.nickname}</strong><small>{claim.taskTitle} · {claim.stars} {claim.stars === 1 ? "star" : "stars"} · {submittedLabel(claim.submittedAt, overview.household.timezone)}</small></span><span className="ruutin-claim-actions"><button className="ruutin-button compact" type="button" disabled={busyKey !== ""} onClick={() => void act(`approve-${claim.id}`, () => parentRequest("/api/parent/claims", { claimId: claim.id, decision: "approve" }), "Approved — the stars are safely recorded.")}>Approve</button><button className="ruutin-text-button danger compact" type="button" disabled={busyKey !== ""} onClick={() => void act(`reject-${claim.id}`, () => parentRequest("/api/parent/claims", { claimId: claim.id, decision: "reject" }), "Sent back for another try.")}>Reject</button></span></li>)}</ul>}
+      </section>
+      <section className="ruutin-card ruutin-queue-card" aria-labelledby="reward-queue-title">
+        <div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Reward review</p><h2 id="reward-queue-title">Small requests</h2></div><span className="ruutin-count-pill">{overview.pendingRewardRequests.length}</span></div>
+        {overview.pendingRewardRequests.length === 0 ? <p className="ruutin-empty-state">No reward requests waiting. They will appear here when someone asks.</p> : <ul className="ruutin-simple-list">{overview.pendingRewardRequests.map((request) => <li className="ruutin-claim-row" key={request.id}><span className="ruutin-avatar small" aria-hidden="true">{request.rewardEmoji}</span><span><strong>{request.rewardTitle}</strong><small>{request.nickname} · {request.starCost} stars · {submittedLabel(request.requestedAt, overview.household.timezone)}</small></span><span className="ruutin-claim-actions"><button className="ruutin-button compact" type="button" disabled={busyKey !== ""} onClick={() => void act(`reward-approve-${request.id}`, () => parentRequest("/api/parent/rewards/requests", { requestId: request.id, decision: "approve" }), "Approved — the stars are safely recorded.")}>Approve</button><button className="ruutin-text-button danger compact" type="button" disabled={busyKey !== ""} onClick={() => void act(`reward-reject-${request.id}`, () => parentRequest("/api/parent/rewards/requests", { requestId: request.id, decision: "reject" }), "Sent back for another try.")}>Not now</button></span></li>)}</ul>}
       </section>
       {reverseClaimId && <div className="ruutin-inline-dialog" role="dialog" aria-modal="true" aria-labelledby="reverse-title" aria-describedby="reverse-description"><h2 id="reverse-title">Reverse this star award?</h2><p id="reverse-description">The original ledger entry stays in history; Ruutin adds a compensating entry.</p><label htmlFor="reverse-reason">Reason</label><input id="reverse-reason" value={reverseReason} maxLength={240} onChange={(event) => setReverseReason(event.target.value)} required /><div className="ruutin-family-actions"><button ref={reverseConfirmRef} className="ruutin-button" type="button" disabled={busyKey !== ""} onClick={() => void act(`reverse-${reverseClaimId}`, () => parentRequest("/api/parent/ledger", { action: "reverse", claimId: reverseClaimId, reason: reverseReason }), "Award reversed with a clear history.", () => setReverseClaimId(""))}>Reverse award</button><button className="ruutin-text-button" type="button" disabled={busyKey !== ""} onClick={() => setReverseClaimId("")}>Cancel</button></div></div>}
       {notice && <p className="ruutin-form-success ruutin-live-feedback" role="status" aria-live="polite">{notice}</p>}

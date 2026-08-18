@@ -254,6 +254,24 @@ body {
 .companion-balance-card { display: grid; gap: 7px; background: linear-gradient(135deg, #f5edfc, #fff); }
 .companion-balance-card strong { color: var(--br-deep-purple); font-size: 34px; letter-spacing: -.06em; }
 .companion-balance-card p { margin: 0; color: var(--br-muted); font-size: 12px; }
+.ruutin-rewards-toolbar { display: flex; min-width: 0; align-items: center; flex-wrap: wrap; gap: 10px; }
+.ruutin-rewards-toolbar label { color: #4f4560; font-size: 12px; font-weight: 700; }
+.ruutin-rewards-toolbar select { min-width: min(240px, 100%); min-height: 42px; padding: 9px 12px; border: 1px solid #dfd4e8; border-radius: 12px; color: var(--br-ink); background: #fff; font: inherit; font-size: 13px; }
+.ruutin-rewards-toolbar .ruutin-state-note { margin-left: auto; }
+.ruutin-rewards-toolbar .ruutin-button { min-height: 40px; padding: 9px 13px; font-size: 11px; }
+.ruutin-reward-editor { max-width: 700px; gap: 13px; }
+.ruutin-reward-editor-grid { display: grid; grid-template-columns: minmax(86px, .25fr) minmax(0, 1fr); gap: 10px; }
+.ruutin-reward-editor-grid > div { display: grid; gap: 8px; }
+.ruutin-reward-catalogue { display: grid; gap: 11px; }
+.ruutin-reward-card { display: grid; min-width: 0; gap: 14px; padding: 17px; }
+.ruutin-reward-card.is-active { border-color: #cbb1e0; background: linear-gradient(135deg, #fcf8ff, #fff); box-shadow: 0 10px 28px rgb(84 56 129 / .09); }
+.ruutin-reward-card h3 { margin: 0; overflow: hidden; color: var(--br-ink); font-size: 15px; font-weight: 720; text-overflow: ellipsis; white-space: nowrap; }
+.ruutin-reward-card .ruutin-profile-card-top p { margin-top: 4px; }
+.ruutin-reward-card .ruutin-family-actions { gap: 8px; }
+.ruutin-reward-card .ruutin-family-actions .ruutin-button { min-height: 38px; padding: 8px 11px; font-size: 11px; }
+.ruutin-archive-panel { display: grid; gap: 11px; }
+.companion-reward-catalogue .ruutin-reward-card .ruutin-button { justify-self: start; min-height: 40px; padding: 9px 13px; font-size: 11px; }
+.companion-reward-catalogue .ruutin-reward-card .ruutin-form-success { margin: 0; }
 .ruutin-pairing-manager, .ruutin-device-manager { display: grid; min-width: 0; gap: 15px; }
 .ruutin-pairing-profile-list { display: grid; gap: 8px; }
 .ruutin-pairing-profile-row { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #eee6f3; }

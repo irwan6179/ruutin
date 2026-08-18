@@ -3,6 +3,7 @@ import { localDateFor } from "./validation";
 import { getParentHousehold } from "./households";
 import { listProfilesForParent, type ParentProfile } from "./profiles";
 import { listTaskOccurrencesForParent, type TaskOccurrence } from "./tasks";
+import { listPendingRewardRequestsForParent, type RewardRequestView } from "./rewards";
 
 export type TodayProfileCard = ParentProfile & {
   taskCount: number;
@@ -27,6 +28,7 @@ export type TodayOverview = {
     submittedAt: string;
     dueDate: string;
   }>;
+  pendingRewardRequests: RewardRequestView[];
 };
 
 async function firstNumber(db: D1DatabaseLike, query: string, ...values: unknown[]): Promise<number> {
@@ -97,11 +99,13 @@ export async function getTodayOverview(
     )
     .bind(household.id)
     .all<TodayOverview["pendingClaims"][number]>();
+  const pendingRewardRequests = await listPendingRewardRequestsForParent(db, context);
   return {
     localDate,
     household: { id: household.id, name: household.name, timezone: household.timezone },
     profiles: cards,
     pendingClaims: pending.results ?? [],
+    pendingRewardRequests,
   };
 }
 

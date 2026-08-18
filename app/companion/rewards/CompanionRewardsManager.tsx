@@ -1,0 +1,89 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+type Reward = {
+  id: string;
+  title: string;
+  emoji: string;
+  starCost: number;
+  isActive: boolean;
+};
+
+type RewardRequest = {
+  id: string;
+  rewardId: string;
+  status: "pending" | "approved" | "rejected";
+  requestedAt: string;
+  resolvedAt: string | null;
+};
+
+type RewardsData = {
+  profile: { nickname: string; emoji: string };
+  balance: number;
+  activeReward: Reward | null;
+  rewards: Reward[];
+};
+
+async function companionRequest(path: string, body: Record<string, unknown>): Promise<void> {
+  const response = await fetch(path, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json().catch(() => ({})) as { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "That reward request could not be sent yet.");
+}
+
+function dateLabel(value: string): string {
+  try { return new Intl.DateTimeFormat("en-MY", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(value)); }
+  catch { return value; }
+}
+
+function statusLabel(status: RewardRequest["status"]): string {
+  if (status === "approved") return "Approved";
+  if (status === "rejected") return "Not this time";
+  return "Waiting for parent";
+}
+
+export function CompanionRewardsManager({ initialRewards, initialRequests }: { initialRewards: RewardsData; initialRequests: RewardRequest[] }) {
+  const [rewards, setRewards] = useState(initialRewards);
+  const [requests, setRequests] = useState(initialRequests);
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const pendingByReward = useMemo(() => new Map(requests.filter((request) => request.status === "pending").map((request) => [request.rewardId, request])), [requests]);
+  const history = requests.filter((request) => request.status !== "pending");
+  const remaining = rewards.activeReward ? Math.max(0, rewards.activeReward.starCost - rewards.balance) : 0;
+  const progress = rewards.activeReward ? Math.min(100, Math.round((rewards.balance / rewards.activeReward.starCost) * 100)) : 0;
+
+  async function refresh() {
+    const [rewardsResponse, requestsResponse] = await Promise.all([
+      fetch("/api/companion/rewards", { credentials: "same-origin", cache: "no-store" }),
+      fetch("/api/companion/rewards/requests", { credentials: "same-origin", cache: "no-store" }),
+    ]);
+    const rewardsPayload = await rewardsResponse.json() as { rewards?: RewardsData; message?: string };
+    const requestsPayload = await requestsResponse.json() as { requests?: RewardRequest[]; message?: string };
+    if (!rewardsResponse.ok || !rewardsPayload.rewards || !requestsResponse.ok || !requestsPayload.requests) throw new Error(rewardsPayload.message ?? requestsPayload.message ?? "Could not refresh rewards.");
+    setRewards(rewardsPayload.rewards); setRequests(requestsPayload.requests);
+  }
+
+  async function askFor(reward: Reward) {
+    if (busy || pendingByReward.has(reward.id)) return;
+    setBusy(reward.id); setError(""); setNotice("");
+    try { await companionRequest("/api/companion/rewards/requests", { rewardId: reward.id }); await refresh(); setNotice(`Asked your parent about ${reward.title}.`); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "That reward request could not be sent yet."); }
+    finally { setBusy(""); }
+  }
+
+  return (
+    <div className="ruutin-page-stack companion-page-stack">
+      <section className="ruutin-page-heading" aria-labelledby="companion-rewards-title"><p className="ruutin-eyebrow">A little something to look forward to</p><h1 id="companion-rewards-title">Rewards</h1><p>Your parent chooses the ideas and reviews each request. There is no rush — this is just a gentle way to notice progress.</p></section>
+      <section className="ruutin-card companion-balance-card" aria-label="Star balance"><span className="ruutin-eyebrow">Your stars</span><strong>{rewards.balance} ✦</strong>{rewards.activeReward ? <><p>{rewards.activeReward.emoji} {rewards.activeReward.title} · {rewards.activeReward.starCost} stars</p><div className="ruutin-progress" role="progressbar" aria-label={`Progress towards ${rewards.activeReward.title}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span aria-hidden="true" style={{ width: `${progress}%` }} /></div><div className="ruutin-card-meta"><span>{progress}% of the goal</span><span>{remaining > 0 ? `${remaining} more to go` : "Ready to ask"}</span></div></> : <p>No active goal yet. Your parent can add one when it feels right.</p>}</section>
+      <section aria-labelledby="reward-list-title"><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Parent-selected</p><h2 id="reward-list-title">Reward ideas</h2></div><span className="ruutin-count-pill">{rewards.rewards.length}</span></div>{rewards.rewards.length === 0 ? <p className="ruutin-empty-state">Your parent can add a reward when the time feels right.</p> : <div className="ruutin-reward-catalogue companion-reward-catalogue">{rewards.rewards.map((reward) => { const pending = pendingByReward.get(reward.id); return <article className={`ruutin-card ruutin-reward-card${reward.isActive ? " is-active" : ""}`} key={reward.id}><div className="ruutin-profile-card-top"><span className="ruutin-avatar" aria-hidden="true">{reward.emoji}</span><div><h3>{reward.title}</h3><p>{reward.starCost} {reward.starCost === 1 ? "star" : "stars"} needed{reward.isActive ? " · active goal" : ""}</p></div></div>{pending ? <p className="ruutin-form-success" role="status">Waiting for parent review</p> : <button className="ruutin-button secondary" type="button" disabled={Boolean(busy)} onClick={() => void askFor(reward)}>{busy === reward.id ? "Sending…" : "Ask parent"} <span aria-hidden="true">↗</span></button>}</article>; })}</div>}</section>
+      <section className="ruutin-card ruutin-queue-card" aria-labelledby="companion-request-history-title"><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Your requests</p><h2 id="companion-request-history-title">A clear record</h2></div><span className="ruutin-count-pill">{history.length}</span></div>{history.length === 0 ? <p className="ruutin-empty-state">Requests you make will stay here with their outcome.</p> : <ul className="ruutin-simple-list">{history.map((request) => { const reward = rewards.rewards.find((item) => item.id === request.rewardId); return <li key={request.id}><span className="ruutin-avatar small" aria-hidden="true">{reward?.emoji ?? "✦"}</span><span><strong>{reward?.title ?? "Reward idea"}</strong><small>{dateLabel(request.resolvedAt ?? request.requestedAt)}</small></span><span className={`ruutin-state-note ${request.status === "approved" ? "good" : ""}`}>{statusLabel(request.status)}</span></li>; })}</ul>}</section>
+      {notice && <p className="ruutin-form-success ruutin-live-feedback" role="status" aria-live="polite">{notice}</p>}{error && <p className="ruutin-form-error" role="alert" aria-live="polite">{error}</p>}
+    </div>
+  );
+}
