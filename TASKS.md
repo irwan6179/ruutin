@@ -136,35 +136,35 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 
 ## G03 — Parent shell, onboarding foundation, and profiles
 
-- [ ] **BR-030 — Build parent shell and four-destination navigation**  
+- [x] **BR-030 — Build parent shell and four-destination navigation**
   Depends: BR-025. Deliver: Today, Family, Rewards, Settings routes and safe-area bottom navigation.  
   Accept: routes require parent context; active/focus states work from 360 px to desktop.
 
-- [ ] **BR-031 — Implement household creation and one-household MVP rule**  
+- [x] **BR-031 — Implement household creation and one-household MVP rule**
   Depends: BR-010, BR-030. Deliver: name/timezone setup and membership transaction.  
   Accept: UI supports one household per parent while schema remains future-compatible.
 
-- [ ] **BR-032 — Finalize age/eligibility launch policy**  
+- [x] **BR-032 — Finalize age/eligibility launch policy**
   Depends: BR-000. Deliver: approved age bands, consent threshold/copy, and policy evidence.  
   Accept: server has a testable mapping from parent confirmation/age band to companion eligibility; no exact birth date is collected.
 
-- [ ] **BR-033 — Implement minimized profile CRUD**  
+- [x] **BR-033 — Implement minimized profile CRUD**
   Depends: BR-012, BR-031, BR-032. Deliver: nickname, emoji, optional age band, eligibility, archive flow.  
   Accept: prohibited fields are absent; multiple profiles work; all operations are household-scoped.
 
-- [ ] **BR-034 — Build the onboarding shell and state model**  
+- [-] **BR-034 — Build the onboarding shell and state model**
   Depends: BR-033. Deliver: step routing/state for household → profile → tasks → review → rewards → optional eligible pairing.  
   Accept: progress, back, resume, skip-optional, and completion behavior are defined; later feature steps have typed integration boundaries without fake persistence.
 
-- [ ] **BR-035 — Build parent Today overview**  
+- [x] **BR-035 — Build parent Today overview**
   Depends: BR-030, BR-033. Deliver: profile cards, task progress, pending queues, balances, reward progress.  
   Accept: data is household-scoped with useful empty/loading/error states.
 
-- [ ] **BR-036 — Build Family profile management UI**  
+- [x] **BR-036 — Build Family profile management UI**
   Depends: BR-033. Deliver: profile list/detail and task/device/pairing entry points.  
   Accept: archived profiles and ineligible pairing states are clear.
 
-- [ ] **BR-037 — Test onboarding/profile privacy and authorization**  
+- [-] **BR-037 — Test onboarding/profile privacy and authorization**
   Depends: BR-030–BR-036. Deliver: integration, E2E, accessibility tests.  
   Accept: AC-07 passes; age/eligibility mapping has unit tests; prohibited data is neither requested nor returned. Pairing-route enforcement of AC-09 is completed in BR-058.
 
@@ -486,6 +486,10 @@ Implementation rules:
 - Scope protected queries from the resolved session, never browser-provided IDs.
 - Never log or persist raw TACs, pairing codes, or session tokens.
 - Add D1 constraints and transaction/idempotency tests when required.
+- Implement a joyful, playful visual experience with purposeful, brief
+  micro-animations that make interactions fun and pleasurable. Keep the parent
+  UI calm and trustworthy, avoid game-like overstimulation, prefer
+  transform/opacity, and fully honor `prefers-reduced-motion`.
 - Do not add prohibited scope from docs/DEVELOPMENT.md.
 - Do not publicly deploy.
 

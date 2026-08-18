@@ -8,7 +8,7 @@ Companion tracker: [`../TASKS.md`](../TASKS.md)
 
 Ruutin is a public, mobile-first family routine and reward tracker. Its name is a wordplay on the Bahasa Malaysia word “rutin.” A parent manages the household, profiles, tasks, approvals, stars, rewards, and linked devices. An eligible family member may use a profile-scoped companion device to claim tasks and request rewards.
 
-The product is marketed to parents and caregivers. It must not target children under 13 or below the applicable local age of digital consent. The MVP minimizes child data and gives parents control over consequential actions.
+The product is marketed to parents and caregivers. It must not target children under 13 or below the applicable local age of digital consent. The MVP minimizes child data and gives parents control over consequential actions. Companion access is eligible only when the profile is not marked `under_13` and the parent explicitly confirms that the intended user meets the minimum digital-consent age where they live. An omitted age band never bypasses that confirmation, and no exact birth date is collected.
 
 This document is the implementation contract. The source brief remains the product authority; this document translates it into technical decisions, invariants, and verification requirements. Work is tracked in `TASKS.md` by stable task ID.
 
@@ -480,7 +480,7 @@ Work in goal-sized batches listed in `TASKS.md`:
 | --- | --- | --- | --- | --- |
 | Sites-generated project/framework and supported server APIs | Engineering | Resolved | Implementation | Scaffold and saved-version smoke test |
 | Resend transactional email credentials, verified sender, and secure Sites server-side reachability | Engineering | Reachability resolved; production credential/sender pending | Parent auth | `docs/evidence/BR-002-email.md` |
-| Applicable age-of-digital-consent policy and age-band copy | Product/legal | Pending before pairing release | Pairing | Written policy and UI/server tests |
+| Applicable age-of-digital-consent policy and age-band copy | Product/legal | Resolved for MVP: never under 13; require parent local-threshold confirmation | Pairing | Server mapping, UI copy, and tests |
 | Service-worker support on saved/published Sites origin | Engineering | Resolved | Optional caching | `docs/evidence/BR-004-service-worker.md` |
 | Timezone defaults and household naming copy | Product | Pending before onboarding release | Onboarding | Approved copy/defaults |
 | Retention/deletion semantics and statutory wording | Product/legal | Pending before public release | Public launch | Reviewed copy and deletion test |
