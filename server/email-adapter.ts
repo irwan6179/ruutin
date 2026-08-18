@@ -24,11 +24,9 @@ export type EmailFailureReason = "configuration" | "timeout" | "network" | "prov
 export type SendEmailOptions = Readonly<{
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
-  userAgent?: string;
 }>;
 
 export const DEFAULT_EMAIL_TIMEOUT_MS = 8_000;
-export const DEFAULT_EMAIL_USER_AGENT = "bintang-rumah-email-adapter/0.1";
 
 const EMAIL_ADDRESS_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -136,7 +134,6 @@ export async function sendEmail(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
-  const userAgent = options.userAgent ?? DEFAULT_EMAIL_USER_AGENT;
 
   try {
     const response = await fetchImpl(config.EMAIL_API_URL, {
@@ -145,7 +142,6 @@ export async function sendEmail(
         Accept: "application/json",
         Authorization: `Bearer ${config.EMAIL_API_KEY}`,
         "Content-Type": "application/json",
-        "User-Agent": userAgent,
       },
       // Resend accepts `to` as either a string or an array. Keep the array
       // form so this adapter can grow to multiple recipients without changing

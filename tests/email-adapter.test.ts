@@ -34,7 +34,7 @@ test("builds the Resend-compatible POST without exposing response data", async (
       subject: "Reachability",
       text: "A temporary probe.",
     },
-    { fetchImpl, timeoutMs: 100, userAgent: "test-user-agent/1.0" },
+    { fetchImpl, timeoutMs: 100 },
   );
 
   assert.ok(request);
@@ -46,7 +46,6 @@ test("builds the Resend-compatible POST without exposing response data", async (
   const headers = new Headers(request.init.headers);
   assert.equal(headers.get("authorization"), "Bearer re_test_key");
   assert.equal(headers.get("content-type"), "application/json");
-  assert.equal(headers.get("user-agent"), "test-user-agent/1.0");
   assert.deepEqual(JSON.parse(String(request.init.body)), {
     from: config.EMAIL_FROM,
     to: ["probe@example.test"],

@@ -9,8 +9,9 @@ Sites-runtime verification are still pending. BR-002 remains unchecked in
 - `server/email-adapter.ts` is a server-only Web Platform adapter for the
   Resend HTTPS API contract. It reads only `EMAIL_API_URL`, `EMAIL_API_KEY`,
   and `EMAIL_FROM`, sends a `POST` with `Authorization: Bearer ...`, JSON
-  `from`/`to`/`subject`/`text`, and a stable `User-Agent`, and uses an
-  `AbortController` timeout. It does not import a Node SDK or log credentials,
+  `from`/`to`/`subject`/`text`, and an `AbortController` timeout. The Sites
+  runtime supplies its outbound `User-Agent`; application code does not try to
+  override that runtime-controlled header. It does not import a Node SDK or log credentials,
   message content, recipient addresses, provider response bodies, or error
   causes.
 - `server/email-probe.ts` contains framework-free guards for the temporary
@@ -46,7 +47,7 @@ npm run build
 Expected results are a clean typecheck, six passing adapter/probe unit tests,
 clean lint, and a successful Sites/Cloudflare Worker build with the temporary
 route included. The local tests assert the POST method, Bearer header, JSON
-shape, User-Agent, HTTPS-only configuration, timeout mapping, sanitized errors,
+shape, HTTPS-only configuration, timeout mapping, sanitized errors,
 fail-closed probe variables, and exact Bearer-secret guard.
 
 ## Exact hosted verification still required
