@@ -246,39 +246,39 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 
 ## G06 — Claims, approvals, and point ledger
 
-- [ ] **BR-060 — Implement append-only ledger and balance query**  
+- [x] **BR-060 — Implement append-only ledger and balance query**
   Depends: BR-013, BR-015, BR-017. Deliver: typed insertion, unique source, profile balance sum, progress helpers.  
   Accept: normal corrections never rewrite history; duplicate source cannot change balance twice.
 
-- [ ] **BR-061 — Implement companion completion claims**  
+- [x] **BR-061 — Implement companion completion claims**
   Depends: BR-045, BR-055. Deliver: assigned-profile pending claim for a due occurrence.  
   Accept: only due/eligible tasks can be claimed; duplicate active claims fail; browser profile IDs do not broaden scope.
 
-- [ ] **BR-062 — Build companion confirmation and task states**  
+- [x] **BR-062 — Build companion confirmation and task states**
   Depends: BR-061. Deliver: review explanation/dialog and To do/Waiting/Completed UI.  
   Accept: successful mutations refetch authoritative state; duplicate taps are safe.
 
-- [ ] **BR-063 — Implement parent pending-claim queue**  
+- [x] **BR-063 — Implement parent pending-claim queue**
   Depends: BR-035, BR-061. Deliver: nickname/emoji/task/stars/time with approve/reject.  
   Accept: queue is household-scoped and stale/resolved items are safe.
 
-- [ ] **BR-064 — Implement transactional claim decisions**  
+- [x] **BR-064 — Implement transactional claim decisions**
   Depends: BR-060, BR-063. Deliver: pending transition plus one `task_approved` ledger row; rejection without stars.  
   Accept: repeated/concurrent approval never awards twice; balance is ledger-derived; valid rejected occurrences may be reclaimed.
 
-- [ ] **BR-065 — Implement parent direct completion**  
+- [x] **BR-065 — Implement parent direct completion**
   Depends: BR-060, BR-045. Deliver: idempotent `parent_completed_task` event and UI action.  
   Accept: it cannot double-award against an approved companion claim for the occurrence.
 
-- [ ] **BR-066 — Implement reversal/manual adjustment controls**  
+- [x] **BR-066 — Implement reversal/manual adjustment controls**
   Depends: BR-060, BR-065. Deliver: compensating `task_reversed` and reasoned `manual_adjustment` flows.  
   Accept: original history remains; actor/reason/source/local date are recorded.
 
-- [ ] **BR-067 — Integrate balances/progress in both interfaces**  
+- [x] **BR-067 — Integrate balances/progress in both interfaces**
   Depends: BR-060, BR-062, BR-064. Deliver: stars and task progress.  
   Accept: reload yields the same ledger-derived balance and profile isolation holds.
 
-- [ ] **BR-068 — Test claims and ledger idempotency**  
+- [x] **BR-068 — Test claims and ledger idempotency**
   Depends: BR-060–BR-067. Deliver: transaction/concurrency/authorization/E2E tests.  
   Accept: AC-15–AC-19 pass with exactly-one ledger evidence.
 
@@ -446,11 +446,11 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 - [x] **AC-12** Linked device sees only its assigned profile.
 - [x] **AC-13** Companion cannot read sibling information.
 - [x] **AC-14** Companion cannot call parent-only routes.
-- [ ] **AC-15** Companion can submit a completion claim.
-- [ ] **AC-16** Duplicate claims do not create duplicate stars.
-- [ ] **AC-17** Parent approval creates exactly one ledger entry.
-- [ ] **AC-18** Repeated approval does not create more stars.
-- [ ] **AC-19** Rejection creates no stars.
+- [x] **AC-15** Companion can submit a completion claim.
+- [x] **AC-16** Duplicate claims do not create duplicate stars.
+- [x] **AC-17** Parent approval creates exactly one ledger entry.
+- [x] **AC-18** Repeated approval does not create more stars.
+- [x] **AC-19** Rejection creates no stars.
 - [ ] **AC-20** Redemption cannot produce a negative balance.
 - [ ] **AC-21** Repeated reward approval cannot deduct twice.
 - [x] **AC-22** Revoking a device removes access.

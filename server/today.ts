@@ -2,7 +2,7 @@ import type { D1DatabaseLike, ParentContext } from "./auth-context";
 import { localDateFor } from "./validation";
 import { getParentHousehold } from "./households";
 import { listProfilesForParent, type ParentProfile } from "./profiles";
-import { listTaskOccurrencesForParent } from "./tasks";
+import { listTaskOccurrencesForParent, type TaskOccurrence } from "./tasks";
 
 export type TodayProfileCard = ParentProfile & {
   taskCount: number;
@@ -10,6 +10,7 @@ export type TodayProfileCard = ParentProfile & {
   pendingClaimCount: number;
   balance: number;
   activeReward: { id: string; title: string; emoji: string; starCost: number } | null;
+  tasks: TaskOccurrence[];
 };
 
 export type TodayOverview = {
@@ -24,6 +25,7 @@ export type TodayOverview = {
     taskTitle: string;
     stars: number;
     submittedAt: string;
+    dueDate: string;
   }>;
 };
 
@@ -77,12 +79,14 @@ export async function getTodayOverview(
       pendingClaimCount,
       balance,
       activeReward: activeReward ?? null,
+      tasks: taskView.occurrences,
     });
   }
   const pending = await db
     .prepare(
       `SELECT c.id, c.child_profile_id AS profileId, p.nickname, p.emoji,
-              t.title AS taskTitle, t.stars, c.submitted_at AS submittedAt
+              t.title AS taskTitle, t.stars, c.submitted_at AS submittedAt,
+              c.due_date AS dueDate
        FROM task_claims AS c
        INNER JOIN child_profiles AS p
          ON p.household_id = c.household_id AND p.id = c.child_profile_id

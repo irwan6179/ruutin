@@ -244,7 +244,13 @@ body {
 .companion-install-note { display: grid; gap: 5px; border-color: #decfed; background: #fbf8fd; }
 .companion-install-note strong { color: var(--br-deep-purple); font-size: 13px; }
 .companion-install-note p { margin: 0; color: var(--br-muted); font-size: 12px; }
+.companion-today-balance { display: flex; min-width: 0; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-color: #decfed; background: linear-gradient(135deg, #f7f0fc, #fff); }
+.companion-today-balance > div { display: grid; gap: 3px; }
+.companion-today-balance strong { color: var(--br-deep-purple); font-size: 25px; letter-spacing: -.05em; }
+.companion-today-balance p { min-width: 0; max-width: 210px; margin: 0 0 0 auto; color: var(--br-muted); font-size: 11px; line-height: 1.45; overflow-wrap: anywhere; text-align: right; }
 .companion-task-list { display: grid; gap: 11px; }
+.companion-action-card { gap: 12px; }
+.companion-action-card > .ruutin-button { justify-self: start; min-height: 42px; }
 .companion-balance-card { display: grid; gap: 7px; background: linear-gradient(135deg, #f5edfc, #fff); }
 .companion-balance-card strong { color: var(--br-deep-purple); font-size: 34px; letter-spacing: -.06em; }
 .companion-balance-card p { margin: 0; color: var(--br-muted); font-size: 12px; }
@@ -260,6 +266,28 @@ body {
 .ruutin-pairing-code { display: block; color: var(--br-deep-purple); font-size: clamp(32px, 8vw, 46px); letter-spacing: .12em; line-height: 1; }
 .ruutin-pairing-challenge > input, .ruutin-device-actions input { width: 100%; min-width: 0; min-height: 43px; padding: 9px 11px; border: 1px solid #dfd4e8; border-radius: 11px; color: var(--br-ink); background: #fff; font: inherit; font-size: 12px; }
 .ruutin-pairing-challenge > label { color: #4f4560; font-size: 11px; font-weight: 700; }
+.ruutin-today-task-list { display: grid; gap: 7px; margin-top: 12px; padding-top: 11px; border-top: 1px solid #eee6f3; }
+.ruutin-today-task { display: flex; min-width: 0; align-items: center; flex-wrap: wrap; gap: 7px; padding: 7px 0; }
+.ruutin-today-task-copy { display: grid; min-width: 0; flex: 1 1 110px; gap: 2px; }
+.ruutin-today-task-copy strong { overflow: hidden; color: var(--br-ink); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.ruutin-today-task-copy small { color: #968aa1; font-size: 10px; }
+.ruutin-avatar.tiny { width: 27px; height: 27px; flex: 0 0 27px; font-size: 13px; }
+.ruutin-today-task .ruutin-task-state { margin-left: auto; }
+.ruutin-button.compact, .ruutin-text-button.compact { min-height: 34px; padding: 7px 9px; font-size: 10px; }
+.ruutin-claim-row { align-items: flex-start !important; flex-wrap: wrap; }
+.ruutin-claim-row > span:nth-child(2) { min-width: 0; flex: 1 1 150px; }
+.ruutin-claim-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-left: auto; }
+.ruutin-adjust-details { margin-top: 8px; border-top: 1px solid #eee6f3; padding-top: 10px; }
+.ruutin-adjust-details summary { color: var(--br-purple); cursor: pointer; font-size: 11px; font-weight: 700; }
+.ruutin-adjust-form { display: grid; gap: 7px; margin-top: 10px; }
+.ruutin-adjust-form label { color: #4f4560; font-size: 11px; font-weight: 700; }
+.ruutin-adjust-form input, .ruutin-inline-dialog input { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #dfd4e8; border-radius: 10px; color: var(--br-ink); background: #fff; font: inherit; font-size: 12px; }
+.ruutin-inline-dialog { display: grid; gap: 10px; max-width: 520px; padding: 18px; border: 1px solid #ddcbe9; border-radius: 18px; background: #fffaff; box-shadow: 0 12px 32px rgb(84 56 129 / .12); animation: ruutin-card-in 180ms ease-out both; }
+.ruutin-inline-dialog h2 { margin: 0; color: var(--br-plum); font-size: 20px; letter-spacing: -.045em; }
+.ruutin-inline-dialog p:not(.ruutin-eyebrow) { margin: 0; color: var(--br-muted); font-size: 12px; line-height: 1.55; }
+.ruutin-inline-dialog { outline: none; }
+.ruutin-live-feedback { animation: ruutin-feedback-pop 220ms ease-out both; }
+@keyframes ruutin-feedback-pop { from { opacity: .4; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 .ruutin-device-row { align-items: flex-start !important; }
 .ruutin-device-summary { display: grid; min-width: 0; flex: 1; gap: 3px; }
 .ruutin-device-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 7px; margin-left: auto; }

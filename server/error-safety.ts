@@ -3,6 +3,7 @@ import { CsrfError, OriginError, jsonResponse } from "./http-security";
 import { RateLimitError } from "./rate-limit";
 import { ScopeError } from "./scoped-data";
 import { PairingAtomicityError, PairingVerificationError } from "./pairing";
+import { ClaimConflictError, ClaimStateError, LedgerAtomicityError } from "./claims";
 import { TacVerificationError } from "./tac";
 import { ValidationError } from "./validation";
 
@@ -42,6 +43,15 @@ export function toPublicError(error: unknown): PublicError {
   }
   if (error instanceof PairingAtomicityError) {
     return { status: 503, code: "server_error", message: "Pairing is temporarily unavailable" };
+  }
+  if (error instanceof ClaimConflictError || error instanceof ClaimStateError) {
+    // Claim messages can be triggered by stale, foreign, or already-resolved
+    // identifiers. Keep all of those outcomes non-enumerating at the route
+    // boundary; service callers may still use the typed error internally.
+    return { status: 409, code: "invalid_request", message: "This routine action could not be completed" };
+  }
+  if (error instanceof LedgerAtomicityError) {
+    return { status: 503, code: "server_error", message: "Stars are temporarily unavailable" };
   }
   if (error instanceof ValidationError) {
     return { status: 400, code: "invalid_request", message: "Request is invalid" };

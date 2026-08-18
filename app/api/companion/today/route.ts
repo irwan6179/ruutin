@@ -1,6 +1,7 @@
 import { requireCompanionContext } from "../../../../server/auth-context";
 import { publicErrorResponse } from "../../../../server/error-safety";
 import { getCompanionToday } from "../../../../server/companion";
+import { handleCompanionClaim } from "../../../../server/claim-routes";
 import { jsonResponse } from "../../../../server/http-security";
 import { companionRouteDependencies } from "../_dependencies";
 
@@ -20,4 +21,8 @@ export async function GET(request: Request): Promise<Response> {
   } catch (error) {
     return publicErrorResponse(error);
   }
+}
+
+export async function POST(request: Request): Promise<Response> {
+  return handleCompanionClaim(request, companionRouteDependencies());
 }
