@@ -1,13 +1,18 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
-import { AGE_BAND_OPTIONS, COMPANION_CONSENT_COPY, type HouseholdRecord, type OnboardingState, type ParentProfile } from "../profile-contracts";
+import { useState, useSyncExternalStore, type FormEvent } from "react";
+import { AGE_BAND_OPTIONS, COMPANION_CONSENT_COPY, type HouseholdRecord, type OnboardingState, type ParentDevice, type ParentProfile } from "../profile-contracts";
 import { TaskManager } from "../family/TaskManager";
+import { PairingManager } from "../family/PairingManager";
+import { RewardsManager, type Reward, type RewardRequest } from "../rewards/RewardsManager";
 
 type Props = {
   initialState: OnboardingState;
   initialHousehold: HouseholdRecord | null;
   initialProfiles: ParentProfile[];
+  initialRewards: Reward[];
+  initialRewardRequests: RewardRequest[];
+  initialDevices: ParentDevice[];
 };
 
 const steps = [
@@ -38,7 +43,11 @@ async function postJson(path: string, body: unknown): Promise<unknown> {
   return response.json();
 }
 
-export function OnboardingFlow({ initialState, initialHousehold, initialProfiles }: Props) {
+const subscribeToTimezone = () => () => {};
+const getBrowserTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+const getServerTimezone = () => "UTC";
+
+export function OnboardingFlow({ initialState, initialHousehold, initialProfiles, initialRewards, initialRewardRequests, initialDevices }: Props) {
   const [state, setState] = useState(initialState);
   const [household, setHousehold] = useState(initialHousehold);
   const [profiles, setProfiles] = useState(initialProfiles);
@@ -51,15 +60,17 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [taskCount, setTaskCount] = useState(initialState.completedSteps.includes("tasks") ? 1 : 0);
+  const [rewardReady, setRewardReady] = useState(() => Boolean(initialProfiles.find((profile) => !profile.archivedAt)?.activeRewardId));
 
   const currentIndex = steps.findIndex(([value]) => value === state.activeStep);
   const progress = Math.round(((currentIndex + 1) / steps.length) * 100);
-  const selectedProfile = profiles[0];
+  const selectedProfile = profiles.find((profile) => !profile.archivedAt) ?? profiles[0];
   const canPair = profiles.some((profile) => profile.companionAccessEligible === 1 && profile.archivedAt === null);
-  const detectedTimezone = useMemo(() => {
-    if (typeof Intl === "undefined") return "UTC";
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  }, []);
+  const eligibleProfiles = profiles.filter((profile) => profile.companionAccessEligible === 1 && profile.archivedAt === null);
+  // Keep the server render and first browser render deterministic. The
+  // browser's timezone is only a convenience suggestion; the server validates
+  // the selected value on save.
+  const detectedTimezone = useSyncExternalStore(subscribeToTimezone, getBrowserTimezone, getServerTimezone);
 
   function goTo(value: OnboardingState["activeStep"]) {
     const index = steps.findIndex(([step]) => step === value);
@@ -104,7 +115,14 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
       goTo("review");
     }
     else if (state.activeStep === "review") goTo("rewards");
-    else if (state.activeStep === "rewards") goTo("pairing");
+    else if (state.activeStep === "rewards") {
+      if (!rewardReady) {
+        setError("Choose one active reward before finishing this step.");
+        return;
+      }
+      if (canPair) goTo("pairing");
+      else window.location.assign("/app/today");
+    }
     else if (state.activeStep === "pairing") window.location.assign("/app/today");
   }
 
@@ -147,15 +165,44 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
             <button className="ruutin-button" type="button" disabled={taskCount < 1} onClick={continueBoundary}>Review routines <span aria-hidden="true">↗</span></button>
           </div>
         )}
-        {["review", "rewards", "pairing"].includes(state.activeStep) && (
+        {state.activeStep === "review" && (
           <div className="ruutin-boundary-step">
             <p className="ruutin-eyebrow">Step {currentIndex + 1}</p>
-            <h2>{steps[currentIndex]?.[1]}</h2>
-            {state.activeStep === "review" && <><p>Review will bring your routines together in one clear summary before anything starts.</p><div className="ruutin-boundary-note"><strong>{household?.name ?? "Your household"}</strong><span>{selectedProfile ? `${selectedProfile.emoji} ${selectedProfile.nickname} is ready for a routine plan.` : "Your profile is ready for a routine plan."}</span></div></>}
-            {state.activeStep === "rewards" && <><p>Pick a meaningful reward when the reward catalogue is ready. Ruutin keeps this parent-controlled and grounded in real family life.</p><div className="ruutin-boundary-note"><strong>Nothing is a purchase</strong><span>Stars are progress markers, not money or a shop balance.</span></div></>}
-            {state.activeStep === "pairing" && <><p>Pairing is optional and only appears for an eligible, active profile. The secure pairing flow will be added in the companion milestone.</p><div className="ruutin-boundary-note"><strong>{canPair ? "An eligible profile is ready" : "No pairing yet"}</strong><span>{canPair ? "You can return to Family when the companion flow is available." : "Under 13 or unconfirmed profiles stay parent-managed."}</span></div></>}
-            <button className="ruutin-button" type="button" onClick={continueBoundary}>{state.activeStep === "pairing" ? "Finish setup" : "Continue"} <span aria-hidden="true">↗</span></button>
-            {state.activeStep === "pairing" && <button className="ruutin-text-button" type="button" onClick={() => window.location.assign("/app/today")}>Skip for now</button>}
+            <h2>Review together</h2>
+            <p>Review will bring your routines together in one clear summary before anything starts.</p>
+            <div className="ruutin-boundary-note"><strong>{household?.name ?? "Your household"}</strong><span>{selectedProfile ? `${selectedProfile.emoji} ${selectedProfile.nickname} is ready for a routine plan.` : "Your profile is ready for a routine plan."}</span></div>
+            <button className="ruutin-button" type="button" onClick={continueBoundary}>Continue <span aria-hidden="true">↗</span></button>
+          </div>
+        )}
+        {state.activeStep === "rewards" && (
+          <div className="ruutin-onboarding-integrated-step">
+            <p className="ruutin-eyebrow">Step {currentIndex + 1}</p>
+            <h2>Something to look forward to</h2>
+            <p>Choose one small, meaningful reward for {selectedProfile?.nickname ?? "your first profile"}. It stays parent-managed — never a shop or a competition.</p>
+            <RewardsManager
+              initialProfiles={selectedProfile ? [selectedProfile] : []}
+              initialRewards={initialRewards}
+              initialRequests={initialRewardRequests}
+              onActiveRewardChange={(rewardId) => setRewardReady(Boolean(rewardId))}
+              embedded
+            />
+            <button className="ruutin-button" type="button" disabled={!rewardReady} onClick={continueBoundary}>Continue to pairing <span aria-hidden="true">↗</span></button>
+            {!rewardReady && <p className="ruutin-form-help">Add a reward, then make it the active goal to continue.</p>}
+          </div>
+        )}
+        {state.activeStep === "pairing" && (
+          <div className="ruutin-onboarding-integrated-step">
+            <p className="ruutin-eyebrow">Step {currentIndex + 1}</p>
+            <h2>Optional companion</h2>
+            {canPair ? <>
+              <p>Pair an eligible profile when it feels useful. Links expire in ten minutes and can be cancelled at any time.</p>
+              <PairingManager profiles={eligibleProfiles} initialDevices={initialDevices} timezone={initialHousehold?.timezone ?? "UTC"} />
+            </> : <>
+              <p>Companion access is not available for this household yet. Under 13 and unconfirmed profiles stay parent-managed.</p>
+              <div className="ruutin-boundary-note"><strong>All set</strong><span>You can start your routines without pairing a device.</span></div>
+            </>}
+            <button className="ruutin-button" type="button" onClick={continueBoundary}>Finish setup <span aria-hidden="true">↗</span></button>
+            {canPair && <button className="ruutin-text-button" type="button" onClick={() => window.location.assign("/app/today")}>Skip for now</button>}
           </div>
         )}
         {error && <p className="ruutin-form-error" role="alert">{error}</p>}

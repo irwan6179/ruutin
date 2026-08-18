@@ -154,9 +154,16 @@ test("G03 client contracts keep mutation semantics and accessibility safeguards 
   assert.match(family, /Under 13 profiles stay parent-managed/);
   assert.match(family, /role="alert"/);
   assert.doesNotMatch(family, /Origin:/);
+  const onboarding = readFileSync("app/app/onboarding/OnboardingFlow.tsx", "utf8");
+  assert.match(onboarding, /useSyncExternalStore/);
+  assert.match(onboarding, /Keep the server render and first browser render deterministic/);
+  assert.match(onboarding, /<RewardsManager/);
+  assert.match(onboarding, /onActiveRewardChange/);
+  assert.match(onboarding, /<PairingManager/);
+  assert.match(onboarding, /eligibleProfiles/);
   assert.doesNotMatch(today, /today&apos;s rhythm/);
   assert.match(signOut, /aria-live="assertive"/);
-  assert.doesNotMatch(readFileSync("app/app/onboarding/OnboardingFlow.tsx", "utf8"), /Progress is saved after each step/);
+  assert.doesNotMatch(onboarding, /Progress is saved after each step/);
   assert.match(styles, /prefers-reduced-motion/);
   assert.match(styles, /ruutin-card-in/);
 });

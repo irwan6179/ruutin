@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import type { ParentProfile } from "../profile-contracts";
 import { REWARD_TEMPLATES, type RewardTemplate } from "../../../shared/reward-templates";
 
-type Reward = {
+export type Reward = {
   id: string;
   householdId: string;
   profileId: string;
@@ -16,7 +16,7 @@ type Reward = {
   updatedAt: string;
 };
 
-type RewardRequest = {
+export type RewardRequest = {
   id: string;
   profileId: string;
   status: "pending" | "approved" | "rejected";
@@ -70,10 +70,14 @@ export function RewardsManager({
   initialProfiles,
   initialRewards,
   initialRequests,
+  onActiveRewardChange,
+  embedded = false,
 }: {
   initialProfiles: ParentProfile[];
   initialRewards: Reward[];
   initialRequests: RewardRequest[];
+  onActiveRewardChange?: (rewardId: string | null) => void;
+  embedded?: boolean;
 }) {
   const activeProfiles = initialProfiles.filter((profile) => !profile.archivedAt);
   const [profileId, setProfileId] = useState(activeProfiles[0]?.id ?? "");
@@ -156,7 +160,7 @@ export function RewardsManager({
   async function chooseActive(rewardId: string | null) {
     if (!selectedProfile || busy) return;
     setBusy(`active-${rewardId ?? "none"}`); setError(""); setNotice("");
-    try { await parentMutation("/api/parent/rewards/active", "POST", { profileId: selectedProfile.id, rewardId }); await refresh(); setActiveRewardIds((current) => ({ ...current, [selectedProfile.id]: rewardId })); setNotice(rewardId ? "Active goal updated." : "Active goal cleared."); }
+    try { await parentMutation("/api/parent/rewards/active", "POST", { profileId: selectedProfile.id, rewardId }); await refresh(); setActiveRewardIds((current) => ({ ...current, [selectedProfile.id]: rewardId })); onActiveRewardChange?.(rewardId); setNotice(rewardId ? "Active goal updated." : "Active goal cleared."); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Could not update the active goal."); }
     finally { setBusy(""); }
   }
@@ -181,7 +185,7 @@ export function RewardsManager({
 
   return (
     <div className="ruutin-page-stack">
-      <section className="ruutin-page-heading" aria-labelledby="rewards-title"><div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">Shared moments, gently chosen</p><h1 id="rewards-title">Rewards, your way.</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={Boolean(busy) || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div><p>Choose small, meaningful moments for each person. Ruutin keeps this parent-managed — it is not a shop or a competition.</p></section>
+      {!embedded && <section className="ruutin-page-heading" aria-labelledby="rewards-title"><div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">Shared moments, gently chosen</p><h1 id="rewards-title">Rewards, your way.</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={Boolean(busy) || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div><p>Choose small, meaningful moments for each person. Ruutin keeps this parent-managed — it is not a shop or a competition.</p></section>}
       <section className="ruutin-card ruutin-rewards-toolbar" aria-label="Reward profile selection"><label htmlFor="reward-profile">For</label><select id="reward-profile" value={selectedProfile.id} onChange={(event) => { setProfileId(event.target.value); setEditor(null); setError(""); void refresh(event.target.value); }}>{activeProfiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.emoji} {profile.nickname}</option>)}</select><span className="ruutin-state-note">{activeRewards.length} of 5 active ideas</span><button className="ruutin-button" type="button" onClick={startCreate} disabled={activeRewards.length >= 5}>Add reward <span aria-hidden="true">+</span></button></section>
       {editor && <form className="ruutin-card ruutin-form ruutin-reward-editor" onSubmit={(event) => void submitEditor(event)} aria-busy={busy === "editor"}><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">{editingId ? "Refine the idea" : "One small thing"}</p><h2>{editingId ? "Edit reward" : "Add a reward"}</h2></div><button className="ruutin-text-button" type="button" onClick={() => setEditor(null)} disabled={busy === "editor"}>Cancel</button></div>{!editingId && <div><label htmlFor="reward-template">Start from a gentle idea <span>(optional)</span></label><select id="reward-template" value={templateId} onChange={(event) => { const next = REWARD_TEMPLATES.find((template) => template.id === event.target.value); if (next) selectTemplate(next); }}><option value="">Write my own</option>{REWARD_TEMPLATES.map((template) => <option key={template.id} value={template.id}>{template.emoji} {template.title} · {template.starCost} stars</option>)}</select></div>}<div className="ruutin-reward-editor-grid"><div><label htmlFor="reward-emoji">Emoji</label><input id="reward-emoji" value={editor.emoji} onChange={(event) => setEditor({ ...editor, emoji: event.target.value })} maxLength={8} required /></div><div><label htmlFor="reward-title">Reward idea</label><input id="reward-title" value={editor.title} onChange={(event) => setEditor({ ...editor, title: event.target.value })} maxLength={120} required /></div></div><label htmlFor="reward-cost">Stars needed</label><input id="reward-cost" type="number" min={1} step={1} value={editor.starCost} onChange={(event) => setEditor({ ...editor, starCost: event.target.value })} required /><button className="ruutin-button" type="submit" disabled={busy === "editor"}>{busy === "editor" ? "Saving…" : editingId ? "Save changes" : "Add reward"} <span aria-hidden="true">↗</span></button></form>}
       <section aria-labelledby="active-rewards-title"><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Parent catalogue</p><h2 id="active-rewards-title">Ideas for {selectedProfile.nickname}</h2></div><span className="ruutin-count-pill">{activeRewards.length}</span></div>{activeRewards.length === 0 ? <p className="ruutin-empty-state">No reward ideas yet. Add one small, meaningful moment to begin.</p> : <div className="ruutin-reward-catalogue">{activeRewards.map((reward) => { const isActive = (activeRewardIds[selectedProfile.id] ?? null) === reward.id; return <article className={`ruutin-card ruutin-reward-card${isActive ? " is-active" : ""}`} key={reward.id}><div className="ruutin-profile-card-top"><span className="ruutin-avatar" aria-hidden="true">{reward.emoji}</span><div><h3>{reward.title}</h3><p>{reward.starCost} {reward.starCost === 1 ? "star" : "stars"} needed{isActive ? " · active goal" : ""}</p></div>{isActive && <span className="ruutin-state-note good">Current goal</span>}</div><div className="ruutin-family-actions"><button className={`ruutin-button ${isActive ? "secondary" : ""}`} type="button" onClick={() => void chooseActive(isActive ? null : reward.id)} disabled={Boolean(busy)}>{busy === `active-${reward.id}` ? "Saving…" : isActive ? "Clear goal" : "Make active goal"}</button><button className="ruutin-button secondary" type="button" onClick={() => startEdit(reward)} disabled={Boolean(busy)}>Edit</button><button className="ruutin-text-button danger" type="button" onClick={() => void archive(reward)} disabled={Boolean(busy)}>{busy === `archive-${reward.id}` ? "Archiving…" : "Archive"}</button></div></article>; })}</div>}</section>

@@ -116,7 +116,7 @@ body {
 .ruutin-button.secondary:hover { background: #f6f0fb; }
 .ruutin-text-button { min-height: 40px; padding: 6px 0; border: 0; color: var(--br-purple); background: none; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; }
 .ruutin-text-button:disabled { opacity: .45; }
-.ruutin-text-button.danger { color: #a26772; }
+.ruutin-text-button.danger { color: #8b4657; }
 .ruutin-family-card { display: grid; gap: 19px; }
 .ruutin-family-card.is-archived { opacity: .7; }
 .ruutin-profile-edit fieldset { display: grid; gap: 10px; margin: 0; padding: 15px; border: 1px solid #e8ddf0; border-radius: 15px; }
@@ -131,7 +131,7 @@ body {
 .ruutin-form label span { color: #a095aa; font-weight: 500; }
 .ruutin-form input:not([type="checkbox"]), .ruutin-form select { width: 100%; min-height: 47px; padding: 11px 13px; border: 1px solid #dfd4e8; border-radius: 12px; outline: 0; color: var(--br-ink); background: #fff; font: inherit; font-size: 14px; }
 .ruutin-form input:focus, .ruutin-form select:focus { border-color: #a982cf; box-shadow: 0 0 0 3px rgb(169 130 207 / .15); }
-.ruutin-form-help { margin: -3px 0 4px; color: #92869d; font-size: 11px; line-height: 1.5; }
+.ruutin-form-help { margin: -3px 0 4px; color: var(--br-muted); font-size: 11px; line-height: 1.5; }
 .ruutin-checkbox { display: flex; align-items: flex-start; gap: 9px; margin-top: 4px; font-weight: 560 !important; line-height: 1.45; }
 .ruutin-checkbox input { width: 17px; height: 17px; flex: 0 0 17px; margin: 1px 0 0; accent-color: var(--br-purple); }
 .ruutin-form-error { margin: 0; color: #a44f62; font-size: 12px; }
@@ -232,7 +232,7 @@ body {
 .ruutin-boundary-note strong { color: var(--br-deep-purple); }
 .ruutin-onboarding-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #9b8fa6; font-size: 11px; }
 .ruutin-bottom-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: 30; display: grid; grid-template-columns: repeat(4, 1fr); min-height: 70px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid rgb(224 214 235 / .95); background: rgb(255 253 255 / .96); box-shadow: 0 -10px 28px rgb(82 57 116 / .08); backdrop-filter: blur(14px); }
-.ruutin-bottom-nav-link { display: grid; min-width: 0; min-height: 51px; place-content: center; justify-items: center; gap: 4px; border-radius: 13px; color: #978ba4; font-size: 10px; font-weight: 650; }
+.ruutin-bottom-nav-link { display: grid; min-width: 0; min-height: 51px; place-content: center; justify-items: center; gap: 4px; border-radius: 13px; color: var(--br-muted); font-size: 10px; font-weight: 650; }
 .ruutin-bottom-nav-link.is-active { color: var(--br-deep-purple); background: #f1e9fa; }
 .ruutin-bottom-nav-icon { font-size: 19px; line-height: 1; }
 .ruutin-button:active { transform: translateY(1px) scale(.985); }

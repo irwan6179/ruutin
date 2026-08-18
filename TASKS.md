@@ -384,41 +384,41 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
   Depends: BR-090–BR-097. Deliver: Sites-origin PWA/UI report.  
   Accept: AC-26–AC-27 pass and behavior matches the Sites runtime decision.
 
-- [ ] **BR-099 — Complete and time the end-to-end onboarding flow**  
+- [x] **BR-099 — Complete and time the end-to-end onboarding flow**
   Depends: BR-034, BR-046, BR-052, BR-072, BR-094. Deliver: fully integrated household → profile → template tasks → schedule/stars review → rewards → optional eligible pairing flow.  
   Accept: a representative new parent completes first setup in under three minutes; ineligible profiles never see or reach pairing; partial/resumed state remains correct.
 
 ## G10 — Security, acceptance, and saved Sites version
 
-- [ ] **BR-100 — Run cross-household authorization matrix**  
+- [x] **BR-100 — Run cross-household authorization matrix**
   Depends: all feature routes. Deliver: every parent read/mutation with foreign household/profile/task/claim/reward/device IDs.  
   Accept: AC-23 passes; denials disclose no foreign record details.
 
-- [ ] **BR-101 — Run companion isolation/role matrix**  
+- [x] **BR-101 — Run companion isolation/role matrix**
   Depends: all companion routes. Deliver: sibling injection, parent-route, revoked/expired-device, parent-email tests.  
   Accept: companion capability never exceeds assigned profile.
 
-- [ ] **BR-102 — Run auth/pairing abuse and secret audit**  
+- [x] **BR-102 — Run auth/pairing abuse and secret audit**
   Depends: BR-027, BR-058. Deliver: enumeration, expiry, attempts, reuse, rate-limit, log, client-bundle, cookie/header tests.  
   Accept: AC-29 passes; no plaintext challenge/token or secret is persisted/exposed.
 
-- [ ] **BR-103 — Run ledger/reward concurrency audit**  
+- [x] **BR-103 — Run ledger/reward concurrency audit**
   Depends: BR-068, BR-077. Deliver: repeated/parallel approval, reversal, redemption tests.  
   Accept: exactly-once sources hold and redemption cannot create negative balance.
 
-- [ ] **BR-104 — Review D1 migrations/deletion semantics**  
+- [x] **BR-104 — Review D1 migrations/deletion semantics**
   Depends: BR-010–BR-014, BR-084. Deliver: schema dump, indexes, foreign keys, forward migration, deletion report.  
   Accept: Sites migration sequence is repeatable and auth/token data is not exported/orphaned.
 
-- [ ] **BR-105 — Execute all 30 source acceptance cases**  
+- [x] **BR-105 — Execute all 30 source acceptance cases**
   Depends: BR-100–BR-104. Deliver: `docs/evidence/BR-105-acceptance.md` with AC-01…AC-30 results.  
   Accept: every case passes or is explicitly blocked; no release blocker is silently waived.
 
-- [ ] **BR-106 — Confirm prohibited-scope audit**  
+- [x] **BR-106 — Confirm prohibited-scope audit**
   Depends: feature complete. Deliver: dependency/code/UI review for non-Sites hosting, R2/uploads, ChatGPT sign-in, passwords, analytics, payments, AI, push, WebSockets, background queues, prohibited reward mechanics.  
   Accept: AC-30 passes and prohibited features/data/configuration are absent.
 
-- [ ] **BR-107 — Run full clean quality suite**  
+- [x] **BR-107 — Run full clean quality suite**
   Depends: BR-105, BR-106. Deliver: format, lint, typecheck, unit/integration/E2E, build, migration, secret, accessibility, responsive checks.  
   Accept: outputs are recorded; failures/flakes are not ignored.
 
@@ -454,14 +454,14 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
 - [x] **AC-20** Redemption cannot produce a negative balance.
 - [x] **AC-21** Repeated reward approval cannot deduct twice.
 - [x] **AC-22** Revoking a device removes access.
-- [ ] **AC-23** Cross-household identifiers expose no data.
+- [x] **AC-23** Cross-household identifiers expose no data.
 - [x] **AC-24** Reload preserves sessions correctly.
 - [x] **AC-25** Foreground return refreshes current data.
 - [ ] **AC-26** Manifest and icons exist on Sites origin.
 - [x] **AC-27** App works at 360 px without horizontal overflow.
 - [x] **AC-28** No private API response is in service-worker cache.
-- [ ] **AC-29** No application secret appears in browser code.
-- [ ] **AC-30** No R2 storage or upload feature exists.
+- [x] **AC-29** No application secret appears in browser code.
+- [x] **AC-30** No R2 storage or upload feature exists.
 
 ## Luna coding delegation prompt
 
