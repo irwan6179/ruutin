@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ruutin.irwan.cc"),
   title: "Ruutin | Calm routines for busy families",
   description:
     "A parent-first routine and reward space that helps families make everyday progress feel lighter.",
@@ -25,6 +26,27 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.webmanifest",
+  openGraph: {
+    title: "Ruutin | Calm routines for busy families",
+    description:
+      "A parent-first routine and reward space that helps families make everyday progress feel lighter.",
+    type: "website",
+    images: [
+      {
+        url: "/ruutin-social-card.png",
+        width: 1728,
+        height: 910,
+        alt: "Ruutin — gentle family routines and shared progress",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ruutin | Calm routines for busy families",
+    description:
+      "A parent-first routine and reward space that helps families make everyday progress feel lighter.",
+    images: ["/ruutin-social-card.png"],
+  },
 };
 
 export const viewport: Viewport = {

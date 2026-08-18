@@ -27,6 +27,7 @@ test("Ruutin manifest and required icon sizes are valid", () => {
   assert.deepEqual(pngSize("public/icon-512.png"), [512, 512]);
   assert.deepEqual(pngSize("public/icon-512-maskable.png"), [512, 512]);
   assert.deepEqual(pngSize("public/apple-touch-icon.png"), [180, 180]);
+  assert.deepEqual(pngSize("public/ruutin-social-card.png"), [1728, 910]);
   assert.ok(manifest.icons.some((icon) => icon.purpose === "maskable" && icon.sizes === "512x512"));
 });
 
@@ -36,6 +37,8 @@ test("layout emits install metadata and companion guidance is standalone-aware",
   assert.match(layout, /manifest: "\/manifest\.webmanifest"/);
   assert.match(layout, /viewportFit: "cover"/);
   assert.match(layout, /apple: "\/apple-touch-icon\.png"/);
+  assert.match(layout, /url: "\/ruutin-social-card\.png"/);
+  assert.match(layout, /metadataBase: new URL\("https:\/\/ruutin\.irwan\.cc"\)/);
   assert.match(guidance, /Save Ruutin to this device's home screen for easier access\./);
   assert.match(guidance, /display-mode: standalone/);
   assert.match(guidance, /Add to Home Screen/);
