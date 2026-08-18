@@ -422,7 +422,7 @@ Tracker state: G02 code complete; live Sites email validation pending; G03 imple
   Depends: BR-105, BR-106. Deliver: format, lint, typecheck, unit/integration/E2E, build, migration, secret, accessibility, responsive checks.  
   Accept: outputs are recorded; failures/flakes are not ignored.
 
-- [ ] **BR-108 — Create a reviewable saved Sites version**  
+- [x] **BR-108 — Create a reviewable saved Sites version**
   Depends: BR-107. Deliver: saved Sites version and revision ID, change summary, known limitations, rollback notes.  
   Accept: reviewers can open it without public deployment; secrets/test identities are not disclosed.
 
