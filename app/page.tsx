@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { AuthFlow } from "./auth/AuthFlow";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Ruutin | Calm routines for busy families",
   description:
