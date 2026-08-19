@@ -8,24 +8,6 @@ export const metadata: Metadata = {
     "A parent-first routine and reward space that helps families make everyday progress feel lighter.",
 };
 
-const routineSteps = [
-  {
-    number: "01",
-    title: "Choose what matters",
-    description: "Start with one routine that fits your day.",
-  },
-  {
-    number: "02",
-    title: "Keep the rhythm",
-    description: "See the next step without the fuss.",
-  },
-  {
-    number: "03",
-    title: "Celebrate progress",
-    description: "Notice progress. Pick a reward.",
-  },
-] as const;
-
 const trustNotes = [
   { icon: "◌", label: "Parent-led" },
   { icon: "⌁", label: "Privacy-forward" },
@@ -50,8 +32,6 @@ export default function Home() {
         </a>
 
         <nav className="br-nav" aria-label="Main navigation">
-          <a href="#how-it-works">How it works</a>
-          <a href="#privacy">Our approach</a>
           <a className="br-nav-cta" href="/signin">
             Sign in
           </a>
@@ -103,55 +83,6 @@ export default function Home() {
                   <b aria-hidden="true">{note.icon}</b> {note.label}
                 </span>
               ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="br-section br-container" id="how-it-works" aria-labelledby="how-title">
-          <div className="br-section-heading">
-            <p className="br-eyebrow">Three small moves</p>
-            <h2 id="how-title">
-              Pick. Do. <em>Celebrate.</em>
-            </h2>
-            <p>
-              Make the next good step easy to see.
-            </p>
-          </div>
-          <div className="br-steps">
-            {routineSteps.map((step) => (
-              <article className="br-step" key={step.number}>
-                <span className="br-step-number">{step.number}</span>
-                <h3>{step.title === "Choose what matters" ? "Pick a routine" : step.title === "Keep the rhythm" ? "Do one thing" : "Celebrate progress"}</h3>
-                <p>{step.description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="br-privacy-section" id="privacy" aria-labelledby="privacy-title">
-          <div className="br-container br-privacy-grid">
-            <div className="br-privacy-art" aria-hidden="true">
-              <div className="br-privacy-sun">✦</div>
-              <div className="br-privacy-card br-privacy-card-back" />
-              <div className="br-privacy-card br-privacy-card-front">
-                <span className="br-privacy-lock">⌁</span>
-                <strong>Parents decide</strong>
-                <span>What is shared, saved, and celebrated.</span>
-              </div>
-            </div>
-            <div className="br-privacy-copy">
-              <p className="br-eyebrow">Parent-led</p>
-              <h2 id="privacy-title">
-                Clear for kids.<br /><em>Calm for parents.</em>
-              </h2>
-              <p>
-                Parents choose what is shared, saved, and celebrated.
-              </p>
-              <ul className="br-check-list">
-                <li><span aria-hidden="true">🔒</span> No passwords to manage for sign-in</li>
-                <li><span aria-hidden="true">🌿</span> Small, clear steps</li>
-                <li><span aria-hidden="true">✨</span> Progress without pressure</li>
-              </ul>
             </div>
           </div>
         </section>

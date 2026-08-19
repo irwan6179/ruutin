@@ -35,8 +35,10 @@ test("server-renders the Ruutin parent landing page", async () => {
   assert.match(html, /Small routines\./);
   assert.match(html, /Sign in with email/);
   assert.match(html, /href="\/signin"/);
-  assert.match(html, /Parents decide/);
-  assert.match(html, /Small, clear steps/);
+  assert.doesNotMatch(
+    html,
+    /Three small moves|Pick\. Do\.|Parents decide|Clear for kids|No passwords to manage/i,
+  );
   assert.doesNotMatch(html, /id="ruutin-email"|class="br-auth-flow"/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
   assert.doesNotMatch(html, /paywall|payment|leaderboard|sibling ranking/i);
