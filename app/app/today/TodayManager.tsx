@@ -98,6 +98,7 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
   const reverseConfirmRef = useRef<HTMLButtonElement>(null);
   const reverseReturnFocusRef = useRef<HTMLButtonElement>(null);
   const pendingReviewCount = overview.pendingClaims.length + overview.pendingRewardRequests.length;
+  const completingTask = busyKey.startsWith("complete-");
 
   useEffect(() => {
     if (reverseClaimId) reverseConfirmRef.current?.focus();
@@ -159,23 +160,23 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
   return (
     <div className="ruutin-page-stack ruutin-today-page">
       <ActionPendingOverlay
-        active={Boolean(busyKey) || refreshing}
+        active={(Boolean(busyKey) && !completingTask) || refreshing}
         label={refreshing ? "Refreshing today…" : "Saving today’s progress…"}
       />
       <section className="ruutin-page-heading ruutin-today-heading" aria-labelledby="today-title">
         <div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">{overview.household.name} · {overview.localDate}</p><h1 id="today-title">Today, together. ✨</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={Boolean(busyKey) || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div>
         <p>Tap a routine to help it along.</p>
       </section>
-      <section className={`ruutin-today-action-rail${pendingReviewCount === 0 ? " is-clear" : ""}`} aria-label="Quick actions">
+      {pendingReviewCount > 0 && <section className="ruutin-today-action-rail" aria-label="Quick actions">
         <div className="ruutin-today-action-summary">
-          <span className="ruutin-today-action-emoji" aria-hidden="true">{pendingReviewCount > 0 ? "👋" : "🌈"}</span>
-          <span><strong>{pendingReviewCount > 0 ? `${pendingReviewCount} small ${pendingReviewCount === 1 ? "thing" : "things"} need you` : "All caught up"}</strong><small>{pendingReviewCount > 0 ? "A quick tap keeps the rhythm going." : "Nice work, family."}</small></span>
+          <span className="ruutin-today-action-emoji" aria-hidden="true">👋</span>
+          <span><strong>{pendingReviewCount} small {pendingReviewCount === 1 ? "thing" : "things"} need you</strong><small>A quick tap keeps the rhythm going.</small></span>
         </div>
-        {pendingReviewCount > 0 && <div className="ruutin-today-action-links">
+        <div className="ruutin-today-action-links">
           {overview.pendingClaims.length > 0 && <a className="ruutin-today-action-link task" href="#today-claims"><span aria-hidden="true">✓</span> Task · {overview.pendingClaims.length}</a>}
           {overview.pendingRewardRequests.length > 0 && <a className="ruutin-today-action-link reward" href="#today-reward-requests"><span aria-hidden="true">🎁</span> Reward · {overview.pendingRewardRequests.length}</a>}
-        </div>}
-      </section>
+        </div>
+      </section>}
       {overview.profiles.length === 0 ? <p className="ruutin-empty-state">Add a profile to begin a shared rhythm.</p> : (
         <section className="ruutin-profile-grid" aria-label="Family progress">
           {overview.profiles.map((profile, profileIndex) => {
@@ -198,7 +199,7 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
                     <span className="ruutin-avatar tiny" aria-hidden="true">{task.emoji}</span>
                     <span className="ruutin-today-task-copy"><strong>{task.title}</strong><small>{task.stars} {task.stars === 1 ? "star" : "stars"}</small></span>
                     <span className={`ruutin-task-state ${task.state}`} aria-label={taskStateLabel(task)} title={taskStateLabel(task)}><span aria-hidden="true">{taskStateGlyph(task)}</span></span>
-                    {task.state === "todo" && !profile.archivedAt && <button className="ruutin-icon-action task" type="button" aria-label={`Mark ${task.title} complete`} title="Mark complete" disabled={busyKey === `complete-${task.id}`} onClick={() => void act(`complete-${task.id}`, () => parentRequest("/api/parent/completions", { profileId: profile.id, taskId: task.id, dueDate: task.dueDate }), "Routine marked complete — a small win.")}>{busyKey === `complete-${task.id}` ? "…" : "✓"}</button>}
+                    {task.state === "todo" && !profile.archivedAt && <button className="ruutin-icon-action task" type="button" aria-label={busyKey === `complete-${task.id}` ? `Marking ${task.title} complete` : `Mark ${task.title} complete`} aria-busy={busyKey === `complete-${task.id}`} title={busyKey === `complete-${task.id}` ? "Saving…" : "Mark complete"} disabled={busyKey !== ""} onClick={() => void act(`complete-${task.id}`, () => parentRequest("/api/parent/completions", { profileId: profile.id, taskId: task.id, dueDate: task.dueDate }), "Routine marked complete — a small win.")}>{busyKey === `complete-${task.id}` ? <span className="ruutin-inline-spinner" aria-hidden="true" /> : "✓"}</button>}
                     {task.state === "completed" && task.claimId && <button className="ruutin-icon-action danger" type="button" aria-label={`Reverse stars for ${task.title}`} title="Reverse stars" onClick={(event) => { reverseReturnFocusRef.current = event.currentTarget; setReverseClaimId(task.claimId ?? ""); setReverseReason(""); }}>↺</button>}
                   </div>)}
                 </div>}

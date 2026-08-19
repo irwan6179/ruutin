@@ -32,6 +32,11 @@ test("Today includes a reward request queue and uses the same guarded decision r
   assert.match(todayUi, /reward-queue-title/);
   assert.match(todayUi, /api\/parent\/rewards\/requests/);
   assert.match(todayUi, /Approved — the stars are safely recorded/);
+  assert.match(todayUi, /pendingReviewCount > 0 && <section className="ruutin-today-action-rail"/);
+  assert.doesNotMatch(todayUi, /All caught up|Nice work, family/);
+  assert.match(todayUi, /active=\{\(Boolean\(busyKey\) && !completingTask\) \|\| refreshing\}/);
+  assert.match(todayUi, /className="ruutin-inline-spinner"/);
+  assert.match(pageCss, /\.ruutin-inline-spinner \{/);
 });
 
 test("reward UI motion is brief and reduced-motion safe", () => {

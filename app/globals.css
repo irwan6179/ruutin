@@ -365,7 +365,6 @@ body {
 .ruutin-today-heading h1 { font-size: clamp(37px, 9.4vw, 60px); font-weight: 800; letter-spacing: -.075em; line-height: .98; }
 .ruutin-today-heading > p:not(.ruutin-eyebrow) { max-width: 420px; margin-top: 11px; font-size: 16px; font-weight: 560; line-height: 1.45; }
 .ruutin-today-action-rail { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 15px; border: 1px solid #c9e5ec; border-radius: 22px; background: linear-gradient(110deg, #effbfc 0%, #f4f0ff 100%); box-shadow: 0 10px 24px rgb(75 151 174 / .08); }
-.ruutin-today-action-rail.is-clear { border-color: #f1ddae; background: linear-gradient(110deg, #fff8e7 0%, #f0fbf3 100%); }
 .ruutin-today-action-summary { display: flex; min-width: 0; align-items: center; gap: 11px; }
 .ruutin-today-action-summary > span:last-child { display: grid; min-width: 0; gap: 3px; }
 .ruutin-today-action-summary strong { color: var(--br-plum); font-size: 16px; font-weight: 800; }
@@ -416,6 +415,7 @@ body {
 .ruutin-icon-action.queue-approve { color: #2f765f; background: #dff4e9; box-shadow: none; }
 .ruutin-icon-action.danger { color: #a44f62; background: #fff0f2; box-shadow: none; }
 .ruutin-icon-action:disabled { cursor: wait; opacity: .55; transform: none; }
+.ruutin-inline-spinner { width: 20px; height: 20px; border: 2px solid rgb(255 255 255 / .45); border-top-color: #fff; border-radius: 50%; animation: ruutin-pending-orbit 720ms linear infinite; }
 .ruutin-today-queue { position: relative; overflow: hidden; gap: 14px; padding: 17px 18px; border-radius: 22px; }
 .ruutin-today-queue.task-queue { border-color: #bfe5d2; background: linear-gradient(145deg, #fff 0%, #f0fbf4 160%); }
 .ruutin-today-queue.reward-queue { border-color: #f1d69f; background: linear-gradient(145deg, #fff 0%, #fff8e7 160%); }
