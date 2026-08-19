@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useCallback, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 type AuthStep = "email" | "code";
+const CODE_LENGTH = 6;
 
 const GENERIC_ERROR = "We couldn’t complete that just yet. Please try again.";
 
@@ -25,11 +26,17 @@ async function readPayload(response: Response): Promise<ApiPayload> {
 export function AuthFlow() {
   const [step, setStep] = useState<AuthStep>("email");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
+  const [codeDigits, setCodeDigits] = useState<string[]>(() => Array(CODE_LENGTH).fill(""));
   const [csrfToken, setCsrfToken] = useState("");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const codeInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const code = codeDigits.join("");
+
+  useEffect(() => {
+    if (step === "code") codeInputRefs.current[0]?.focus();
+  }, [step]);
 
   const bootstrapCsrf = useCallback(async () => {
     const response = await fetch("/api/auth/request", {
@@ -100,7 +107,9 @@ export function AuthFlow() {
         setError(payload.message ?? "That code is invalid or has expired. Request a new code and try again.");
         return;
       }
-      window.location.replace("/app/today");
+      // The protected entry chooses onboarding for a brand-new parent and
+      // Today for an existing household.
+      window.location.replace("/app");
     } catch {
       setError(GENERIC_ERROR);
     } finally {
@@ -133,7 +142,7 @@ export function AuthFlow() {
         );
         return;
       }
-      setCode("");
+      setCodeDigits(Array(CODE_LENGTH).fill(""));
       setStatus("A fresh code is on its way. Only the newest code will work.");
     } catch {
       setError(GENERIC_ERROR);
@@ -145,13 +154,46 @@ export function AuthFlow() {
   function startOver() {
     setStep("email");
     setEmail("");
-    setCode("");
+    setCodeDigits(Array(CODE_LENGTH).fill(""));
     setError("");
     setStatus("");
   }
 
+  function setCodeDigit(index: number, value: string) {
+    const digit = value.replace(/\D/gu, "").slice(-1);
+    setCodeDigits((previous) => {
+      const digits = [...previous];
+      digits[index] = digit;
+      return digits;
+    });
+    if (digit && index < CODE_LENGTH - 1) codeInputRefs.current[index + 1]?.focus();
+  }
+
+  function handleCodeKeyDown(index: number, event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Backspace" && !codeDigits[index] && index > 0) {
+      event.preventDefault();
+      codeInputRefs.current[index - 1]?.focus();
+    } else if (event.key === "ArrowLeft" && index > 0) {
+      event.preventDefault();
+      codeInputRefs.current[index - 1]?.focus();
+    } else if (event.key === "ArrowRight" && index < CODE_LENGTH - 1) {
+      event.preventDefault();
+      codeInputRefs.current[index + 1]?.focus();
+    }
+  }
+
+  function handleCodePaste(event: React.ClipboardEvent<HTMLInputElement>) {
+    const pastedCode = event.clipboardData.getData("text").replace(/\D/gu, "").slice(0, CODE_LENGTH);
+    if (!pastedCode) return;
+    event.preventDefault();
+    const digits = Array(CODE_LENGTH).fill("");
+    pastedCode.split("").forEach((digit, index) => { digits[index] = digit; });
+    setCodeDigits(digits);
+    codeInputRefs.current[Math.min(pastedCode.length, CODE_LENGTH) - 1]?.focus();
+  }
+
   return (
-    <div className="br-auth-flow" aria-label="Parent email sign-in">
+    <div className="br-auth-flow" aria-label="Parent email sign-in" aria-busy={busy}>
       <div className="br-sign-in-heading">
         <div className="br-sign-in-icon" aria-hidden="true">✦</div>
         <div>
@@ -169,8 +211,15 @@ export function AuthFlow() {
             type="email"
             autoComplete="email"
             inputMode="email"
+            enterKeyHint="send"
+            aria-keyshortcuts="Enter"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+              event.preventDefault();
+              event.currentTarget.form?.requestSubmit();
+            }}
             placeholder="you@example.com"
             required
           />
@@ -180,31 +229,33 @@ export function AuthFlow() {
         </form>
       ) : (
         <form className="br-auth-form" onSubmit={submitCode}>
-          <label htmlFor="ruutin-code">Six-digit code</label>
-          <input
-            className="br-auth-code-input"
-            id="ruutin-code"
-            name="code"
-            type="text"
-            autoComplete="one-time-code"
-            inputMode="numeric"
-            pattern="[0-9]{6}"
-            maxLength={6}
-            value={code}
-            onChange={(event) => setCode(event.target.value.replace(/\D/gu, "").slice(0, 6))}
-            onPaste={(event) => {
-              const pastedCode = event.clipboardData.getData("text").replace(/\D/gu, "").slice(0, 6);
-              if (pastedCode) {
-                event.preventDefault();
-                setCode(pastedCode);
-              }
-            }}
-            placeholder="000000"
-            required
-            aria-describedby="ruutin-code-help"
-          />
+          <div className="br-auth-code-heading">
+            <label htmlFor="ruutin-code-0">Verification code</label>
+            <span>Enter the six-digit code sent to {email}.</span>
+          </div>
+          <div className="br-auth-code-inputs" role="group" aria-label="Six-digit verification code" aria-describedby="ruutin-code-help">
+            {Array.from({ length: CODE_LENGTH }, (_, index) => (
+              <input
+                className="br-auth-code-input"
+                id={`ruutin-code-${index}`}
+                key={index}
+                name={`code-${index}`}
+                type="text"
+                autoComplete={index === 0 ? "one-time-code" : "off"}
+                inputMode="numeric"
+                pattern="[0-9]"
+                maxLength={1}
+                value={codeDigits[index] ?? ""}
+                onChange={(event) => setCodeDigit(index, event.target.value)}
+                onKeyDown={(event) => handleCodeKeyDown(index, event)}
+                onPaste={handleCodePaste}
+                required
+                aria-label={`Digit ${index + 1} of ${CODE_LENGTH}`}
+              />
+            ))}
+          </div>
           <span id="ruutin-code-help" className="br-auth-help">It expires in 10 minutes and works once.</span>
-          <button className="br-button br-button-light" type="submit" disabled={busy || code.length !== 6}>
+          <button className="br-button br-button-light" type="submit" disabled={busy || code.length !== CODE_LENGTH}>
             {busy ? "Checking…" : "Verify and continue"} <span aria-hidden="true">↗</span>
           </button>
           <button className="br-auth-back" type="button" onClick={requestAnotherCode} disabled={busy}>
@@ -214,6 +265,13 @@ export function AuthFlow() {
             Use a different email
           </button>
         </form>
+      )}
+
+      {busy && (
+        <div className="br-auth-progress" role="status" aria-live="polite">
+          <span className="br-auth-spinner" aria-hidden="true" />
+          <span>{step === "email" ? "Sending your sign-in code…" : "Checking your code…"}</span>
+        </div>
       )}
 
       <p className="br-auth-feedback" aria-live="polite" role={error ? "alert" : undefined}>
