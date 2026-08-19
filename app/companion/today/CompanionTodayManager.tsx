@@ -81,26 +81,36 @@ export function CompanionTodayManager({ initialToday }: { initialToday: TodayDat
 
   async function submitClaim() {
     if (!selectedTask || busy) return;
+    const task = selectedTask;
+    const previousToday = today;
     setBusy(true); setError("");
+    setToday((current) => ({
+      ...current,
+      tasks: current.tasks.map((item) => item.id === task.id ? {
+        ...item,
+        state: "waiting",
+        submittedAt: new Date().toISOString(),
+      } : item),
+    }));
+    setSelectedTask(null);
     try {
       const response = await fetch("/api/companion/today", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskId: selectedTask.id }),
+        body: JSON.stringify({ taskId: task.id }),
       });
       const payload = await response.json().catch(() => ({})) as { today?: TodayData; message?: string };
       if (!response.ok || !payload.today) throw new Error(payload.message ?? "That routine could not be sent yet.");
-      setToday({ ...payload.today, balance: today.balance, activeReward: today.activeReward });
-      setSelectedTask(null);
+      setToday({ ...payload.today, balance: previousToday.balance, activeReward: previousToday.activeReward });
       // The POST includes an authoritative snapshot; re-read both private
       // views as well so a delayed balance/reward write cannot leave stale UI.
-      try {
-        await refreshToday();
-      } catch {
+      void refreshToday().catch(() => {
         // Keep the authoritative POST snapshot; the next visibility refresh retries.
-      }
+      });
     } catch (cause) {
+      setToday(previousToday);
+      setSelectedTask(task);
       setError(cause instanceof Error ? cause.message : "That routine could not be sent yet.");
     } finally {
       setBusy(false);

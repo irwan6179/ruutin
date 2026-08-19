@@ -25,15 +25,16 @@ type RewardsData = {
   rewards: Reward[];
 };
 
-async function companionRequest(path: string, body: Record<string, unknown>): Promise<void> {
+async function companionRequest(path: string, body: Record<string, unknown>): Promise<RewardRequest> {
   const response = await fetch(path, {
     method: "POST",
     credentials: "same-origin",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const payload = await response.json().catch(() => ({})) as { message?: string };
-  if (!response.ok) throw new Error(payload.message ?? "That reward request could not be sent yet.");
+  const payload = await response.json().catch(() => ({})) as { request?: RewardRequest; message?: string };
+  if (!response.ok || !payload.request) throw new Error(payload.message ?? "That reward request could not be sent yet.");
+  return payload.request;
 }
 
 function dateLabel(value: string): string {
@@ -89,9 +90,26 @@ export function CompanionRewardsManager({ initialRewards, initialRequests }: { i
 
   async function askFor(reward: Reward) {
     if (busy || pendingByReward.has(reward.id)) return;
+    const optimisticId = `optimistic-${crypto.randomUUID()}`;
+    const optimisticRequest: RewardRequest = {
+      id: optimisticId,
+      rewardId: reward.id,
+      status: "pending",
+      requestedAt: new Date().toISOString(),
+      resolvedAt: null,
+    };
     setBusy(reward.id); setError(""); setNotice("");
-    try { await companionRequest("/api/companion/rewards/requests", { rewardId: reward.id }); await refresh(); setNotice(`Asked your parent about ${reward.title}.`); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "That reward request could not be sent yet."); }
+    setRequests((current) => [...current, optimisticRequest]);
+    try {
+      const request = await companionRequest("/api/companion/rewards/requests", { rewardId: reward.id });
+      setRequests((current) => current.map((item) => item.id === optimisticId ? request : item));
+      setNotice(`Asked your parent about ${reward.title}.`);
+      void refresh().catch(() => undefined);
+    }
+    catch (cause) {
+      setRequests((current) => current.filter((item) => item.id !== optimisticId));
+      setError(cause instanceof Error ? cause.message : "That reward request could not be sent yet.");
+    }
     finally { setBusy(""); }
   }
 

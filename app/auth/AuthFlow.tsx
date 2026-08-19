@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useCallback, useState } from "react";
 
 type AuthStep = "email" | "code" | "success";
@@ -161,9 +162,9 @@ export function AuthFlow() {
             <p>{status}</p>
           </div>
         </div>
-        <a className="br-button br-button-light br-auth-continue" href="/app/today">
+        <Link className="br-button br-button-light br-auth-continue" href="/app/today" prefetch={false}>
           Continue to Ruutin <span aria-hidden="true">↗</span>
-        </a>
+        </Link>
       </div>
     );
   }

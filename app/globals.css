@@ -255,7 +255,22 @@ body {
 .ruutin-bottom-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: 30; display: grid; grid-template-columns: repeat(4, 1fr); min-height: 70px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid rgb(224 214 235 / .95); background: rgb(255 253 255 / .96); box-shadow: 0 -10px 28px rgb(82 57 116 / .08); backdrop-filter: blur(14px); }
 .ruutin-bottom-nav-link { display: grid; min-width: 0; min-height: 51px; place-content: center; justify-items: center; gap: 4px; border-radius: 13px; color: var(--br-muted); font-size: 10px; font-weight: 650; }
 .ruutin-bottom-nav-link.is-active { color: var(--br-deep-purple); background: #f1e9fa; }
+.ruutin-bottom-nav-content { display: grid; min-width: 0; place-content: center; justify-items: center; gap: 4px; transition: opacity 140ms ease; }
+.ruutin-bottom-nav-content.is-pending { opacity: .62; }
+.ruutin-bottom-nav-content.is-pending .ruutin-bottom-nav-icon { animation: ruutin-nav-pending 700ms ease-in-out infinite alternate; }
 .ruutin-bottom-nav-icon { font-size: 19px; line-height: 1; }
+.ruutin-route-loading { display: grid; gap: 18px; padding: 24px 0 44px; }
+.ruutin-route-loading-heading { display: grid; gap: 9px; }
+.ruutin-route-loading-heading span,
+.ruutin-route-loading-grid > span { position: relative; overflow: hidden; border: 1px solid #eee5f3; background: #f4eef7; }
+.ruutin-route-loading-heading span::after,
+.ruutin-route-loading-grid > span::after { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 15%, rgb(255 255 255 / .72) 48%, transparent 82%); content: ""; transform: translateX(-100%); animation: ruutin-route-shimmer 1.15s ease-in-out infinite; }
+.ruutin-route-loading-heading span:first-child { width: min(38%, 190px); height: 13px; border-radius: 999px; }
+.ruutin-route-loading-heading span:last-child { width: min(72%, 430px); height: 42px; border-radius: 14px; }
+.ruutin-route-loading-grid { display: grid; gap: 16px; }
+.ruutin-route-loading-grid > span { min-height: 190px; border-radius: 21px; }
+@keyframes ruutin-nav-pending { from { transform: scale(.88); } to { transform: scale(1.08); } }
+@keyframes ruutin-route-shimmer { to { transform: translateX(100%); } }
 .ruutin-button:active { transform: translateY(1px) scale(.985); }
 .ruutin-card { animation: ruutin-card-in 220ms ease-out both; }
 @keyframes ruutin-card-in { from { opacity: .78; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -523,6 +538,8 @@ body {
   .ruutin-app-main { padding-bottom: 52px; }
   .ruutin-bottom-nav { position: static; width: min(1120px, calc(100% - 32px)); min-height: 0; margin: 0 auto; padding: 0 0 32px; border: 0; box-shadow: none; background: transparent; backdrop-filter: none; }
   .ruutin-bottom-nav-link { display: inline-flex; min-height: 42px; flex-direction: row; justify-content: center; padding: 8px 16px; font-size: 12px; }
+  .ruutin-bottom-nav-content { display: inline-flex; flex-direction: row; align-items: center; gap: 7px; }
+  .ruutin-route-loading-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ruutin-bottom-nav-icon { font-size: 16px; }
   .ruutin-profile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ruutin-page-stack { gap: 28px; }

@@ -1,9 +1,10 @@
 import { headers } from "next/headers";
+import { cache } from "react";
 import { getD1 } from "../../db";
 import { getServerConfig } from "../../server/config";
 import { resolveCompanionContext, type CompanionContext } from "../../server/auth-context";
 
-export async function getCompanionPageContext(): Promise<CompanionContext> {
+export const getCompanionPageContext = cache(async (): Promise<CompanionContext> => {
   const requestHeaders = await headers();
   const config = getServerConfig();
   if (!config) throw new Error("Server configuration is unavailable");
@@ -15,4 +16,4 @@ export async function getCompanionPageContext(): Promise<CompanionContext> {
   });
   if (!context) throw new Error("Companion authentication required");
   return context;
-}
+});

@@ -218,20 +218,14 @@ export async function resolveParentSession(
   return context;
 }
 
-/** Resolve parent scope solely from the secure cookie and D1 membership. */
-export async function resolveParentContext(
-  request: Request,
-  db: D1DatabaseLike,
-  options: { sessionSecret: string; now?: Date } ,
-): Promise<ParentContext | null> {
-  const session = await resolveParentSession(request, db, options);
-  if (!session || session.memberships.length === 0) return null;
-
-  // MVP presents one household.  If a future UI supports switching, it must
-  // add a server-maintained active-household choice rather than trusting a
-  // URL/body household ID.  The context still returns every verified member.
+/** Build the household scope from an already verified parent session. */
+export function parentContextFromSession(
+  session: ParentSessionContext,
+): ParentContext | null {
   const primary = session.memberships[0];
-  const context: ParentContext = {
+  if (!primary) return null;
+
+  return {
     kind: "parent",
     sessionId: session.sessionId,
     tokenHash: session.tokenHash,
@@ -241,8 +235,22 @@ export async function resolveParentContext(
     memberships: session.memberships,
     expiresAt: session.expiresAt,
   };
+}
+
+/** Resolve parent scope solely from the secure cookie and D1 membership. */
+export async function resolveParentContext(
+  request: Request,
+  db: D1DatabaseLike,
+  options: { sessionSecret: string; now?: Date } ,
+): Promise<ParentContext | null> {
+  const session = await resolveParentSession(request, db, options);
+  if (!session) return null;
+
+  // MVP presents one household.  If a future UI supports switching, it must
+  // add a server-maintained active-household choice rather than trusting a
+  // URL/body household ID.  The context still returns every verified member.
   // `resolveParentSession` already performed the throttled last-seen write.
-  return context;
+  return parentContextFromSession(session);
 }
 
 export async function requireParentContext(
