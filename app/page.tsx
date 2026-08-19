@@ -83,7 +83,7 @@ export default function Home() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="br-hero-image"
-              src="/ruutin-hero-collage.png"
+              src="/ruutin-hero-collage.webp"
               alt="Three Ruutin mobile screens showing routines, progress, and family controls"
               width={1536}
               height={1024}
