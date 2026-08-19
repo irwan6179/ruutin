@@ -192,6 +192,13 @@ export function AuthFlow() {
             maxLength={6}
             value={code}
             onChange={(event) => setCode(event.target.value.replace(/\D/gu, "").slice(0, 6))}
+            onPaste={(event) => {
+              const pastedCode = event.clipboardData.getData("text").replace(/\D/gu, "").slice(0, 6);
+              if (pastedCode) {
+                event.preventDefault();
+                setCode(pastedCode);
+              }
+            }}
             placeholder="000000"
             required
             aria-describedby="ruutin-code-help"
