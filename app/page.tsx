@@ -31,12 +31,6 @@ const trustNotes = [
   { icon: "✦", label: "Made for real homes" },
 ] as const;
 
-const sampleRoutines = [
-  { icon: "☼", title: "Morning routine", detail: "5 routines · weekdays", tone: "sun" },
-  { icon: "⌂", title: "Home reset", detail: "3 routines · today", tone: "lilac" },
-  { icon: "☾", title: "Bedtime wind-down", detail: "4 routines · daily", tone: "plum" },
-] as const;
-
 export default function Home() {
   return (
     <main className="br-site">
@@ -75,80 +69,27 @@ export default function Home() {
               <em>More ease.</em>
             </h1>
             <p className="br-hero-description">
-              Routines, rewards, and small wins for your home.
+              A gentler rhythm for home.
             </p>
             <div className="br-hero-actions">
               <a className="br-button br-button-primary" href="#sign-in">
                 Sign in with email <span aria-hidden="true">↗</span>
               </a>
-              <a className="br-text-link" href="#how-it-works">
-                See how it works <span aria-hidden="true">↓</span>
-              </a>
             </div>
-            <p className="br-hero-note">
-              One-time code · no password
-            </p>
           </div>
 
-          <div className="br-hero-art" aria-label="A preview of a parent routine view">
-            <div className="br-orbit br-orbit-one" aria-hidden="true" />
-            <div className="br-orbit br-orbit-two" aria-hidden="true" />
-            <div className="br-doodle br-doodle-star" aria-hidden="true">
-              ✦
-            </div>
-            <div className="br-doodle br-doodle-spark" aria-hidden="true">
-              ·
-            </div>
-            <article className="br-routine-card">
-              <div className="br-card-topline">
-                <div>
-                  <p className="br-card-kicker">Your home rhythm</p>
-                  <h2>This week</h2>
-                </div>
-                <span className="br-card-avatar" aria-hidden="true">
-                  A
-                </span>
-              </div>
-              <div className="br-progress-row">
-                <span>Steady progress</span>
-                <strong>68%</strong>
-              </div>
-              <div className="br-progress-track" aria-hidden="true">
-                <span />
-              </div>
-              <div className="br-routine-list">
-                {sampleRoutines.map((routine) => (
-                  <div className="br-routine-item" key={routine.title}>
-                    <span className={`br-routine-icon br-routine-icon-${routine.tone}`} aria-hidden="true">
-                      {routine.icon}
-                    </span>
-                    <span className="br-routine-copy">
-                      <strong>{routine.title}</strong>
-                      <small>{routine.detail}</small>
-                    </span>
-                    <span className="br-routine-check" aria-label="On track">
-                      ✓
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div className="br-card-footer">
-                <span className="br-mini-avatars" aria-hidden="true">
-                  <span>A</span>
-                  <span>M</span>
-                  <span>+</span>
-                </span>
-                <span>3 people keeping the rhythm</span>
-              </div>
-            </article>
-            <div className="br-floating-note br-floating-note-top">
-              <span aria-hidden="true">✿</span>
-              <span>Room for real life</span>
-            </div>
-            <div className="br-floating-note br-floating-note-bottom">
-              <span className="br-floating-check" aria-hidden="true">✓</span>
-              <span>One thing at a time</span>
-            </div>
+          <div className="br-hero-art" aria-label="Ruutin mobile app preview">
+            {/* The local collage is intentionally served as a static hero asset. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="br-hero-image"
+              src="/ruutin-hero-collage.png"
+              alt="Three Ruutin mobile screens showing routines, progress, and family controls"
+              width={1536}
+              height={1024}
+              fetchPriority="high"
+              decoding="async"
+            />
           </div>
         </section>
 
