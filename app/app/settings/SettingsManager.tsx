@@ -159,7 +159,7 @@ export function SettingsManager({ initialSettings }: { initialSettings: Settings
       <section className="ruutin-page-heading" aria-labelledby="settings-title">
         <p className="ruutin-eyebrow">Your controls</p>
         <h1 id="settings-title">Settings</h1>
-        <p>Quiet controls for your household, privacy, and parent session.</p>
+        <p>Household controls and privacy, in one calm place.</p>
       </section>
 
       <section className="ruutin-card ruutin-settings-panel" aria-labelledby="account-title">

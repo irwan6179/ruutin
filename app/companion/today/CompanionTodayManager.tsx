@@ -111,7 +111,7 @@ export function CompanionTodayManager({ initialToday }: { initialToday: TodayDat
     <div className="ruutin-page-stack companion-page-stack">
       <section className="ruutin-page-heading" aria-labelledby="companion-today-title">
         <div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">{today.localDate} · your space</p><h1 id="companion-today-title">Hi {today.profile.nickname} {today.profile.emoji}</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={busy || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div>
-        <p>Here&apos;s your gentle list for today. Your parent reviews each routine when you&apos;re ready.</p>
+        <p>Pick a routine. Your parent reviews it when you&apos;re ready.</p>
       </section>
       <InstallGuidance />
       <section className="ruutin-card companion-today-balance" aria-label="Star balance">

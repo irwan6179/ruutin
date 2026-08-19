@@ -68,6 +68,12 @@ function taskStateLabel(task: TaskOccurrence): string {
   return "To do";
 }
 
+function taskStateGlyph(task: TaskOccurrence): string {
+  if (task.state === "completed") return "✓";
+  if (task.state === "waiting") return "⏳";
+  return "→";
+}
+
 function submittedLabel(value: string, timezone: string): string {
   try {
     return new Intl.DateTimeFormat("en-MY", { dateStyle: "medium", timeStyle: "short", timeZone: timezone }).format(new Date(value));
@@ -90,6 +96,7 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
   const [adjustRequestIds, setAdjustRequestIds] = useState<Record<string, string>>({});
   const reverseConfirmRef = useRef<HTMLButtonElement>(null);
   const reverseReturnFocusRef = useRef<HTMLButtonElement>(null);
+  const pendingReviewCount = overview.pendingClaims.length + overview.pendingRewardRequests.length;
 
   useEffect(() => {
     if (reverseClaimId) reverseConfirmRef.current?.focus();
@@ -149,32 +156,45 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
   }
 
   return (
-    <div className="ruutin-page-stack">
-      <section className="ruutin-page-heading" aria-labelledby="today-title">
-        <div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">{overview.household.name} · {overview.localDate}</p><h1 id="today-title">A little progress, together.</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={Boolean(busyKey) || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div>
-        <p>Here&apos;s the gentle overview for today. You stay in charge of every approval.</p>
+    <div className="ruutin-page-stack ruutin-today-page">
+      <section className="ruutin-page-heading ruutin-today-heading" aria-labelledby="today-title">
+        <div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">{overview.household.name} · {overview.localDate}</p><h1 id="today-title">Today, together. ✨</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={Boolean(busyKey) || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div>
+        <p>Tap a routine to help it along.</p>
+      </section>
+      <section className={`ruutin-today-action-rail${pendingReviewCount === 0 ? " is-clear" : ""}`} aria-label="Quick actions">
+        <div className="ruutin-today-action-summary">
+          <span className="ruutin-today-action-emoji" aria-hidden="true">{pendingReviewCount > 0 ? "👋" : "🌈"}</span>
+          <span><strong>{pendingReviewCount > 0 ? `${pendingReviewCount} small ${pendingReviewCount === 1 ? "thing" : "things"} need you` : "All caught up"}</strong><small>{pendingReviewCount > 0 ? "A quick tap keeps the rhythm going." : "Nice work, family."}</small></span>
+        </div>
+        {pendingReviewCount > 0 && <div className="ruutin-today-action-links">
+          {overview.pendingClaims.length > 0 && <a className="ruutin-today-action-link task" href="#today-claims"><span aria-hidden="true">✓</span> Task · {overview.pendingClaims.length}</a>}
+          {overview.pendingRewardRequests.length > 0 && <a className="ruutin-today-action-link reward" href="#today-reward-requests"><span aria-hidden="true">🎁</span> Reward · {overview.pendingRewardRequests.length}</a>}
+        </div>}
       </section>
       {overview.profiles.length === 0 ? <p className="ruutin-empty-state">Add a profile to begin a shared rhythm.</p> : (
         <section className="ruutin-profile-grid" aria-label="Family progress">
-          {overview.profiles.map((profile) => {
+          {overview.profiles.map((profile, profileIndex) => {
             const progress = profile.taskCount > 0 ? Math.round((profile.completedTaskCount / profile.taskCount) * 100) : 0;
             return (
-              <article className="ruutin-card ruutin-profile-card" key={profile.id}>
+              <article className={`ruutin-card ruutin-profile-card ruutin-profile-card-tone-${profileIndex % 4}`} key={profile.id}>
                 <div className="ruutin-profile-card-top">
                   <span className="ruutin-avatar" aria-hidden="true">{profile.emoji}</span>
                   <div><h2>{profile.nickname}</h2><p>{profile.archivedAt ? "Archived" : `${progress}% of today’s rhythm`}</p></div>
-                  <span className="ruutin-balance" aria-label={`${profile.balance} ${profile.balance === 1 ? "star" : "stars"}`}>{profile.balance} ✦</span>
+                  <span className="ruutin-balance" aria-label={`${profile.balance} ${profile.balance === 1 ? "star" : "stars"}`}><strong>{profile.balance}</strong><span aria-hidden="true">✦</span></span>
                 </div>
                 <div className="ruutin-progress" role="progressbar" aria-label={`${profile.nickname}'s routine progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span aria-hidden="true" style={{ width: `${progress}%` }} /></div>
-                <div className="ruutin-card-meta"><span>{profile.completedTaskCount} of {profile.taskCount} routines</span><span>{profile.pendingClaimCount ? `${profile.pendingClaimCount} waiting` : "Nothing waiting"}</span></div>
-                {profile.activeReward ? <p className="ruutin-reward-note">{profile.activeReward.emoji} {profile.activeReward.title} · {profile.activeReward.starCost} stars</p> : <p className="ruutin-muted-note">No active reward yet</p>}
+                <div className="ruutin-profile-stat-row" aria-label={`${profile.completedTaskCount} of ${profile.taskCount} routines complete${profile.pendingClaimCount ? `, ${profile.pendingClaimCount} waiting` : ", nothing waiting"}`}>
+                  <span><strong>{profile.completedTaskCount}/{profile.taskCount}</strong><small>done</small></span>
+                  <span><strong>{profile.pendingClaimCount || "✓"}</strong><small>{profile.pendingClaimCount ? "waiting" : "clear"}</small></span>
+                  {profile.activeReward ? <span className="ruutin-goal-chip" aria-label={`${profile.activeReward.title}, ${profile.activeReward.starCost} stars needed`}><span aria-hidden="true">{profile.activeReward.emoji}</span><small>{profile.activeReward.starCost}✦</small></span> : <span className="ruutin-goal-chip is-empty" aria-label="No active reward"><span aria-hidden="true">☆</span><small>goal</small></span>}
+                </div>
                 {profile.tasks.length > 0 && <div className="ruutin-today-task-list" aria-label={`${profile.nickname}'s routines`}>
                   {profile.tasks.map((task) => <div className="ruutin-today-task" key={task.id}>
                     <span className="ruutin-avatar tiny" aria-hidden="true">{task.emoji}</span>
                     <span className="ruutin-today-task-copy"><strong>{task.title}</strong><small>{task.stars} {task.stars === 1 ? "star" : "stars"}</small></span>
-                    <span className={`ruutin-task-state ${task.state}`}>{taskStateLabel(task)}</span>
-                    {task.state === "todo" && !profile.archivedAt && <button className="ruutin-button secondary compact" type="button" disabled={busyKey === `complete-${task.id}`} onClick={() => void act(`complete-${task.id}`, () => parentRequest("/api/parent/completions", { profileId: profile.id, taskId: task.id, dueDate: task.dueDate }), "Routine marked complete — a small win.")}>{busyKey === `complete-${task.id}` ? "Saving…" : "Mark complete"}</button>}
-                    {task.state === "completed" && task.claimId && <button className="ruutin-text-button danger compact" type="button" onClick={(event) => { reverseReturnFocusRef.current = event.currentTarget; setReverseClaimId(task.claimId ?? ""); setReverseReason(""); }}>Reverse stars</button>}
+                    <span className={`ruutin-task-state ${task.state}`} aria-label={taskStateLabel(task)} title={taskStateLabel(task)}><span aria-hidden="true">{taskStateGlyph(task)}</span></span>
+                    {task.state === "todo" && !profile.archivedAt && <button className="ruutin-icon-action task" type="button" aria-label={`Mark ${task.title} complete`} title="Mark complete" disabled={busyKey === `complete-${task.id}`} onClick={() => void act(`complete-${task.id}`, () => parentRequest("/api/parent/completions", { profileId: profile.id, taskId: task.id, dueDate: task.dueDate }), "Routine marked complete — a small win.")}>{busyKey === `complete-${task.id}` ? "…" : "✓"}</button>}
+                    {task.state === "completed" && task.claimId && <button className="ruutin-icon-action danger" type="button" aria-label={`Reverse stars for ${task.title}`} title="Reverse stars" onClick={(event) => { reverseReturnFocusRef.current = event.currentTarget; setReverseClaimId(task.claimId ?? ""); setReverseReason(""); }}>↺</button>}
                   </div>)}
                 </div>}
                 {!profile.archivedAt && <details className="ruutin-adjust-details" open={adjustProfileId === profile.id} onToggle={(event) => { if ((event.currentTarget as HTMLDetailsElement).open) { setAdjustProfileId(profile.id); setAdjustRequestIds((current) => current[profile.id] ? current : { ...current, [profile.id]: crypto.randomUUID() }); } else if (adjustProfileId === profile.id) setAdjustProfileId(""); }}>
@@ -190,13 +210,13 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
           })}
         </section>
       )}
-      <section className="ruutin-card ruutin-queue-card" aria-labelledby="queue-title">
+      <section id="today-claims" className="ruutin-card ruutin-queue-card ruutin-today-queue task-queue" aria-labelledby="queue-title">
         <div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Parent review</p><h2 id="queue-title">Waiting for you</h2></div><span className="ruutin-count-pill">{overview.pendingClaims.length}</span></div>
-        {overview.pendingClaims.length === 0 ? <p className="ruutin-empty-state">No approvals waiting. The queue will appear here when a routine is submitted.</p> : <ul className="ruutin-simple-list">{overview.pendingClaims.map((claim) => <li className="ruutin-claim-row" key={claim.id}><span className="ruutin-avatar small" aria-hidden="true">{claim.emoji}</span><span><strong>{claim.nickname}</strong><small>{claim.taskTitle} · {claim.stars} {claim.stars === 1 ? "star" : "stars"} · {submittedLabel(claim.submittedAt, overview.household.timezone)}</small></span><span className="ruutin-claim-actions"><button className="ruutin-button compact" type="button" disabled={busyKey !== ""} onClick={() => void act(`approve-${claim.id}`, () => parentRequest("/api/parent/claims", { claimId: claim.id, decision: "approve" }), "Approved — the stars are safely recorded.")}>Approve</button><button className="ruutin-text-button danger compact" type="button" disabled={busyKey !== ""} onClick={() => void act(`reject-${claim.id}`, () => parentRequest("/api/parent/claims", { claimId: claim.id, decision: "reject" }), "Sent back for another try.")}>Reject</button></span></li>)}</ul>}
+        {overview.pendingClaims.length === 0 ? <p className="ruutin-empty-state">Nothing waiting. ✨</p> : <ul className="ruutin-simple-list">{overview.pendingClaims.map((claim) => <li className="ruutin-claim-row" key={claim.id}><span className="ruutin-avatar small" aria-hidden="true">{claim.emoji}</span><span><strong>{claim.nickname}</strong><small>{claim.taskTitle} · {claim.stars}✦ · {submittedLabel(claim.submittedAt, overview.household.timezone)}</small></span><span className="ruutin-claim-actions"><button className="ruutin-icon-action queue-approve" type="button" aria-label={`Approve ${claim.nickname}'s ${claim.taskTitle}`} title="Approve" disabled={busyKey !== ""} onClick={() => void act(`approve-${claim.id}`, () => parentRequest("/api/parent/claims", { claimId: claim.id, decision: "approve" }), "Approved — the stars are safely recorded.")}>✓</button><button className="ruutin-icon-action danger" type="button" aria-label={`Reject ${claim.nickname}'s ${claim.taskTitle}`} title="Reject" disabled={busyKey !== ""} onClick={() => void act(`reject-${claim.id}`, () => parentRequest("/api/parent/claims", { claimId: claim.id, decision: "reject" }), "Sent back for another try.")}>×</button></span></li>)}</ul>}
       </section>
-      <section className="ruutin-card ruutin-queue-card" aria-labelledby="reward-queue-title">
+      <section id="today-reward-requests" className="ruutin-card ruutin-queue-card ruutin-today-queue reward-queue" aria-labelledby="reward-queue-title">
         <div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Reward review</p><h2 id="reward-queue-title">Small requests</h2></div><span className="ruutin-count-pill">{overview.pendingRewardRequests.length}</span></div>
-        {overview.pendingRewardRequests.length === 0 ? <p className="ruutin-empty-state">No reward requests waiting. They will appear here when someone asks.</p> : <ul className="ruutin-simple-list">{overview.pendingRewardRequests.map((request) => <li className="ruutin-claim-row" key={request.id}><span className="ruutin-avatar small" aria-hidden="true">{request.rewardEmoji}</span><span><strong>{request.rewardTitle}</strong><small>{request.nickname} · {request.starCost} stars · {submittedLabel(request.requestedAt, overview.household.timezone)}</small></span><span className="ruutin-claim-actions"><button className="ruutin-button compact" type="button" disabled={busyKey !== ""} onClick={() => void act(`reward-approve-${request.id}`, () => parentRequest("/api/parent/rewards/requests", { requestId: request.id, decision: "approve" }), "Approved — the stars are safely recorded.")}>Approve</button><button className="ruutin-text-button danger compact" type="button" disabled={busyKey !== ""} onClick={() => void act(`reward-reject-${request.id}`, () => parentRequest("/api/parent/rewards/requests", { requestId: request.id, decision: "reject" }), "Sent back for another try.")}>Not now</button></span></li>)}</ul>}
+        {overview.pendingRewardRequests.length === 0 ? <p className="ruutin-empty-state">Nothing waiting. ✨</p> : <ul className="ruutin-simple-list">{overview.pendingRewardRequests.map((request) => <li className="ruutin-claim-row" key={request.id}><span className="ruutin-avatar small" aria-hidden="true">{request.rewardEmoji}</span><span><strong>{request.rewardTitle}</strong><small>{request.nickname} · {request.starCost}✦ · {submittedLabel(request.requestedAt, overview.household.timezone)}</small></span><span className="ruutin-claim-actions"><button className="ruutin-icon-action queue-approve" type="button" aria-label={`Approve ${request.rewardTitle} for ${request.nickname}`} title="Approve" disabled={busyKey !== ""} onClick={() => void act(`reward-approve-${request.id}`, () => parentRequest("/api/parent/rewards/requests", { requestId: request.id, decision: "approve" }), "Approved — the stars are safely recorded.")}>✓</button><button className="ruutin-icon-action danger" type="button" aria-label={`Do not approve ${request.rewardTitle} for ${request.nickname}`} title="Not now" disabled={busyKey !== ""} onClick={() => void act(`reward-reject-${request.id}`, () => parentRequest("/api/parent/rewards/requests", { requestId: request.id, decision: "reject" }), "Sent back for another try.")}>×</button></span></li>)}</ul>}
       </section>
       {reverseClaimId && <div className="ruutin-inline-dialog" role="dialog" aria-modal="true" aria-labelledby="reverse-title" aria-describedby="reverse-description"><h2 id="reverse-title">Reverse this star award?</h2><p id="reverse-description">The original ledger entry stays in history; Ruutin adds a compensating entry.</p><label htmlFor="reverse-reason">Reason</label><input id="reverse-reason" value={reverseReason} maxLength={240} onChange={(event) => setReverseReason(event.target.value)} required /><div className="ruutin-family-actions"><button ref={reverseConfirmRef} className="ruutin-button" type="button" disabled={busyKey !== ""} onClick={() => void act(`reverse-${reverseClaimId}`, () => parentRequest("/api/parent/ledger", { action: "reverse", claimId: reverseClaimId, reason: reverseReason }), "Award reversed with a clear history.", () => setReverseClaimId(""))}>Reverse award</button><button className="ruutin-text-button" type="button" disabled={busyKey !== ""} onClick={() => setReverseClaimId("")}>Cancel</button></div></div>}
       {notice && <p className="ruutin-form-success ruutin-live-feedback" role="status" aria-live="polite">{notice}</p>}

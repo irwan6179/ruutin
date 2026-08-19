@@ -130,8 +130,8 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
     <div className="ruutin-onboarding">
       <section className="ruutin-onboarding-header" aria-labelledby="onboarding-title">
         <p className="ruutin-eyebrow">A calm setup, one step at a time</p>
-        <h1 id="onboarding-title">Make Ruutin feel like your home.</h1>
-        <p>We only ask for the essentials. You can pause and come back at any point.</p>
+        <h1 id="onboarding-title">Make it yours.</h1>
+        <p>Just the essentials. Come back anytime.</p>
         <div className="ruutin-onboarding-progress" role="progressbar" aria-label={`Setup progress: step ${currentIndex + 1} of ${steps.length}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span aria-hidden="true" style={{ width: `${progress}%` }} /></div>
         <p className="ruutin-progress-label">Step {currentIndex + 1} of {steps.length} · {steps[currentIndex]?.[1]}</p>
       </section>

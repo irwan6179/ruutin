@@ -10,6 +10,11 @@
   --br-plum: #3e2a56;
   --br-line: #e7deef;
   --br-white: #fffdfd;
+  --br-mint: #4b977a;
+  --br-sky: #4a8eae;
+  --br-sun: #d99437;
+  --br-coral: #c85f73;
+  --br-rounded-font: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
   --background: #fcfafc;
   --foreground: var(--br-ink);
 }
@@ -32,6 +37,22 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+.ruutin-parent-shell,
+.ruutin-companion-shell {
+  font-family: var(--br-rounded-font);
+}
+
+.ruutin-parent-shell .ruutin-app-brand,
+.ruutin-companion-shell .ruutin-app-brand { font-size: 22px; }
+.ruutin-parent-shell .ruutin-app-mark,
+.ruutin-companion-shell .ruutin-app-mark { width: 40px; height: 40px; border-radius: 14px; font-size: 19px; }
+.ruutin-parent-shell .ruutin-parent-label { font-size: 14px; }
+.br-site,
+.ruutin-public-shell,
+.ruutin-onboarding {
+  font-family: var(--br-rounded-font);
 }
 
 /* Authenticated parent workspace ------------------------------------------------ */
@@ -256,6 +277,169 @@ body {
 .companion-header { padding-inline: 18px; }
 .ruutin-companion-greeting { margin: 0; color: var(--br-purple); font-size: 13px; font-weight: 700; }
 .companion-bottom-nav { grid-template-columns: repeat(2, 1fr); }
+
+/* Today refresh: playful action-first parent dashboard ----------------------- */
+.ruutin-today-page { gap: 20px; }
+.ruutin-today-heading { padding-top: 6px; }
+.ruutin-today-page .ruutin-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+.ruutin-today-heading h1 { font-size: clamp(37px, 9.4vw, 60px); font-weight: 800; letter-spacing: -.075em; line-height: .98; }
+.ruutin-today-heading > p:not(.ruutin-eyebrow) { max-width: 420px; margin-top: 11px; font-size: 16px; font-weight: 560; line-height: 1.45; }
+.ruutin-today-action-rail { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 15px; border: 1px solid #c9e5ec; border-radius: 22px; background: linear-gradient(110deg, #effbfc 0%, #f4f0ff 100%); box-shadow: 0 10px 24px rgb(75 151 174 / .08); }
+.ruutin-today-action-rail.is-clear { border-color: #f1ddae; background: linear-gradient(110deg, #fff8e7 0%, #f0fbf3 100%); }
+.ruutin-today-action-summary { display: flex; min-width: 0; align-items: center; gap: 11px; }
+.ruutin-today-action-summary > span:last-child { display: grid; min-width: 0; gap: 3px; }
+.ruutin-today-action-summary strong { color: var(--br-plum); font-size: 16px; font-weight: 800; }
+.ruutin-today-action-summary small { color: var(--br-muted); font-size: 13px; }
+.ruutin-today-action-emoji { display: grid; width: 50px; height: 50px; flex: 0 0 50px; place-items: center; border-radius: 17px; background: #fff; box-shadow: 0 5px 14px rgb(84 56 129 / .09); font-size: 25px; }
+.ruutin-today-action-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.ruutin-today-action-link { display: inline-flex; min-height: 44px; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 999px; font-size: 13px; font-weight: 800; white-space: nowrap; }
+.ruutin-today-action-link.task { color: #2f765f; background: #dff4e9; }
+.ruutin-today-action-link.reward { color: #9a6528; background: #fff0cf; }
+.ruutin-profile-card { --profile-accent: var(--br-purple); --profile-soft: #f5effc; --profile-icon: #eee3fa; position: relative; overflow: hidden; gap: 14px; padding: 18px; border-color: color-mix(in srgb, var(--profile-accent) 27%, #eadff1); background: linear-gradient(145deg, #fff 0%, var(--profile-soft) 170%); box-shadow: 0 12px 26px color-mix(in srgb, var(--profile-accent) 12%, transparent); }
+.ruutin-profile-card::after { position: absolute; top: -42px; right: -38px; width: 110px; height: 110px; border-radius: 50%; background: color-mix(in srgb, var(--profile-accent) 15%, transparent); content: ""; pointer-events: none; }
+.ruutin-profile-card-tone-0 { --profile-accent: #c85f73; --profile-soft: #fff2f2; --profile-icon: #ffe0e5; }
+.ruutin-profile-card-tone-1 { --profile-accent: #4b977a; --profile-soft: #effaf4; --profile-icon: #d9f1e2; }
+.ruutin-profile-card-tone-2 { --profile-accent: #4a8eae; --profile-soft: #eef8fc; --profile-icon: #d8edf5; }
+.ruutin-profile-card-tone-3 { --profile-accent: #d99437; --profile-soft: #fff7e7; --profile-icon: #ffe9bd; }
+.ruutin-profile-card > * { position: relative; z-index: 1; }
+.ruutin-profile-card .ruutin-profile-card-top { gap: 13px; }
+.ruutin-profile-card .ruutin-avatar:not(.tiny):not(.small) { width: 58px; height: 58px; flex-basis: 58px; border-radius: 18px; background: var(--profile-icon); font-size: 29px; }
+.ruutin-profile-card h2 { font-size: 28px; font-weight: 800; }
+.ruutin-profile-card-top p { color: color-mix(in srgb, var(--profile-accent) 70%, #6e667e); font-size: 14px; }
+.ruutin-profile-card .ruutin-balance { display: flex; align-items: center; gap: 4px; padding: 8px 10px; border-radius: 14px; color: var(--profile-accent); background: var(--profile-soft); }
+.ruutin-profile-card .ruutin-balance strong { font-size: 20px; line-height: 1; }
+.ruutin-profile-card .ruutin-balance span { font-size: 16px; }
+.ruutin-profile-card .ruutin-progress { height: 10px; background: color-mix(in srgb, var(--profile-accent) 12%, #fff); }
+.ruutin-profile-card .ruutin-progress span { background: var(--profile-accent); }
+.ruutin-profile-stat-row { display: flex; min-width: 0; gap: 7px; }
+.ruutin-profile-stat-row > span { display: flex; min-width: 0; min-height: 54px; flex: 1 1 0; flex-direction: column; justify-content: center; gap: 3px; padding: 8px 10px; border-radius: 16px; background: color-mix(in srgb, var(--profile-accent) 9%, #fff); }
+.ruutin-profile-stat-row strong { color: var(--profile-accent); font-size: 18px; line-height: 1; }
+.ruutin-profile-stat-row small { overflow: hidden; color: #8b7f96; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.ruutin-goal-chip { display: flex !important; flex-direction: row !important; align-items: center; justify-content: center; gap: 5px; }
+.ruutin-goal-chip > span { font-size: 24px; line-height: 1; }
+.ruutin-goal-chip > small { color: var(--profile-accent); font-size: 13px; font-weight: 800; }
+.ruutin-goal-chip.is-empty > span { color: #a497ad; }
+.ruutin-goal-chip.is-empty > small { color: #8b7f96; }
+.ruutin-profile-card .ruutin-today-task-list { margin-top: 2px; padding-top: 9px; border-top: 2px solid color-mix(in srgb, var(--profile-accent) 30%, transparent); }
+.ruutin-profile-card .ruutin-today-task { min-height: 54px; gap: 9px; padding: 7px 0; }
+.ruutin-profile-card .ruutin-avatar.tiny { width: 34px; height: 34px; flex-basis: 34px; background: var(--profile-icon); font-size: 17px; }
+.ruutin-profile-card .ruutin-today-task-copy { gap: 3px; }
+.ruutin-profile-card .ruutin-today-task-copy strong { font-size: 15px; font-weight: 760; }
+.ruutin-profile-card .ruutin-today-task-copy small { color: var(--profile-accent); font-size: 12px; font-weight: 700; }
+.ruutin-profile-card .ruutin-task-state { display: grid; width: 34px; height: 34px; flex: 0 0 34px; margin-left: auto; padding: 0; place-items: center; border-radius: 50%; font-size: 15px; }
+.ruutin-profile-card .ruutin-task-state.completed { color: #2f765f; background: #dcf3e7; }
+.ruutin-profile-card .ruutin-task-state.waiting { color: #97672c; background: #fff0d0; }
+.ruutin-profile-card .ruutin-task-state.todo { color: var(--profile-accent); background: color-mix(in srgb, var(--profile-accent) 12%, #fff); }
+.ruutin-icon-action { display: inline-grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; border: 0; border-radius: 14px; color: #fff; background: var(--br-deep-purple); box-shadow: 0 5px 12px rgb(84 56 129 / .15); cursor: pointer; font: inherit; font-size: 21px; font-weight: 800; transition: transform 140ms ease, filter 140ms ease; }
+.ruutin-icon-action:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.ruutin-icon-action.task { color: #fff; background: var(--profile-accent); }
+.ruutin-icon-action.queue-approve { color: #2f765f; background: #dff4e9; box-shadow: none; }
+.ruutin-icon-action.danger { color: #a44f62; background: #fff0f2; box-shadow: none; }
+.ruutin-icon-action:disabled { cursor: wait; opacity: .55; transform: none; }
+.ruutin-today-queue { position: relative; overflow: hidden; gap: 14px; padding: 17px 18px; border-radius: 22px; }
+.ruutin-today-queue.task-queue { border-color: #bfe5d2; background: linear-gradient(145deg, #fff 0%, #f0fbf4 160%); }
+.ruutin-today-queue.reward-queue { border-color: #f1d69f; background: linear-gradient(145deg, #fff 0%, #fff8e7 160%); }
+.ruutin-today-queue h2 { font-size: 26px; font-weight: 800; }
+.ruutin-today-queue .ruutin-count-pill { color: var(--br-plum); background: #fff; box-shadow: 0 4px 10px rgb(84 56 129 / .08); }
+.ruutin-today-queue .ruutin-simple-list { gap: 8px; }
+.ruutin-today-queue .ruutin-simple-list li { padding: 10px 0 2px; }
+.ruutin-today-queue .ruutin-claim-row > span:nth-child(2) { gap: 2px; }
+.ruutin-today-queue .ruutin-claim-actions { gap: 6px; }
+.ruutin-bottom-nav-link:nth-child(1).is-active { color: #2f765f; background: #e1f5ea; }
+.ruutin-bottom-nav-link:nth-child(2).is-active { color: #3d7795; background: #e6f4fa; }
+.ruutin-bottom-nav-link:nth-child(3).is-active { color: #a16b28; background: #fff1d3; }
+.ruutin-bottom-nav-link:nth-child(4).is-active { color: #a44f62; background: #fff0f2; }
+
+.ruutin-today-queue .ruutin-simple-list strong { font-size: 15px; font-weight: 760; }
+.ruutin-today-queue .ruutin-simple-list small { font-size: 13px; }
+.ruutin-companion-shell .ruutin-page-heading h1 { font-size: clamp(38px, 10vw, 60px); font-weight: 800; letter-spacing: -.07em; }
+.ruutin-companion-shell .ruutin-page-heading p:not(.ruutin-eyebrow) { font-size: 16px; }
+.ruutin-companion-shell .ruutin-task-card h3 { font-size: 18px; font-weight: 800; }
+.ruutin-companion-shell .ruutin-task-card p { font-size: 13px; }
+.ruutin-companion-shell .ruutin-task-state { padding: 7px 10px; font-size: 12px; }
+.ruutin-companion-shell .ruutin-button { min-height: 50px; font-size: 15px; }
+
+/* Shared family system: rounded type, generous targets, concise hierarchy ----- */
+.ruutin-parent-shell .ruutin-page-stack,
+.ruutin-companion-shell .ruutin-page-stack { gap: 22px; }
+.ruutin-parent-shell .ruutin-page-heading:not(.ruutin-today-heading),
+.ruutin-companion-shell .ruutin-page-heading { padding-top: 6px; }
+.ruutin-parent-shell .ruutin-page-heading:not(.ruutin-today-heading) h1,
+.ruutin-companion-shell .ruutin-page-heading h1 { font-size: clamp(36px, 9vw, 58px); font-weight: 800; letter-spacing: -.07em; }
+.ruutin-parent-shell .ruutin-page-heading:not(.ruutin-today-heading) > p:not(.ruutin-eyebrow),
+.ruutin-companion-shell .ruutin-page-heading > p:not(.ruutin-eyebrow) { max-width: 560px; font-size: 16px; font-weight: 560; line-height: 1.5; }
+.ruutin-parent-shell .ruutin-section-heading h2,
+.ruutin-parent-shell .ruutin-settings-section-heading h2,
+.ruutin-companion-shell .ruutin-section-heading h2 { font-size: 26px; font-weight: 800; }
+.ruutin-parent-shell .ruutin-card,
+.ruutin-companion-shell .ruutin-card { border-radius: 24px; }
+.ruutin-parent-shell .ruutin-button:not(.compact),
+.ruutin-companion-shell .ruutin-button:not(.compact) { min-height: 48px; border-radius: 16px; font-size: 14px; }
+.ruutin-parent-shell .ruutin-button.compact,
+.ruutin-companion-shell .ruutin-button.compact { min-height: 42px; padding: 8px 12px; border-radius: 14px; font-size: 12px; }
+.ruutin-parent-shell .ruutin-text-button,
+.ruutin-companion-shell .ruutin-text-button { font-size: 13px; }
+.ruutin-parent-shell .ruutin-form label,
+.ruutin-companion-shell .ruutin-form label { font-size: 13px; }
+.ruutin-parent-shell .ruutin-form input:not([type="checkbox"]),
+.ruutin-parent-shell .ruutin-form select,
+.ruutin-companion-shell .ruutin-form input:not([type="checkbox"]),
+.ruutin-companion-shell .ruutin-form select { min-height: 50px; font-size: 15px; }
+.ruutin-parent-shell .ruutin-form-help,
+.ruutin-parent-shell .ruutin-form-error,
+.ruutin-parent-shell .ruutin-form-success,
+.ruutin-companion-shell .ruutin-form-help,
+.ruutin-companion-shell .ruutin-form-error,
+.ruutin-companion-shell .ruutin-form-success { font-size: 13px; }
+.ruutin-parent-shell .ruutin-simple-list strong,
+.ruutin-companion-shell .ruutin-simple-list strong { font-size: 15px; font-weight: 760; }
+.ruutin-parent-shell .ruutin-simple-list small,
+.ruutin-companion-shell .ruutin-simple-list small { font-size: 13px; }
+.ruutin-parent-shell .ruutin-state-note,
+.ruutin-companion-shell .ruutin-state-note { font-size: 13px; }
+.ruutin-parent-shell .ruutin-bottom-nav-link,
+.ruutin-companion-shell .ruutin-bottom-nav-link { font-size: 12px; font-weight: 760; }
+.ruutin-parent-shell .ruutin-bottom-nav-icon,
+.ruutin-companion-shell .ruutin-bottom-nav-icon { font-size: 22px; }
+
+.ruutin-parent-shell .ruutin-family-card { border-color: #eccbd5; background: linear-gradient(145deg, #fff 0%, #fff4f5 170%); }
+.ruutin-parent-shell .ruutin-family-card:nth-child(even) { border-color: #c6e4d4; background: linear-gradient(145deg, #fff 0%, #f1fbf5 170%); }
+.ruutin-parent-shell .ruutin-family-card .ruutin-avatar { background: #ffe3e8; }
+.ruutin-parent-shell .ruutin-family-card:nth-child(even) .ruutin-avatar { background: #dcf3e5; }
+.ruutin-parent-shell .ruutin-family-card h2 { font-size: 25px; font-weight: 800; }
+.ruutin-parent-shell .ruutin-family-card .ruutin-profile-card-top p { font-size: 14px; }
+.ruutin-parent-shell .ruutin-reward-card { border-color: #ead7b0; background: linear-gradient(145deg, #fff 0%, #fff8e9 170%); }
+.ruutin-parent-shell .ruutin-reward-card.is-active { border-color: #cbb1e0; background: linear-gradient(145deg, #fff 0%, #f8f1fd 170%); }
+.ruutin-parent-shell .ruutin-reward-card h3 { font-size: 18px; font-weight: 800; }
+.ruutin-parent-shell .ruutin-reward-card .ruutin-profile-card-top p { font-size: 14px; }
+.ruutin-parent-shell .ruutin-settings-panel { border-color: #d8cbea; background: linear-gradient(145deg, #fff 0%, #faf6ff 170%); }
+.ruutin-parent-shell .ruutin-settings-panel h2 { font-size: 24px; font-weight: 800; }
+.ruutin-parent-shell .ruutin-settings-copy { font-size: 15px; line-height: 1.55; }
+.ruutin-parent-shell .ruutin-settings-export strong { font-size: 15px; }
+.ruutin-parent-shell .ruutin-settings-export p { font-size: 13px; }
+
+.ruutin-companion-shell .companion-install-note strong { font-size: 17px; }
+.ruutin-companion-shell .companion-install-note p,
+.ruutin-companion-shell .companion-today-balance p,
+.ruutin-companion-shell .companion-balance-card p { font-size: 14px; line-height: 1.5; }
+.ruutin-companion-shell .companion-today-balance strong { font-size: 30px; }
+.ruutin-companion-shell .companion-balance-card strong { font-size: 38px; }
+.ruutin-companion-shell .ruutin-reward-card h3 { font-size: 18px; font-weight: 800; }
+.ruutin-companion-shell .ruutin-reward-card .ruutin-profile-card-top p { font-size: 14px; }
+
+.ruutin-onboarding .ruutin-onboarding-header h1,
+.ruutin-onboarding .ruutin-onboarding-prompt h1 { font-size: clamp(36px, 9vw, 58px); font-weight: 800; letter-spacing: -.07em; }
+.ruutin-onboarding .ruutin-boundary-step h2,
+.ruutin-onboarding .ruutin-form h2 { font-size: 26px; font-weight: 800; }
+.ruutin-onboarding .ruutin-button { min-height: 50px; font-size: 15px; }
+.ruutin-public-shell .ruutin-pair-card h1 { font-weight: 800; }
+.ruutin-public-shell .ruutin-button { min-height: 50px; font-size: 15px; }
+
+@media (max-width: 699px) {
+  .ruutin-today-action-rail { align-items: flex-start; flex-direction: column; }
+  .ruutin-today-action-links { width: 100%; justify-content: stretch; }
+  .ruutin-today-action-link { flex: 1 1 0; justify-content: center; }
+}
 .companion-page-stack { max-width: 760px; }
 .companion-install-note { display: grid; gap: 5px; border-color: #decfed; background: #fbf8fd; }
 .companion-install-note strong { color: var(--br-deep-purple); font-size: 13px; }

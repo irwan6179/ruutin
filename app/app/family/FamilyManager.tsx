@@ -158,10 +158,10 @@ export function FamilyManager({
       <section className="ruutin-page-heading" aria-labelledby="family-title">
         <p className="ruutin-eyebrow">Your people, your pace</p>
         <h1 id="family-title">Family</h1>
-        <p>Keep profiles simple and parent-managed. Add routines, rewards, and companion access when they fit.</p>
+        <p>Profiles, routines, rewards, and devices — all in one place.</p>
       </section>
       <section className="ruutin-section-heading" aria-labelledby="profiles-heading">
-        <div><p className="ruutin-eyebrow">Profiles</p><h2 id="profiles-heading">Who is in your rhythm?</h2></div>
+        <div><p className="ruutin-eyebrow">Profiles</p><h2 id="profiles-heading">Your people</h2></div>
         <button className="ruutin-button" type="button" aria-expanded={showForm} aria-controls="add-profile-form" onClick={() => setShowForm((value) => !value)}>{showForm ? "Close" : "Add profile"} <span aria-hidden="true">{showForm ? "×" : "+"}</span></button>
       </section>
       {showForm && <form className="ruutin-card ruutin-form" id="add-profile-form" onSubmit={addProfile} aria-busy={savingProfileId === "new"}>
@@ -191,7 +191,7 @@ export function FamilyManager({
                 <div className="ruutin-family-actions"><button className="ruutin-button" type="submit" disabled={isSaving}>{isSaving ? "Saving…" : "Save changes"} <span aria-hidden="true">↗</span></button><button className="ruutin-text-button" type="button" disabled={isSaving} onClick={stopEditing}>Cancel</button></div>
                 {editError && <p className="ruutin-form-error" role="alert" aria-live="polite">{editError}</p>}
               </fieldset>
-            </form> : <div className="ruutin-family-actions"><a className="ruutin-button secondary" href="#tasks">Tasks &amp; schedules</a><button className="ruutin-button secondary" type="button" aria-expanded={isEditing} onClick={() => startEditing(profile)}>Edit profile</button>{profile.companionAccessEligible === 1 && !profile.archivedAt ? <a className="ruutin-button secondary" href="#pairing">Pair companion</a> : <span className="ruutin-state-note">Pairing unavailable for this profile</span>}{!profile.archivedAt && <button className="ruutin-text-button danger" type="button" disabled={archiveBusyId === profile.id} onClick={() => archive(profile.id)}>{archiveBusyId === profile.id ? "Archiving…" : "Archive"}</button>}</div>}
+            </form> : <div className="ruutin-family-actions"><a className="ruutin-button secondary" href="#tasks">Tasks</a><button className="ruutin-button secondary" type="button" aria-expanded={isEditing} onClick={() => startEditing(profile)}>Edit</button>{profile.companionAccessEligible === 1 && !profile.archivedAt ? <a className="ruutin-button secondary" href="#pairing">Pair device</a> : <span className="ruutin-state-note">Pairing unavailable for this profile</span>}{!profile.archivedAt && <button className="ruutin-text-button danger" type="button" disabled={archiveBusyId === profile.id} onClick={() => archive(profile.id)}>{archiveBusyId === profile.id ? "Archiving…" : "Archive"}</button>}</div>}
           </article>;
         })}
         {profiles.length === 0 && <p className="ruutin-empty-state">Your first profile will appear here after setup.</p>}
