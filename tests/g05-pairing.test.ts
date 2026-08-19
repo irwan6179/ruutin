@@ -450,3 +450,12 @@ test("pairing QR contract uses a bundled encoder and only appears in the parent 
   assert.doesNotMatch(flowSource, /initialToken/u);
   assert.doesNotMatch(pageSource, /searchParams/u);
 });
+
+test("a pairing link is accepted automatically and reports success before opening Today", () => {
+  const flowSource = readFileSync("app/pair/PairFlow.tsx", "utf8");
+  assert.match(flowSource, /pairRequest\(\{ token, confirm: true \}\)/u);
+  assert.match(flowSource, /setSuccessProfile\(payload\.profile\)/u);
+  assert.match(flowSource, /Device linked/u);
+  assert.match(flowSource, /window\.setTimeout/u);
+  assert.match(flowSource, /navigate\("\/companion\/today"/u);
+});

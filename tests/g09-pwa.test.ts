@@ -61,9 +61,9 @@ test("layout emits install metadata and companion guidance is standalone-aware",
   assert.match(layout, /apple: "\/apple-touch-icon\.png"/);
   assert.match(layout, /url: "\/ruutin-social-card\.png"/);
   assert.match(layout, /metadataBase: new URL\("https:\/\/ruutin\.irwan\.cc"\)/);
-  assert.match(guidance, /Save Ruutin to this device's home screen for easier access\./);
   assert.match(guidance, /display-mode: standalone/);
-  assert.match(guidance, /iPhone Safari or Chrome/);
+  assert.match(guidance, /if \(standalone\) return null/);
+  assert.match(guidance, /<strong>iPhone:<\/strong>/);
   assert.match(guidance, /fresh six-digit code/);
   assert.match(guidance, /Add to Home Screen/);
   assert.match(guidance, /Install app/);

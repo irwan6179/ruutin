@@ -369,18 +369,23 @@ test("companion routes deny ineligible profiles and cannot call parent endpoints
   assert.equal(parentOnly.status, 401);
 });
 
-test("claims UI has confirmation/refetch states and reduced-motion design guard", () => {
+test("claims UI has direct action/refetch states and reduced-motion design guard", () => {
   const companionUi = readFileSync("app/companion/today/CompanionTodayManager.tsx", "utf8");
   const parentUi = readFileSync("app/app/today/TodayManager.tsx", "utf8");
   const styles = readFileSync("app/globals.css", "utf8");
-  assert.match(companionUi, /role="dialog"/);
-  assert.match(companionUi, /useRef/);
   assert.match(companionUi, /visibilitychange/);
-  assert.match(companionUi, /Send for approval/);
+  assert.match(companionUi, /void submitClaim\(task\)/);
+  assert.match(companionUi, /className="ruutin-inline-spinner"/);
+  assert.doesNotMatch(companionUi, /Send for approval|role="dialog"/);
+  assert.doesNotMatch(companionUi, /Pick a routine|Your parent reviews|take a breath/);
+  assert.ok(
+    companionUi.indexOf('className="companion-routines"') < companionUi.indexOf('className="ruutin-card companion-today-summary"')
+      && companionUi.indexOf('className="companion-routines"') < companionUi.indexOf("<InstallGuidance />"),
+    "routines should appear before secondary summary and install guidance",
+  );
   assert.match(companionUi, /await refreshToday\(\)/);
   assert.match(companionUi, /role="progressbar"/);
-  assert.match(companionUi, /Waiting for approval/);
-  assert.match(companionUi, /Completed/);
+  assert.match(companionUi, /task\.state === "completed" \? "Done" : "Waiting"/);
   assert.ok(companionUi.includes("/api/companion/today"));
   assert.ok(parentUi.includes("/api/parent/claims"));
   assert.ok(parentUi.includes("/api/parent/completions"));

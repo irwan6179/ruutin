@@ -351,6 +351,10 @@ body {
 .ruutin-pair-countdown strong { color: var(--br-deep-purple); font-size: 19px; font-variant-numeric: tabular-nums; }
 .ruutin-pair-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
 .ruutin-pair-link-note { margin: 0; padding: 11px 13px; border-radius: 12px; color: #5f4a72; background: #f5effa; font-size: 12px; line-height: 1.45; }
+.ruutin-pair-success { display: grid; min-height: 250px; place-content: center; justify-items: center; gap: 8px; text-align: center; }
+.ruutin-pair-success-mark { display: grid; width: 64px; height: 64px; margin-bottom: 6px; place-items: center; border-radius: 22px; color: #fff; background: #4b977a; box-shadow: 0 12px 28px rgb(75 151 122 / .22); font-size: 30px; font-weight: 850; }
+.ruutin-pair-success h2 { margin: 0; color: var(--br-plum); font-size: 29px; letter-spacing: -.05em; }
+.ruutin-pair-success p { margin: 0; color: var(--br-muted); font-size: 14px; }
 .ruutin-pair-qr { display: block; width: 176px; aspect-ratio: 1; flex: 0 0 176px; border: 8px solid #fff; outline: 1px solid #ded0e8; border-radius: 12px; background: #fff; }
 .ruutin-pair-qr.compact { width: 118px; flex-basis: 118px; }
 .ruutin-companion-shell { min-height: 100svh; padding-bottom: 92px; background: radial-gradient(circle at 88% 2%, rgb(237 228 248 / .55), transparent 25rem), var(--background); }
@@ -532,9 +536,27 @@ body {
 .companion-today-balance > div { display: grid; gap: 3px; }
 .companion-today-balance strong { color: var(--br-deep-purple); font-size: 25px; letter-spacing: -.05em; }
 .companion-today-balance p { min-width: 0; max-width: 210px; margin: 0 0 0 auto; color: var(--br-muted); font-size: 11px; line-height: 1.45; overflow-wrap: anywhere; text-align: right; }
-.companion-task-list { display: grid; gap: 11px; }
-.companion-action-card { gap: 12px; }
-.companion-action-card > .ruutin-button { justify-self: start; min-height: 42px; }
+.ruutin-companion-shell .companion-today-heading { padding-top: 0; padding-bottom: 2px; }
+.ruutin-companion-shell .companion-today-heading h1 { font-size: clamp(30px, 8vw, 42px); }
+.companion-routines { display: grid; gap: 10px; }
+.companion-routines .ruutin-section-heading { align-items: center; }
+.companion-task-list { display: grid; gap: 8px; }
+.companion-task-row { display: grid; min-width: 0; min-height: 68px; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 11px; padding: 11px 12px; border-radius: 18px; }
+.companion-task-row.is-waiting { border-color: #efdcae; background: #fffbf0; }
+.companion-task-row.is-completed { border-color: #cce5d7; background: #f3fbf6; }
+.companion-task-copy { display: grid; min-width: 0; gap: 2px; }
+.companion-task-copy strong { overflow: hidden; color: var(--br-ink); font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.companion-task-copy small { color: var(--br-muted); font-size: 12px; font-weight: 750; }
+.companion-done-button { min-width: 82px; min-height: 44px; gap: 7px; padding: 9px 13px; }
+.companion-today-summary { display: grid; grid-template-columns: auto minmax(120px, 1fr) minmax(0, auto); align-items: center; gap: 18px; padding: 13px 15px; }
+.companion-summary-stat { display: grid; gap: 1px; }
+.companion-summary-stat span, .companion-summary-goal small { color: var(--br-muted); font-size: 10px; font-weight: 750; text-transform: uppercase; }
+.companion-summary-stat strong { color: var(--br-deep-purple); font-size: 23px; letter-spacing: -.04em; }
+.companion-summary-progress { display: grid; min-width: 120px; gap: 6px; }
+.companion-summary-goal { display: flex; min-width: 0; align-items: center; gap: 7px; }
+.companion-summary-goal > span:first-child { font-size: 24px; }
+.companion-summary-goal > span:last-child { display: grid; min-width: 0; gap: 1px; }
+.companion-summary-goal strong { max-width: 150px; overflow: hidden; color: var(--br-ink); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .companion-balance-card { display: grid; gap: 7px; background: linear-gradient(135deg, #f5edfc, #fff); }
 .companion-balance-card strong { color: var(--br-deep-purple); font-size: 34px; letter-spacing: -.06em; }
 .companion-balance-card p { margin: 0; color: var(--br-muted); font-size: 12px; }
@@ -556,6 +578,13 @@ body {
 .ruutin-archive-panel { display: grid; gap: 11px; }
 .companion-reward-catalogue .ruutin-reward-card .ruutin-button { justify-self: start; min-height: 40px; padding: 9px 13px; font-size: 11px; }
 .companion-reward-catalogue .ruutin-reward-card .ruutin-form-success { margin: 0; }
+
+@media (max-width: 520px) {
+  .companion-today-summary { grid-template-columns: auto minmax(0, 1fr); gap: 12px; }
+  .companion-summary-goal { grid-column: 1 / -1; }
+  .companion-task-row { gap: 9px; }
+  .companion-done-button { min-width: 72px; padding-inline: 11px; }
+}
 .ruutin-pairing-manager, .ruutin-device-manager { display: grid; min-width: 0; gap: 15px; }
 .ruutin-pairing-profile-list { display: grid; gap: 8px; }
 .ruutin-pairing-profile-row { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #eee6f3; }

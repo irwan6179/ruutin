@@ -133,9 +133,11 @@ test("dynamic app areas expose route fallbacks and optimistic companion actions"
     assert.match(source(path), /export \{ default \} from "\.\.\/loading"/u);
   }
 
-  assert.match(
-    source("app/companion/today/CompanionTodayManager.tsx"),
-    /state: "waiting"[\s\S]*setSelectedTask\(null\)/u,
+  const companionToday = source("app/companion/today/CompanionTodayManager.tsx");
+  assert.match(companionToday, /state: "waiting"/u);
+  assert.ok(
+    companionToday.indexOf('state: "waiting"') < companionToday.indexOf('await fetch("/api/companion/today"'),
+    "companion completion should become waiting before its network request",
   );
   assert.match(
     source("app/companion/rewards/CompanionRewardsManager.tsx"),
