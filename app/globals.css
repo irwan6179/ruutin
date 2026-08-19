@@ -765,6 +765,18 @@ body {
 }
 
 .br-site .br-cta-copy > p:last-child { max-width: 350px; margin-top: 18px; font-size: 16px; line-height: 1.45; }
+.br-site .br-static-auth-cta {
+  display: grid;
+  gap: 14px;
+  align-content: center;
+  padding: 20px;
+  border: 1px solid rgb(255 255 255 / 0.13);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 0.12);
+}
+.br-site .br-static-auth-cta strong { color: #fffaff; font-size: 20px; }
+.br-site .br-static-auth-cta p { margin: 0; color: #d0c3dc; font-size: 13px; line-height: 1.55; }
+.br-site .br-static-auth-cta .br-button { width: 100%; min-height: 54px; }
 .br-site .br-auth-flow { gap: 16px; padding: 20px; border-radius: 24px; background: rgb(255 255 255 / 0.12); }
 .br-site .br-sign-in-heading strong { font-size: 15px; }
 .br-site .br-sign-in-heading p { font-size: 11px; }
@@ -775,6 +787,27 @@ body {
 .br-site .br-auth-feedback { font-size: 12px; }
 .br-site .br-footer-note { margin-top: 22px; font-size: 12px; }
 .br-site .br-footer { min-height: 96px; font-size: 12px; }
+.br-signin-site { min-height: 100svh; }
+.br-signin-page {
+  display: grid;
+  min-height: calc(100svh - 92px);
+  align-content: center;
+  gap: 18px;
+  padding-block: clamp(44px, 8vw, 90px);
+}
+.br-site .br-signin-card { width: 100%; }
+.br-site .br-signin-card h1 {
+  font-family: var(--br-rounded-font);
+  font-size: clamp(43px, 8vw, 72px);
+  font-weight: 820;
+  letter-spacing: -0.085em;
+  line-height: 0.93;
+}
+.br-site .br-signin-card h1 em {
+  color: #d89cf2;
+  font-style: normal;
+}
+.br-signin-note { margin: 0 auto; color: #71627f; font-size: 12px; text-align: center; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }

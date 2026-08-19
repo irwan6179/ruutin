@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { AuthFlow } from "./auth/AuthFlow";
 
-export const revalidate = 3600;
+export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Ruutin | Calm routines for busy families",
@@ -53,7 +52,7 @@ export default function Home() {
         <nav className="br-nav" aria-label="Main navigation">
           <a href="#how-it-works">How it works</a>
           <a href="#privacy">Our approach</a>
-          <a className="br-nav-cta" href="#sign-in">
+          <a className="br-nav-cta" href="/signin">
             Sign in
           </a>
         </nav>
@@ -74,7 +73,7 @@ export default function Home() {
               A gentler rhythm for home.
             </p>
             <div className="br-hero-actions">
-              <a className="br-button br-button-primary" href="#sign-in">
+              <a className="br-button br-button-primary" href="/signin">
                 Sign in with email <span aria-hidden="true">↗</span>
               </a>
             </div>
@@ -157,7 +156,11 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="br-cta-section br-container" id="sign-in" aria-labelledby="cta-title">
+        <section
+          className="br-cta-section br-container"
+          id="get-started"
+          aria-labelledby="cta-title"
+        >
           <div className="br-cta-card">
             <div className="br-cta-copy">
               <p className="br-eyebrow">Start here</p>
@@ -168,7 +171,15 @@ export default function Home() {
                 Sign in with your email. We&apos;ll send a one-time code.
               </p>
             </div>
-            <AuthFlow />
+            <div className="br-static-auth-cta">
+              <strong>Ready when you are.</strong>
+              <p>
+                Use your email to sign in or create your household. We&apos;ll send a one-time code.
+              </p>
+              <a className="br-button br-button-light" href="/signin">
+                Continue with email <span aria-hidden="true">↗</span>
+              </a>
+            </div>
           </div>
           <p className="br-footer-note">
             Made for parents, caregivers, and the little wins in between.
