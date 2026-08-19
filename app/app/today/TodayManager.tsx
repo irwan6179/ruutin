@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { TaskOccurrence } from "../profile-contracts";
+import { ActionPendingOverlay } from "../../components/ActionPendingOverlay";
 
 type ProfileCard = {
   id: string;
@@ -157,6 +158,10 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
 
   return (
     <div className="ruutin-page-stack ruutin-today-page">
+      <ActionPendingOverlay
+        active={Boolean(busyKey) || refreshing}
+        label={refreshing ? "Refreshing today…" : "Saving today’s progress…"}
+      />
       <section className="ruutin-page-heading ruutin-today-heading" aria-labelledby="today-title">
         <div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">{overview.household.name} · {overview.localDate}</p><h1 id="today-title">Today, together. ✨</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={Boolean(busyKey) || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div>
         <p>Tap a routine to help it along.</p>

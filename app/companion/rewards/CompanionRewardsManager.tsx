@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ActionPendingOverlay } from "../../components/ActionPendingOverlay";
 
 type Reward = {
   id: string;
@@ -115,6 +116,10 @@ export function CompanionRewardsManager({ initialRewards, initialRequests }: { i
 
   return (
     <div className="ruutin-page-stack companion-page-stack">
+      <ActionPendingOverlay
+        active={Boolean(busy) || refreshing}
+        label={refreshing ? "Refreshing rewards…" : "Sending your reward request…"}
+      />
       <section className="ruutin-page-heading" aria-labelledby="companion-rewards-title"><div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">Small wins</p><h1 id="companion-rewards-title">Rewards</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={Boolean(busy) || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div><p>Your parent picks the ideas. You choose what to ask for.<span className="sr-only"> This is an assigned-profile space; your parent chooses, and there is no rush.</span></p></section>
       <section className="ruutin-card companion-balance-card" aria-label="Star balance"><span className="ruutin-eyebrow">Your stars</span><strong>{rewards.balance} ✦</strong>{rewards.activeReward ? <><p>{rewards.activeReward.emoji} {rewards.activeReward.title} · {rewards.activeReward.starCost} stars</p><div className="ruutin-progress" role="progressbar" aria-label={`Progress towards ${rewards.activeReward.title}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span aria-hidden="true" style={{ width: `${progress}%` }} /></div><div className="ruutin-card-meta"><span>{progress}% of the goal</span><span>{remaining > 0 ? `${remaining} more to go` : "Ready to ask"}</span></div></> : <p>No active goal yet. Your parent can add one when it feels right.</p>}</section>
       <section aria-labelledby="reward-list-title"><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Parent-selected</p><h2 id="reward-list-title">Reward ideas</h2></div><span className="ruutin-count-pill">{rewards.rewards.length}</span></div>{rewards.rewards.length === 0 ? <p className="ruutin-empty-state">Your parent can add a reward when the time feels right.</p> : <div className="ruutin-reward-catalogue companion-reward-catalogue">{rewards.rewards.map((reward) => { const pending = pendingByReward.get(reward.id); return <article className={`ruutin-card ruutin-reward-card${reward.isActive ? " is-active" : ""}`} key={reward.id}><div className="ruutin-profile-card-top"><span className="ruutin-avatar" aria-hidden="true">{reward.emoji}</span><div><h3>{reward.title}</h3><p>{reward.starCost} {reward.starCost === 1 ? "star" : "stars"} needed{reward.isActive ? " · active goal" : ""}</p></div></div>{pending ? <p className="ruutin-form-success" role="status">Waiting for parent review</p> : <button className="ruutin-button secondary" type="button" disabled={Boolean(busy)} onClick={() => void askFor(reward)}>{busy === reward.id ? "Sending…" : "Ask parent"} <span aria-hidden="true">↗</span></button>}</article>; })}</div>}</section>

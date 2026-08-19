@@ -11,6 +11,7 @@ import {
 } from "../profile-contracts";
 import { TaskManager } from "./TaskManager";
 import { PairingManager } from "./PairingManager";
+import { ActionPendingOverlay } from "../../components/ActionPendingOverlay";
 
 type EditValues = {
   nickname: string;
@@ -155,6 +156,10 @@ export function FamilyManager({
 
   return (
     <div className="ruutin-page-stack">
+      <ActionPendingOverlay
+        active={savingProfileId !== null || archiveBusyId !== null}
+        label={archiveBusyId ? "Archiving this profile…" : "Saving family changes…"}
+      />
       <section className="ruutin-page-heading" aria-labelledby="family-title">
         <p className="ruutin-eyebrow">Your people, your pace</p>
         <h1 id="family-title">Family</h1>

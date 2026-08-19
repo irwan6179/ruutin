@@ -268,6 +268,74 @@ body {
 .ruutin-route-loading-grid { display: grid; gap: 16px; }
 .ruutin-route-loading-grid > span { min-height: 190px; border-radius: 21px; }
 @keyframes ruutin-route-shimmer { to { transform: translateX(100%); } }
+.ruutin-action-pending-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  padding: 24px;
+  place-items: center;
+  background: rgb(44 27 63 / 0.48);
+  backdrop-filter: blur(10px);
+  animation: ruutin-pending-reveal 180ms 120ms both;
+}
+.ruutin-action-pending-card {
+  display: grid;
+  width: min(100%, 330px);
+  justify-items: center;
+  gap: 7px;
+  padding: 30px 24px 27px;
+  border: 1px solid rgb(255 255 255 / 0.72);
+  border-radius: 28px;
+  background: rgb(255 253 255 / 0.96);
+  box-shadow: 0 30px 80px rgb(39 21 57 / 0.28);
+  text-align: center;
+}
+.ruutin-action-pending-orbit {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  margin-bottom: 9px;
+  border: 2px solid #e5d7f1;
+  border-radius: 50%;
+  animation: ruutin-pending-orbit 1.15s linear infinite;
+}
+.ruutin-action-pending-orbit b {
+  position: absolute;
+  inset: 13px;
+  display: grid;
+  place-items: center;
+  border-radius: 23px;
+  color: #fffaff;
+  background: linear-gradient(145deg, #9d74c5, #604187);
+  font-size: 25px;
+  animation: ruutin-pending-pulse 900ms ease-in-out infinite alternate;
+}
+.ruutin-action-pending-orbit span {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #c4778a;
+  box-shadow: 0 3px 8px rgb(72 40 101 / 0.2);
+}
+.ruutin-action-pending-orbit span:nth-child(1) { top: -5px; left: 34px; }
+.ruutin-action-pending-orbit span:nth-child(2) { right: 2px; bottom: 8px; background: #4b977a; }
+.ruutin-action-pending-orbit span:nth-child(3) { bottom: 8px; left: 2px; background: #d99437; }
+.ruutin-action-pending-card p {
+  margin: 0;
+  color: var(--br-purple);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.ruutin-action-pending-card strong { color: var(--br-plum); font-size: 21px; line-height: 1.25; }
+.ruutin-action-pending-card small { max-width: 240px; color: var(--br-muted); font-size: 12px; line-height: 1.5; }
+@keyframes ruutin-pending-reveal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ruutin-pending-orbit { to { transform: rotate(360deg); } }
+@keyframes ruutin-pending-pulse { to { transform: scale(0.9); } }
 .ruutin-button:active { transform: translateY(1px) scale(.985); }
 .ruutin-card { animation: ruutin-card-in 220ms ease-out both; }
 @keyframes ruutin-card-in { from { opacity: .78; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
@@ -784,6 +852,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  .ruutin-action-pending-overlay { animation-delay: 0ms !important; }
 }
 
 a { color: inherit; text-decoration: none; }
@@ -1205,33 +1274,6 @@ a:focus-visible {
 .br-auth-form .br-button { width: 100%; margin-top: 5px; border: 0; cursor: pointer; }
 
 .br-auth-form .br-button:disabled { cursor: wait; opacity: 0.65; }
-
-.br-auth-progress {
-  display: flex;
-  min-height: 44px;
-  align-items: center;
-  gap: 10px;
-  margin-top: 3px;
-  padding: 10px 12px;
-  border: 1px solid rgb(255 255 255 / 0.2);
-  border-radius: 12px;
-  color: #fffaff;
-  background: rgb(255 255 255 / 0.12);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.br-auth-spinner {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  border: 2px solid rgb(255 255 255 / 0.35);
-  border-top-color: #fffaff;
-  border-radius: 50%;
-  animation: br-auth-spin 720ms linear infinite;
-}
-
-@keyframes br-auth-spin { to { transform: rotate(360deg); } }
 
 .br-auth-help { color: #c6b8d2; font-size: 10px; line-height: 1.4; }
 

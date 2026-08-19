@@ -2,6 +2,10 @@
 
 import { FormEvent, useState } from "react";
 import { SignOutButton } from "./SignOutButton";
+import {
+  ActionPendingOverlay,
+  usePendingDocumentNavigation,
+} from "../../components/ActionPendingOverlay";
 
 type SettingsData = Readonly<{
   account: { email: string };
@@ -41,6 +45,7 @@ async function responseMessage(response: Response, fallback: string): Promise<st
 }
 
 export function SettingsManager({ initialSettings }: { initialSettings: SettingsData }) {
+  const { pendingLabel, navigate } = usePendingDocumentNavigation();
   const [timezone, setTimezone] = useState(initialSettings.household.timezone);
   const [savingTimezone, setSavingTimezone] = useState(false);
   const [timezoneMessage, setTimezoneMessage] = useState("");
@@ -147,7 +152,7 @@ export function SettingsManager({ initialSettings }: { initialSettings: Settings
     try {
       const response = await sendJson("/api/parent/settings/deletion", { confirmation });
       if (!response.ok) throw new Error(await responseMessage(response, "We couldn’t delete this household yet."));
-      window.location.assign("/");
+      navigate("/", "Returning to the homepage…", { replace: true });
     } catch (error) {
       setDeletionError(error instanceof Error ? error.message : "We couldn’t delete this household yet.");
       setDeletionBusy(false);
@@ -156,6 +161,10 @@ export function SettingsManager({ initialSettings }: { initialSettings: Settings
 
   return (
     <div className="ruutin-page-stack">
+      <ActionPendingOverlay
+        active={savingTimezone || exporting || deletionBusy || Boolean(pendingLabel)}
+        label={pendingLabel || (savingTimezone ? "Saving your timezone…" : exporting ? "Preparing your download…" : deleteStage === "confirm" ? "Deleting this household…" : deleteStage === "code" ? "Checking the confirmation code…" : "Sending a confirmation code…")}
+      />
       <section className="ruutin-page-heading" aria-labelledby="settings-title">
         <p className="ruutin-eyebrow">Your controls</p>
         <h1 id="settings-title">Settings</h1>

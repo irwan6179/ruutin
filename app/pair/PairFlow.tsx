@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useSyncExternalStore, type FormEvent } from "react";
+import {
+  ActionPendingOverlay,
+  usePendingDocumentNavigation,
+} from "../components/ActionPendingOverlay";
 
 type Preview = { nickname: string; emoji: string; expiresAt: string };
 
@@ -26,6 +30,7 @@ function formatRemaining(expiresAt: string, now: number): string {
 }
 
 export function PairFlow() {
+  const { pendingLabel, navigate } = usePendingDocumentNavigation();
   const [code, setCode] = useState("");
   const token = useSyncExternalStore(subscribeToLocation, pairingUrlToken, () => "");
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -61,7 +66,7 @@ export function PairFlow() {
         beginCountdown(payload.pairing.expiresAt);
         return;
       }
-      window.location.assign("/companion/today");
+      navigate("/companion/today", "Opening your routine space…", { replace: true });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not check that pairing request.");
     } finally {
@@ -84,6 +89,11 @@ export function PairFlow() {
   const urlValue = token;
   return (
     <main className="ruutin-public-shell pair-shell">
+      <ActionPendingOverlay
+        active={busy || Boolean(pendingLabel)}
+        label={pendingLabel || (confirming ? "Linking this device…" : "Checking the pairing code…")}
+        detail="The selected companion space is being verified securely."
+      />
       <a className="ruutin-skip-link" href="#pair-main">Skip to content</a>
       <div className="ruutin-pair-card" id="pair-main">
         <p className="ruutin-eyebrow">Ruutin companion</p>

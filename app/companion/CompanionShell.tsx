@@ -2,6 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import {
+  ActionPendingOverlay,
+  usePendingDocumentNavigation,
+} from "../components/ActionPendingOverlay";
 
 const destinations = [
   { href: "/companion/today", label: "Today", icon: "☼" },
@@ -33,11 +37,18 @@ export function CompanionShell({
   profile: { nickname: string; emoji: string };
 }) {
   const pathname = usePathname();
+  const { pendingLabel, beginNavigation } = usePendingDocumentNavigation();
   return (
     <div className="ruutin-companion-shell">
+      <ActionPendingOverlay active={Boolean(pendingLabel)} label={pendingLabel} />
       <a className="ruutin-skip-link" href="#companion-main">Skip to content</a>
       <header className="ruutin-app-header companion-header">
-        <a className="ruutin-app-brand" href="/companion/today" aria-label="Ruutin companion Today">
+        <a
+          className="ruutin-app-brand"
+          href="/companion/today"
+          aria-label="Ruutin companion Today"
+          onClick={(event) => beginNavigation(event, "/companion/today", "Today")}
+        >
           <span className="ruutin-app-mark" aria-hidden="true">✦</span>
           <span>Ruutin</span>
         </a>
@@ -54,6 +65,9 @@ export function CompanionShell({
               className={`ruutin-bottom-nav-link${active ? " is-active" : ""}`}
               href={destination.href}
               aria-current={active ? "page" : undefined}
+              onClick={(event) =>
+                beginNavigation(event, destination.href, destination.label)
+              }
               key={destination.href}
             >
               <DestinationLabel icon={destination.icon} label={destination.label} />

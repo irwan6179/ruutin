@@ -1,6 +1,10 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActionPendingOverlay,
+  usePendingDocumentNavigation,
+} from "../components/ActionPendingOverlay";
 
 type AuthStep = "email" | "code";
 const CODE_LENGTH = 6;
@@ -24,6 +28,7 @@ async function readPayload(response: Response): Promise<ApiPayload> {
 }
 
 export function AuthFlow() {
+  const { pendingLabel, navigate } = usePendingDocumentNavigation();
   const [step, setStep] = useState<AuthStep>("email");
   const [email, setEmail] = useState("");
   const [codeDigits, setCodeDigits] = useState<string[]>(() => Array(CODE_LENGTH).fill(""));
@@ -109,7 +114,7 @@ export function AuthFlow() {
       }
       // The protected entry chooses onboarding for a brand-new parent and
       // Today for an existing household.
-      window.location.replace("/app");
+      navigate("/app", "Opening your family space…", { replace: true });
     } catch {
       setError(GENERIC_ERROR);
     } finally {
@@ -194,6 +199,11 @@ export function AuthFlow() {
 
   return (
     <div className="br-auth-flow" aria-label="Parent email sign-in" aria-busy={busy}>
+      <ActionPendingOverlay
+        active={busy || Boolean(pendingLabel)}
+        label={pendingLabel || (step === "email" ? "Sending your sign-in code…" : "Checking your code…")}
+        detail="Your secure parent session is being prepared."
+      />
       <div className="br-sign-in-heading">
         <div className="br-sign-in-icon" aria-hidden="true">✦</div>
         <div>
@@ -265,13 +275,6 @@ export function AuthFlow() {
             Use a different email
           </button>
         </form>
-      )}
-
-      {busy && (
-        <div className="br-auth-progress" role="status" aria-live="polite">
-          <span className="br-auth-spinner" aria-hidden="true" />
-          <span>{step === "email" ? "Sending your sign-in code…" : "Checking your code…"}</span>
-        </div>
       )}
 
       <p className="br-auth-feedback" aria-live="polite" role={error ? "alert" : undefined}>

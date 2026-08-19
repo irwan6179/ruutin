@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import type { ParentDevice, ParentProfile } from "../profile-contracts";
 import { PairingQr } from "../../pair/PairingQr";
+import {
+  ActionPendingOverlay,
+  usePendingDocumentNavigation,
+} from "../../components/ActionPendingOverlay";
 
 type PairingChallenge = {
   id: string;
@@ -42,6 +46,7 @@ export function PairingManager({
   initialDevices: ParentDevice[];
   timezone: string;
 }) {
+  const { pendingLabel, beginNavigation } = usePendingDocumentNavigation();
   const [challenge, setChallenge] = useState<PairingChallenge | null>(null);
   const [devices, setDevices] = useState(initialDevices);
   const [clock, setClock] = useState(() => Date.now());
@@ -141,11 +146,15 @@ export function PairingManager({
   const eligibleProfiles = profiles.filter((profile) => profile.companionAccessEligible === 1 && !profile.archivedAt);
   return (
     <>
+      <ActionPendingOverlay
+        active={busy !== "" || Boolean(pendingLabel)}
+        label={pendingLabel || (busy === "cancel" ? "Cancelling this link…" : busy.startsWith("revoke:") ? "Revoking companion access…" : busy.startsWith("rename:") ? "Saving the device name…" : "Preparing a pairing link…")}
+      />
       <section className="ruutin-card ruutin-pairing-manager" id="pairing" aria-labelledby="pairing-title">
         <div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Parent-only control</p><h2 id="pairing-title">Pair a companion device</h2></div><span className="ruutin-count-pill">{eligibleProfiles.length}</span></div>
         <p className="ruutin-muted-note">Pairing links show only the selected nickname and emoji. They expire in ten minutes and can be cancelled at any time.</p>
         {eligibleProfiles.length === 0 ? <p className="ruutin-empty-state">No profile is eligible for companion access yet.</p> : <div className="ruutin-pairing-profile-list">{eligibleProfiles.map((profile) => <div className="ruutin-pairing-profile-row" key={profile.id}><span className="ruutin-avatar small" aria-hidden="true">{profile.emoji}</span><span><strong>{profile.nickname}</strong><small>Parent confirmation is on file</small></span><button className="ruutin-button secondary" type="button" onClick={() => void createChallenge(profile.id)} disabled={busy !== ""}>{busy === `pair:${profile.id}` ? "Creating…" : challenge?.profileId === profile.id ? "Regenerate" : "Create link"}</button></div>)}</div>}
-        {challenge && <div className="ruutin-pairing-challenge" aria-live="polite"><div className="ruutin-pairing-challenge-top"><div><p className="ruutin-eyebrow">Ready to pair</p><strong className="ruutin-pairing-code">{challenge.code}</strong><p className="ruutin-form-help">Manual code · expires in {formatRemaining(challenge.expiresAt, clock)}</p></div><PairingQr value={challenge.pairingUrl} /></div><label htmlFor="pairing-url">Pairing URL</label><input id="pairing-url" readOnly value={challenge.pairingUrl} onFocus={(event) => event.currentTarget.select()} /><div className="ruutin-family-actions"><a className="ruutin-button secondary" href={challenge.pairingUrl}>Open pairing page</a><button className="ruutin-text-button danger" type="button" onClick={() => void cancelChallenge()} disabled={busy !== "" || challengeExpired}>{busy === "cancel" ? "Cancelling…" : "Cancel link"}</button></div>{challengeExpired && <p className="ruutin-form-error" role="alert">This link expired. Generate a fresh one when you&apos;re ready.</p>}</div>}
+        {challenge && <div className="ruutin-pairing-challenge" aria-live="polite"><div className="ruutin-pairing-challenge-top"><div><p className="ruutin-eyebrow">Ready to pair</p><strong className="ruutin-pairing-code">{challenge.code}</strong><p className="ruutin-form-help">Manual code · expires in {formatRemaining(challenge.expiresAt, clock)}</p></div><PairingQr value={challenge.pairingUrl} /></div><label htmlFor="pairing-url">Pairing URL</label><input id="pairing-url" readOnly value={challenge.pairingUrl} onFocus={(event) => event.currentTarget.select()} /><div className="ruutin-family-actions"><a className="ruutin-button secondary" href={challenge.pairingUrl} onClick={(event) => beginNavigation(event, challenge.pairingUrl, "the pairing page")}>Open pairing page</a><button className="ruutin-text-button danger" type="button" onClick={() => void cancelChallenge()} disabled={busy !== "" || challengeExpired}>{busy === "cancel" ? "Cancelling…" : "Cancel link"}</button></div>{challengeExpired && <p className="ruutin-form-error" role="alert">This link expired. Generate a fresh one when you&apos;re ready.</p>}</div>}
         {error && <p className="ruutin-form-error" role="alert" aria-live="polite">{error}</p>}
       </section>
       <section className="ruutin-card ruutin-device-manager" id="devices" aria-labelledby="devices-title"><div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Linked devices</p><h2 id="devices-title">Companion access</h2></div><span className="ruutin-count-pill">{devices.length}</span></div><p className="ruutin-muted-note">Only parents can rename, revoke, or replace a linked device. Revocation takes effect on its next request.</p>{devices.length === 0 ? <p className="ruutin-empty-state">No devices linked.</p> : <ul className="ruutin-simple-list">{devices.map((device) => <li className="ruutin-device-row" key={device.id}><span className="ruutin-avatar small" aria-hidden="true">{device.profileEmoji}</span><span className="ruutin-device-summary"><strong>{device.deviceLabel}</strong><small>{device.profileNickname} · linked {formatDeviceDate(device.createdAt, timezone)} · last active {formatDeviceDate(device.lastSeenAt, timezone, true)}</small><span className={device.revokedAt ? "ruutin-state-note" : "ruutin-state-note good"}>{device.revokedAt ? `Revoked ${formatDeviceDate(device.revokedAt, timezone)}` : "Linked"}</span></span><div className="ruutin-device-actions">{!device.revokedAt && <><label className="sr-only" htmlFor={`device-label-${device.id}`}>Rename {device.deviceLabel}</label><input id={`device-label-${device.id}`} value={labels[device.id] ?? device.deviceLabel} onChange={(event) => setLabels((previous) => ({ ...previous, [device.id]: event.target.value }))} maxLength={40} /><button className="ruutin-button secondary" type="button" onClick={() => void renameDevice(device)} disabled={busy !== ""}>{busy === `rename:${device.id}` ? "Saving…" : "Rename"}</button><button className="ruutin-text-button danger" type="button" onClick={() => void revokeDevice(device)} disabled={busy !== ""}>{busy === `revoke:${device.id}` ? "Revoking…" : "Revoke"}</button></>}{device.revokedAt && <button className="ruutin-button secondary" type="button" onClick={() => void createChallenge(device.profileId)} disabled={busy !== ""}>Create replacement link</button>}</div></li>)}</ul>}</section>

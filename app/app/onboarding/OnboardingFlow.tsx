@@ -5,6 +5,10 @@ import { AGE_BAND_OPTIONS, COMPANION_CONSENT_COPY, type HouseholdRecord, type On
 import { TaskManager } from "../family/TaskManager";
 import { PairingManager } from "../family/PairingManager";
 import { RewardsManager, type Reward, type RewardRequest } from "../rewards/RewardsManager";
+import {
+  ActionPendingOverlay,
+  usePendingDocumentNavigation,
+} from "../../components/ActionPendingOverlay";
 
 type Props = {
   initialState: OnboardingState;
@@ -48,6 +52,7 @@ const getBrowserTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZon
 const getServerTimezone = () => "UTC";
 
 export function OnboardingFlow({ initialState, initialHousehold, initialProfiles, initialRewards, initialRewardRequests, initialDevices }: Props) {
+  const { pendingLabel, navigate } = usePendingDocumentNavigation();
   const [state, setState] = useState(initialState);
   const [household, setHousehold] = useState(initialHousehold);
   const [profiles, setProfiles] = useState(initialProfiles);
@@ -121,13 +126,14 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
         return;
       }
       if (canPair) goTo("pairing");
-      else window.location.assign("/app/today");
+      else navigate("/app/today", "Opening Today…");
     }
-    else if (state.activeStep === "pairing") window.location.assign("/app/today");
+    else if (state.activeStep === "pairing") navigate("/app/today", "Opening Today…");
   }
 
   return (
     <div className="ruutin-onboarding">
+      <ActionPendingOverlay active={busy || Boolean(pendingLabel)} label={pendingLabel || "Saving your setup…"} />
       <section className="ruutin-onboarding-header" aria-labelledby="onboarding-title">
         <p className="ruutin-eyebrow">A calm setup, one step at a time</p>
         <h1 id="onboarding-title">Make it yours.</h1>
@@ -202,7 +208,7 @@ export function OnboardingFlow({ initialState, initialHousehold, initialProfiles
               <div className="ruutin-boundary-note"><strong>All set</strong><span>You can start your routines without pairing a device.</span></div>
             </>}
             <button className="ruutin-button" type="button" onClick={continueBoundary}>Finish setup <span aria-hidden="true">↗</span></button>
-            {canPair && <button className="ruutin-text-button" type="button" onClick={() => window.location.assign("/app/today")}>Skip for now</button>}
+            {canPair && <button className="ruutin-text-button" type="button" onClick={() => navigate("/app/today", "Opening Today…")}>Skip for now</button>}
           </div>
         )}
         {error && <p className="ruutin-form-error" role="alert">{error}</p>}

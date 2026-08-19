@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { InstallGuidance } from "../InstallGuidance";
+import { ActionPendingOverlay } from "../../components/ActionPendingOverlay";
 
 type CompanionTask = {
   id: string;
@@ -119,6 +120,10 @@ export function CompanionTodayManager({ initialToday }: { initialToday: TodayDat
 
   return (
     <div className="ruutin-page-stack companion-page-stack">
+      <ActionPendingOverlay
+        active={busy || refreshing}
+        label={refreshing ? "Refreshing today…" : "Sending this routine for approval…"}
+      />
       <section className="ruutin-page-heading" aria-labelledby="companion-today-title">
         <div className="ruutin-page-heading-top"><div><p className="ruutin-eyebrow">{today.localDate} · your space</p><h1 id="companion-today-title">Hi {today.profile.nickname} {today.profile.emoji}</h1></div><button className="ruutin-button secondary compact" type="button" onClick={() => void refreshManually()} disabled={busy || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></div>
         <p>Pick a routine. Your parent reviews it when you&apos;re ready.</p>

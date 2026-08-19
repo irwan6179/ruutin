@@ -14,6 +14,9 @@ test("protected app shells use reliable document navigation", () => {
     const contents = source(path);
     assert.match(contents, /<a\s+className=\{`ruutin-bottom-nav-link/u);
     assert.match(contents, /href=\{destination\.href\}/u);
+    assert.match(contents, /usePendingDocumentNavigation\(\)/u);
+    assert.match(contents, /beginNavigation\(event, destination\.href, destination\.label\)/u);
+    assert.match(contents, /<ActionPendingOverlay/u);
     assert.doesNotMatch(contents, /from "next\/link"|useLinkStatus|prefetch=/u);
   }
 });
@@ -22,7 +25,7 @@ test("successful email verification uses the first-time-aware app entry", () => 
   const authFlow = source("app/auth/AuthFlow.tsx");
   const appIndex = source("app/app/page.tsx");
 
-  assert.match(authFlow, /window\.location\.replace\("\/app"\)/u);
+  assert.match(authFlow, /navigate\("\/app", "Opening your family space…", \{ replace: true \}\)/u);
   assert.doesNotMatch(authFlow, /Continue to Ruutin|You&apos;re in|step === "success"/u);
   assert.match(appIndex, /getParentPageContext\(\)/u);
   assert.match(appIndex, /parent \? "\/app\/today" : "\/app\/onboarding"/u);
@@ -34,9 +37,38 @@ test("email sign-in submits with Enter and exposes an explicit busy state", () =
   assert.match(authFlow, /enterKeyHint="send"/u);
   assert.match(authFlow, /aria-keyshortcuts="Enter"/u);
   assert.match(authFlow, /event\.currentTarget\.form\?\.requestSubmit\(\)/u);
-  assert.match(authFlow, /className="br-auth-progress" role="status"/u);
+  assert.match(authFlow, /<ActionPendingOverlay/u);
   assert.match(authFlow, /Sending your sign-in code…/u);
   assert.match(authFlow, /aria-busy=\{busy\}/u);
+});
+
+test("network-backed actions share a prominent accessible pending interaction", () => {
+  for (const path of [
+    "app/auth/AuthFlow.tsx",
+    "app/pair/PairFlow.tsx",
+    "app/app/family/FamilyManager.tsx",
+    "app/app/family/PairingManager.tsx",
+    "app/app/family/TaskManager.tsx",
+    "app/app/onboarding/OnboardingFlow.tsx",
+    "app/app/rewards/RewardsManager.tsx",
+    "app/app/settings/SettingsManager.tsx",
+    "app/app/settings/SignOutButton.tsx",
+    "app/app/today/TodayManager.tsx",
+    "app/companion/rewards/CompanionRewardsManager.tsx",
+    "app/companion/today/CompanionTodayManager.tsx",
+  ]) {
+    assert.match(source(path), /<ActionPendingOverlay/u, path);
+  }
+
+  const pendingInteraction = source("app/components/ActionPendingOverlay.tsx");
+  const styles = source("app/globals.css");
+  assert.match(pendingInteraction, /role="status"/u);
+  assert.match(pendingInteraction, /aria-live="polite"/u);
+  assert.match(pendingInteraction, /aria-busy="true"/u);
+  assert.match(pendingInteraction, /requestAnimationFrame/u);
+  assert.match(styles, /animation: ruutin-pending-reveal 180ms 120ms both/u);
+  assert.match(styles, /prefers-reduced-motion: reduce/u);
+  assert.match(styles, /\.ruutin-action-pending-overlay \{ animation-delay: 0ms !important; \}/u);
 });
 
 test("verification code uses six accessible digit fields with paste support", () => {

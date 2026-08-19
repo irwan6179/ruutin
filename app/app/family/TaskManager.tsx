@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { ROUTINE_CATEGORIES, templateById } from "../../../shared/task-templates";
 import type { ParentProfile, ParentTask, TaskOccurrence, TaskSchedule } from "../profile-contracts";
+import { ActionPendingOverlay } from "../../components/ActionPendingOverlay";
 
 const WEEKDAYS = [
   [1, "Mon"], [2, "Tue"], [3, "Wed"], [4, "Thu"], [5, "Fri"], [6, "Sat"], [7, "Sun"],
@@ -287,6 +288,7 @@ export function TaskManager({
   }
 
   return <section className={`ruutin-card ruutin-task-manager${compact ? " is-compact" : ""}`} id={compact ? undefined : "tasks"} aria-labelledby="task-manager-title">
+    <ActionPendingOverlay active={busy} label="Updating your routines…" />
     <div className="ruutin-section-heading"><div><p className="ruutin-eyebrow">Routine setup</p><h2 id="task-manager-title">Tasks that fit your rhythm</h2><p className="ruutin-muted-note">Start with a cheerful suggestion, then make it yours. {localDate && `Today is ${localDate} in your household.`}</p></div>{!compact && <span className="ruutin-count-pill">{tasks.length}</span>}</div>
     {activeProfiles.length > 1 && <div className="ruutin-task-profile-picker"><label htmlFor="task-profile">Set routines for</label><select id="task-profile" value={effectiveProfileId} onChange={(event) => onProfileChange(event.target.value)}>{activeProfiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.emoji} {profile.nickname}</option>)}</select></div>}
     {!selectedProfile ? <p className="ruutin-empty-state">Add a profile first, then we’ll make a routine together.</p> : <>
