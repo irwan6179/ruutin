@@ -20,6 +20,13 @@ test("app shells use private soft navigation with accessible pending feedback", 
   }
 });
 
+test("successful email verification redirects straight into Ruutin", () => {
+  const authFlow = source("app/auth/AuthFlow.tsx");
+
+  assert.match(authFlow, /window\.location\.replace\("\/app\/today"\)/u);
+  assert.doesNotMatch(authFlow, /Continue to Ruutin|You&apos;re in|step === "success"/u);
+});
+
 test("protected layouts and pages share one cached authentication context", () => {
   const parentContext = source("app/app/page-context.ts");
   const companionContext = source("app/companion/page-context.ts");

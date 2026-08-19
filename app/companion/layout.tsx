@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { CompanionShell } from "./CompanionShell";
 import { getCompanionPageContext } from "./page-context";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  manifest: "/companion.webmanifest",
+};
 
 function isFrameworkRedirect(error: unknown): boolean {
   return Boolean(

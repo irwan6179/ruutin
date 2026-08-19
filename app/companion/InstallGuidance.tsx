@@ -33,7 +33,8 @@ export function InstallGuidance() {
       {!standalone && <p>{SAVE_MESSAGE}</p>}
       {standalone && <p>This app is already open from your home screen. You can reopen these steps whenever you need them.</p>}
       {open && <div className="ruutin-install-details" id="install-guidance-details">
-        <p><strong>iPhone Safari:</strong> tap Share, then <em>Add to Home Screen</em>.</p>
+        <p><strong>iPhone Safari or Chrome:</strong> finish linking and wait for Today to open. Remove any older Ruutin icon, then tap Share and <em>Add to Home Screen</em>.</p>
+        <p>If the saved app asks you to link again, get a fresh six-digit code from your parent and enter it there.</p>
         <p><strong>Android Chrome or another common browser:</strong> open the browser menu, then choose <em>Install app</em> or <em>Add to Home screen</em>.</p>
       </div>}
     </section>

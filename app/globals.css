@@ -783,6 +783,26 @@ body {
 .br-site .br-auth-form { gap: 9px; }
 .br-site .br-auth-form label { font-size: 12px; }
 .br-site .br-auth-form input { min-height: 54px; border-radius: 16px; font-size: 16px; }
+
+.br-site .br-auth-code-input {
+  min-height: 58px;
+  padding-inline: 20px 14px;
+  color: #fffaff;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  line-height: 1;
+  text-align: center;
+}
+
+.br-site .br-auth-code-input::placeholder {
+  color: #d6c9e1;
+  letter-spacing: 0.22em;
+  opacity: 0.78;
+}
+
+.br-site .br-auth-code-input:focus { letter-spacing: 0.22em; }
 .br-site .br-auth-form .br-button { min-height: 54px; border-radius: 16px; }
 .br-site .br-auth-feedback { font-size: 12px; }
 .br-site .br-footer-note { margin-top: 22px; font-size: 12px; }
@@ -1242,8 +1262,7 @@ a:focus-visible {
   background: rgb(255 255 255 / 0.09);
 }
 
-.br-sign-in-heading,
-.br-auth-success {
+.br-sign-in-heading {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -1256,11 +1275,9 @@ a:focus-visible {
 
 .br-sign-in-box p { margin: 3px 0 0; color: #c6b8d2; font-size: 10px; }
 
-.br-sign-in-heading strong,
-.br-auth-success strong { color: #fffaff; font-size: 13px; font-weight: 660; }
+.br-sign-in-heading strong { color: #fffaff; font-size: 13px; font-weight: 660; }
 
-.br-sign-in-heading p,
-.br-auth-success p { margin: 3px 0 0; overflow: hidden; color: #c6b8d2; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.br-sign-in-heading p { margin: 3px 0 0; overflow: hidden; color: #c6b8d2; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 
 .br-auth-form { display: grid; gap: 8px; }
 
@@ -1302,26 +1319,6 @@ a:focus-visible {
 .br-auth-back:hover { color: #fffaff; text-decoration: underline; }
 
 .br-auth-feedback { min-height: 16px; margin: 0; color: #ddcaee; font-size: 11px; line-height: 1.45; }
-
-.br-auth-success-icon {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  place-items: center;
-  border-radius: 12px;
-  color: #fff;
-  background: #9a74bd;
-  font-size: 17px;
-  animation: br-auth-pop 280ms ease-out both;
-}
-
-.br-auth-continue { width: 100%; }
-
-@keyframes br-auth-pop {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
-}
 
 .br-button-light { grid-column: 1 / -1; width: 100%; color: var(--br-plum); background: #fffaff; }
 

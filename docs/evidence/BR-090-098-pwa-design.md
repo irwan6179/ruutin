@@ -5,9 +5,14 @@ pairing, device, or parent identity values.
 
 ## Manifest and install metadata
 
-- `public/manifest.webmanifest` declares the product name and short name as
-  `Ruutin`, uses `standalone` display, portrait orientation, the Ruutin theme
-  and background colors, and starts at `/`.
+- `public/manifest.webmanifest` declares the parent/product install identity as
+  `/`, uses `standalone` display, portrait orientation, the Ruutin theme and
+  background colors, and starts at `/`.
+- `public/companion.webmanifest` declares a separate `/companion` install
+  identity and starts at `/companion/today`. Companion routes override the
+  root manifest through nested metadata. Its `/` scope keeps the safe `/pair`
+  fallback inside standalone mode when an iPhone does not transfer the
+  existing companion cookie.
 - The manifest references valid PNG assets at 192×192, 512×512, and 512×512
   maskable sizes. `public/apple-touch-icon.png` is 180×180 for iPhone Safari.
 - `app/layout.tsx` emits the manifest, PNG icon links, Apple touch icon,
@@ -17,8 +22,9 @@ pairing, device, or parent identity values.
 
 - After pairing, `/companion/today` renders the exact message: “Save Ruutin to
   this device's home screen for easier access.” The companion can reopen the
-  iPhone Safari and common Android browser steps with “How to save”; the
-  guidance remains available after installation.
+  iPhone Safari/Chrome and common Android browser steps with “How to save”;
+  the guidance tells users to remove an older icon before reinstalling and to
+  pair with a fresh code inside the saved app if cookie transfer is unavailable.
 - `InstallGuidance` detects `display-mode: standalone` and iPhone Safari's
   `navigator.standalone` signal without changing the server-rendered snapshot.
 - The Sites origin accepted the disposable capability probe in BR-004, but

@@ -420,12 +420,13 @@ The app is online-first. After successful mutations, refetch authoritative data.
 
 Required assets and metadata:
 
-- `manifest.webmanifest`: name **Ruutin**, short name **Ruutin**, standalone display, theme/background colors
+- `manifest.webmanifest`: parent/product install identity, name **Ruutin**, short name **Ruutin**, standalone display, theme/background colors
+- `companion.webmanifest`: distinct companion identity that launches at `/companion/today` while keeping `/pair` in scope
 - 192×192, 512×512, maskable, and Apple touch icons
 - Mobile viewport and safe-area metadata
 - Standalone-mode detection
 - Post-pairing message: “Save Ruutin to this device’s home screen for easier access.”
-- Guidance for Safari on iPhone and common Android browsers
+- Guidance for Safari or Chrome on iPhone and common Android browsers, including reinstall and in-app re-pair fallback
 
 The current Sites probe confirms that the origin accepts service-worker
 registration, but Ruutin deliberately does not ship an application service

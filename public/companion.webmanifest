@@ -1,9 +1,9 @@
 {
-  "name": "Ruutin",
+  "name": "Ruutin Companion",
   "short_name": "Ruutin",
   "description": "A calm routine and reward space for families.",
-  "id": "/",
-  "start_url": "/",
+  "id": "/companion",
+  "start_url": "/companion/today",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

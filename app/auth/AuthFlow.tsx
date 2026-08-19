@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useCallback, useState } from "react";
 
-type AuthStep = "email" | "code" | "success";
+type AuthStep = "email" | "code";
 
 const GENERIC_ERROR = "We couldn’t complete that just yet. Please try again.";
 
@@ -101,8 +100,7 @@ export function AuthFlow() {
         setError(payload.message ?? "That code is invalid or has expired. Request a new code and try again.");
         return;
       }
-      setStep("success");
-      setStatus("You’re signed in. Your household is ready when you are.");
+      window.location.replace("/app/today");
     } catch {
       setError(GENERIC_ERROR);
     } finally {
@@ -152,23 +150,6 @@ export function AuthFlow() {
     setStatus("");
   }
 
-  if (step === "success") {
-    return (
-      <div className="br-auth-flow" aria-label="Parent sign-in complete">
-        <div className="br-auth-success" role="status">
-          <span className="br-auth-success-icon" aria-hidden="true">✓</span>
-          <div>
-            <strong>You&apos;re in.</strong>
-            <p>{status}</p>
-          </div>
-        </div>
-        <Link className="br-button br-button-light br-auth-continue" href="/app/today" prefetch={false}>
-          Continue to Ruutin <span aria-hidden="true">↗</span>
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="br-auth-flow" aria-label="Parent email sign-in">
       <div className="br-sign-in-heading">
@@ -201,6 +182,7 @@ export function AuthFlow() {
         <form className="br-auth-form" onSubmit={submitCode}>
           <label htmlFor="ruutin-code">Six-digit code</label>
           <input
+            className="br-auth-code-input"
             id="ruutin-code"
             name="code"
             type="text"
