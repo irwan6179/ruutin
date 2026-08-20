@@ -24,6 +24,7 @@ import {
 } from "../server/claims";
 import { handleCompanionClaim, handleParentClaims, handleParentLedger } from "../server/claim-routes";
 import { issueCsrfToken } from "../server/http-security";
+import { listTaskOccurrencesForParent } from "../server/tasks";
 
 const SECRET = "g06-session-secret-for-tests-0123456789";
 const timestamp = "2026-08-18T00:00:00.000Z";
@@ -250,6 +251,8 @@ test("parent completion resolves a pending companion claim once and reversal is 
   const repeated = await reverseTaskLedgerForParent(db, parent(), "claim-pending", "Retry", { now: new Date("2026-08-19T00:00:00.000Z") });
   assert.equal(repeated.balance, 0);
   assert.equal(database.prepare("SELECT count(*) AS count FROM point_ledger WHERE event_type = 'task_reversed'").get()?.count, 1);
+  const today = await listTaskOccurrencesForParent(db, parent(), "p1", { now: new Date(timestamp) });
+  assert.equal(today.occurrences.find((task) => task.id === "t1")?.awardReversed, true);
 });
 
 test("claim routes enforce parent CSRF, companion origin, private responses, and household scope", async () => {
@@ -403,6 +406,8 @@ test("claims UI has direct action/refetch states and reduced-motion design guard
   assert.match(parentUi, /requestId/);
   assert.match(parentUi, /role="progressbar"/);
   assert.match(parentUi, /Reverse stars/);
+  assert.match(parentUi, /awardReversed/);
+  assert.match(parentUi, /type="submit"/);
   assert.match(parentUi, /Adjust stars/);
   assert.match(styles, /prefers-reduced-motion/);
   assert.match(styles, /ruutin-inline-dialog/);

@@ -344,6 +344,7 @@ export async function handleParentTasks(
           state: "not_due" as const,
           claimId: null,
           submittedAt: null,
+          awardReversed: false,
         });
         return jsonResponse({ tasks: managementTasks, occurrences: occurrenceView.occurrences, localDate: occurrenceView.localDate }, { status: 200 }, { private: true });
       }

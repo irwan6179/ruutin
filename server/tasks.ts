@@ -46,6 +46,7 @@ export type TaskOccurrence = ParentTask & {
   state: "todo" | "waiting" | "completed";
   claimId: string | null;
   submittedAt: string | null;
+  awardReversed: boolean;
 };
 
 function runStatement(statement: D1StatementLike): Promise<unknown> {
@@ -368,30 +369,45 @@ export async function listTaskOccurrencesForParent(
     ? localDateFor(options.now ?? new Date(), household.timezone)
     : validateLocalDate(options.localDate);
   const tasks = await listTasksForParent(db, context, profile.id);
-  const claims = await db.prepare(`SELECT id, task_id AS taskId, status, submitted_at AS submittedAt
-      FROM task_claims
-      WHERE household_id = ? AND child_profile_id = ? AND due_date = ?
-        AND status IN ('pending', 'approved')
-      ORDER BY submitted_at ASC, id ASC`).bind(household.id, profile.id, localDate).all<{
-        id: string;
-        taskId: string;
-        status: "pending" | "approved";
-        submittedAt: string;
-      }>();
+  const [claims, reversals] = await Promise.all([
+    db.prepare(`SELECT id, task_id AS taskId, status, submitted_at AS submittedAt
+        FROM task_claims
+        WHERE household_id = ? AND child_profile_id = ? AND due_date = ?
+          AND status IN ('pending', 'approved')
+        ORDER BY submitted_at ASC, id ASC`).bind(household.id, profile.id, localDate).all<{
+          id: string;
+          taskId: string;
+          status: "pending" | "approved";
+          submittedAt: string;
+        }>(),
+    db.prepare(`SELECT source_id AS sourceId
+        FROM point_ledger
+        WHERE household_id = ? AND child_profile_id = ? AND source_type = 'task_reversal'`).bind(household.id, profile.id).all<{
+          sourceId: string;
+        }>(),
+  ]);
   const byTask = new Map<string, { id: string; status: "pending" | "approved"; submittedAt: string }>();
   for (const claim of claims.results ?? []) {
     if (!byTask.has(claim.taskId)) byTask.set(claim.taskId, claim);
   }
+  const reversedSources = new Set((reversals.results ?? []).map((reversal) => reversal.sourceId));
   return {
     localDate,
     occurrences: tasks.filter((task) => isTaskDueOnLocalDate(task.schedule, localDate)).map((task) => {
       const claim = byTask.get(task.id);
+      const occurrenceSource = `${household.id}:${profile.id}:${task.id}:${localDate}`;
       return {
         ...task,
         dueDate: localDate,
         state: claim?.status === "approved" ? "completed" : claim?.status === "pending" ? "waiting" : "todo",
         claimId: claim?.id ?? null,
         submittedAt: claim?.submittedAt ?? null,
+        // A companion claim can be completed by the parent, which records the
+        // original award against the occurrence rather than the claim ID. Check
+        // both source forms so the UI reflects either path consistently.
+        awardReversed: claim
+          ? reversedSources.has(`task_claim:${claim.id}`) || reversedSources.has(`task_occurrence:${occurrenceSource}`)
+          : false,
       };
     }),
   };

@@ -70,12 +70,14 @@ async function parentRequest(path: string, body: Record<string, unknown>): Promi
 }
 
 function taskStateLabel(task: TaskOccurrence): string {
+  if (task.awardReversed) return "Award reversed";
   if (task.state === "completed") return "Completed";
   if (task.state === "waiting") return "Waiting for approval";
   return "To do";
 }
 
 function taskStateGlyph(task: TaskOccurrence): string {
+  if (task.awardReversed) return "↩";
   if (task.state === "completed") return "✓";
   if (task.state === "waiting") return "⏳";
   return "→";
@@ -227,7 +229,7 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
                   <div className="ruutin-advanced-ledger-content">
                     <p className="ruutin-form-help">Use these corrections only when an award needs fixing. Routine logging above is the everyday action.</p>
                     {profile.tasks.some((task) => task.state === "completed" && task.claimId) && <ul className="ruutin-advanced-award-list" aria-label={`Completed awards for ${profile.nickname}`}>
-                      {profile.tasks.filter((task) => task.state === "completed" && task.claimId).map((task) => <li key={task.id}><span><strong>{task.title}</strong><small>{task.stars} {task.stars === 1 ? "star" : "stars"} awarded</small></span><button className="ruutin-button secondary compact" type="button" aria-label={`Reverse stars for ${task.title}`} onClick={(event) => { reverseReturnFocusRef.current = event.currentTarget; setReverseClaimId(task.claimId ?? ""); setReverseReason(""); }}>Reverse stars</button></li>)}
+                      {profile.tasks.filter((task) => task.state === "completed" && task.claimId).map((task) => <li key={task.id}><span><strong>{task.title}</strong><small>{task.stars} {task.stars === 1 ? "star" : "stars"} {task.awardReversed ? "reversed" : "awarded"}</small></span>{task.awardReversed ? <span className="ruutin-state-note" role="status">Reversed</span> : <button className="ruutin-button secondary compact" type="button" aria-label={`Reverse stars for ${task.title}`} onClick={(event) => { reverseReturnFocusRef.current = event.currentTarget; setReverseClaimId(task.claimId ?? ""); setReverseReason(""); }}>Reverse stars</button>}</li>)}
                     </ul>}
                     <details className="ruutin-adjust-details" open={adjustProfileId === profile.id} onToggle={(event) => { if ((event.currentTarget as HTMLDetailsElement).open) { setAdjustProfileId(profile.id); setAdjustRequestIds((current) => current[profile.id] ? current : { ...current, [profile.id]: crypto.randomUUID() }); } else if (adjustProfileId === profile.id) setAdjustProfileId(""); }}>
                       <summary>Adjust stars</summary>
@@ -261,7 +263,7 @@ export function TodayManager({ initialOverview }: { initialOverview: TodayData }
         </div>
         <div className="ruutin-tomorrow-cue"><span aria-hidden="true">🌤️</span><p><strong>{overview.rhythm.tomorrowTaskCount > 0 ? "Tomorrow is ready." : "Tomorrow can be gentle too."}</strong><small>{overview.rhythm.tomorrowTaskCount > 0 ? `${overview.rhythm.tomorrowTaskCount} ${overview.rhythm.tomorrowTaskCount === 1 ? "routine is" : "routines are"} already lined up.` : "There are no routines lined up yet — take the day as it comes."}</small></p></div>
       </section>
-      {reverseClaimId && <div className="ruutin-inline-dialog" role="dialog" aria-modal="true" aria-labelledby="reverse-title" aria-describedby="reverse-description"><h2 id="reverse-title">Reverse this star award?</h2><p id="reverse-description">The original ledger entry stays in history; Ruutin adds a compensating entry.</p><label htmlFor="reverse-reason">Reason</label><input id="reverse-reason" value={reverseReason} maxLength={240} onChange={(event) => setReverseReason(event.target.value)} required /><div className="ruutin-family-actions"><button ref={reverseConfirmRef} className="ruutin-button" type="button" disabled={busyKey !== ""} onClick={() => void act(`reverse-${reverseClaimId}`, () => parentRequest("/api/parent/ledger", { action: "reverse", claimId: reverseClaimId, reason: reverseReason }), "Award reversed with a clear history.", () => setReverseClaimId(""))}>Reverse award</button><button className="ruutin-text-button" type="button" disabled={busyKey !== ""} onClick={() => setReverseClaimId("")}>Cancel</button></div></div>}
+      {reverseClaimId && <form className="ruutin-inline-dialog" role="dialog" aria-modal="true" aria-labelledby="reverse-title" aria-describedby="reverse-description" onSubmit={(event) => { event.preventDefault(); void act(`reverse-${reverseClaimId}`, () => parentRequest("/api/parent/ledger", { action: "reverse", claimId: reverseClaimId, reason: reverseReason }), "Award reversed with a clear history.", () => setReverseClaimId("")); }}><h2 id="reverse-title">Reverse this star award?</h2><p id="reverse-description">The original ledger entry stays in history; Ruutin adds a compensating entry.</p><label htmlFor="reverse-reason">Reason</label><input id="reverse-reason" value={reverseReason} maxLength={240} onChange={(event) => setReverseReason(event.target.value)} placeholder="e.g. Logged by mistake" required /><div className="ruutin-family-actions"><button ref={reverseConfirmRef} className="ruutin-button" type="submit" disabled={busyKey !== "" || reverseReason.trim().length === 0}>Reverse award</button><button className="ruutin-text-button" type="button" disabled={busyKey !== ""} onClick={() => setReverseClaimId("")}>Cancel</button></div></form>}
       {notice && <p className="ruutin-form-success ruutin-live-feedback" role="status" aria-live="polite">{notice}</p>}
       {error && <p className="ruutin-form-error" role="alert" aria-live="polite">{error}</p>}
     </div>

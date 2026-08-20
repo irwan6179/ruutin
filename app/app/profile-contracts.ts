@@ -64,6 +64,7 @@ export type TaskOccurrence = ParentTask & {
   state: "todo" | "waiting" | "completed" | "not_due";
   claimId: string | null;
   submittedAt: string | null;
+  awardReversed: boolean;
 };
 
 export type OnboardingState = {
