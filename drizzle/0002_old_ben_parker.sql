@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `task_claims_active_occurrence_unique` ON `task_claims` (`household_id`,`child_profile_id`,`task_id`,`due_date`) WHERE "task_claims"."status" IN ('pending', 'approved');

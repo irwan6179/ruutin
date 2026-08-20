@@ -1,0 +1,35 @@
+name: ruutin-local
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    init: true
+    restart: unless-stopped
+    environment:
+      RUUTIN_DEV_WATCH_POLLING: "true"
+    ports:
+      - "0.0.0.0:3100:3100"
+    volumes:
+      - .:/workspace
+      - ruutin_node_modules:/workspace/node_modules
+    tmpfs:
+      - /workspace/.next
+      - /workspace/.vinext
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:3100/signin').then(response => {
+            if (!response.ok) process.exit(1)
+          }).catch(() => process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  ruutin_node_modules:
