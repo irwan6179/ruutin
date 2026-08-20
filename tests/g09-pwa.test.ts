@@ -56,7 +56,12 @@ test("layout emits install metadata and companion guidance is standalone-aware",
   const companionLayout = readFileSync("app/companion/layout.tsx", "utf8");
   const guidance = readFileSync("app/companion/InstallGuidance.tsx", "utf8");
   assert.match(layout, /manifest: "\/manifest\.webmanifest"/);
-  assert.match(companionLayout, /manifest: "\/companion\.webmanifest"/);
+  assert.match(companionLayout, /manifest: "\/companion\/manifest\.webmanifest"/);
+  assert.match(companionLayout, /appleWebApp: \{ capable: true, title: appName/);
+  const companionManifestRoute = readFileSync("app/companion/manifest.webmanifest/route.ts", "utf8");
+  assert.match(companionManifestRoute, /short_name: name/);
+  assert.match(companionManifestRoute, /Cache-Control.*private, no-store/);
+  assert.match(companionManifestRoute, /resolveCompanionContext/);
   assert.match(layout, /viewportFit: "cover"/);
   assert.match(layout, /apple: "\/apple-touch-icon\.png"/);
   assert.match(layout, /url: "\/ruutin-social-card\.png"/);

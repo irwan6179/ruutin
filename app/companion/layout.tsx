@@ -1,13 +1,25 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { CompanionShell } from "./CompanionShell";
+import { companionAppName } from "./app-identity";
 import { getCompanionPageContext } from "./page-context";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  manifest: "/companion.webmanifest",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  let nickname: string | undefined;
+  try {
+    nickname = (await getCompanionPageContext()).profile.nickname;
+  } catch {
+    // The generic name keeps the manifest useful before pairing or after expiry.
+  }
+  const appName = companionAppName(nickname);
+  return {
+    manifest: "/companion/manifest.webmanifest",
+    title: appName,
+    appleWebApp: { capable: true, title: appName, statusBarStyle: "default" },
+  };
+}
 
 function isFrameworkRedirect(error: unknown): boolean {
   return Boolean(

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { InstallGuidance } from "../InstallGuidance";
+import { companionAppName } from "../app-identity";
 import { ActionPendingOverlay } from "../../components/ActionPendingOverlay";
 
 type CompanionTask = {
@@ -152,7 +153,7 @@ export function CompanionTodayManager({ initialToday }: { initialToday: TodayDat
         </>}
       </section>
       {notice && <p className="companion-action-feedback ruutin-form-success ruutin-live-feedback" data-motion="gentle" role="status" aria-live="polite">{notice}</p>}
-      {firstRoutineSent && <InstallGuidance placement="after-first-completion" compact />}
+      {firstRoutineSent && <InstallGuidance appName={companionAppName(today.profile.nickname)} placement="after-first-completion" compact />}
       <section className="ruutin-card companion-today-summary" aria-label="Today summary">
         <div className="companion-summary-stat"><span>Stars</span><strong>{today.balance} ✦</strong></div>
         <div className="companion-summary-progress"><div className="ruutin-card-meta"><span>Today</span><strong>{completedCount}/{today.tasks.length}</strong></div><div className="ruutin-progress" role="progressbar" aria-label="Today routine progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span aria-hidden="true" style={{ width: `${progress}%` }} /></div></div>

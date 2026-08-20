@@ -9,7 +9,7 @@ function readStandalone(): boolean {
     || ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
 }
 
-export function InstallGuidance({ placement = "bottom", compact = false }: { placement?: "top" | "after-first-completion" | "bottom"; compact?: boolean }) {
+export function InstallGuidance({ appName = "Ruutin Companion", placement = "bottom", compact = false }: { appName?: string; placement?: "top" | "after-first-completion" | "bottom"; compact?: boolean }) {
   const [standalone, setStandalone] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -26,7 +26,7 @@ export function InstallGuidance({ placement = "bottom", compact = false }: { pla
   return (
     <section className={`ruutin-card companion-install-note companion-install-note-${placement}${compact ? " companion-install-note-compact" : ""}`} aria-label="Install guidance">
       <div className="ruutin-install-heading">
-        <strong>Add to home screen</strong>
+        <strong>Add {appName} to home screen</strong>
         <button className="ruutin-text-button compact" type="button" aria-expanded={open} aria-controls="install-guidance-details" onClick={() => { setOpen((current) => !current); if (!open) void recordExperienceSignal("install_guidance_opened"); }}>
           {open ? "Close" : "How"}
         </button>
