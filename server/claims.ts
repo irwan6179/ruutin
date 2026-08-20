@@ -19,6 +19,11 @@ import {
 
 export type ClaimDecision = "approve" | "reject";
 
+// Companion routines are temporarily in direct-complete mode while the child
+// experience is being tuned. Keep the pending-claim and parent-resolution
+// paths below intact so the review gate can be restored with one switch.
+export const COMPANION_PARENT_REVIEW_ENABLED = false;
+
 export type LedgerRow = {
   id: string;
   householdId: string;
@@ -257,7 +262,7 @@ export async function claimCompanionTask(
   db: D1DatabaseLike,
   context: CompanionContext,
   taskIdValue: unknown,
-  options: { now?: Date; claimId?: string } = {},
+  options: { now?: Date; claimId?: string; reviewEnabled?: boolean } = {},
 ): Promise<{ today: import("./companion").CompanionToday; claim: ClaimRecord }> {
   const taskId = validateId(taskIdValue, "taskId");
   const nowDate = options.now ?? new Date();
@@ -291,23 +296,75 @@ export async function claimCompanionTask(
   }
   if (!due) throw new ClaimConflictError("That routine is not due today");
   const id = options.claimId ?? createId();
-  try {
-    await runStatement(db.prepare(`INSERT INTO task_claims
+  const reviewEnabled = options.reviewEnabled ?? true;
+  if (reviewEnabled) {
+    try {
+      await runStatement(db.prepare(`INSERT INTO task_claims
+        (id, household_id, child_profile_id, task_id, due_date,
+         submitted_by_type, submitted_by_device_id, status, submitted_at,
+         resolved_at, resolved_by_user_id)
+        VALUES (?, ?, ?, ?, ?, 'companion', ?, 'pending', ?, NULL, NULL)`)
+        .bind(id, context.householdId, context.profileId, taskId, localDate, context.deviceId, now));
+    } catch {
+      const existing = await db.prepare(`${claimSelect()}
+        WHERE household_id = ? AND child_profile_id = ? AND task_id = ?
+          AND due_date = ? AND status IN ('pending', 'approved')
+        LIMIT 1`).bind(context.householdId, context.profileId, taskId, localDate).first<ClaimRecord>();
+      if (existing) throw new ClaimConflictError();
+      throw new LedgerAtomicityError();
+    }
+  } else {
+    if (!db.batch) throw new LedgerAtomicityError();
+    const occurrenceSource = occurrenceSourceId(context.householdId, context.profileId, taskId, localDate);
+    const insertClaim = db.prepare(`INSERT INTO task_claims
       (id, household_id, child_profile_id, task_id, due_date,
        submitted_by_type, submitted_by_device_id, status, submitted_at,
        resolved_at, resolved_by_user_id)
-      VALUES (?, ?, ?, ?, ?, 'companion', ?, 'pending', ?, NULL, NULL)`)
-      .bind(id, context.householdId, context.profileId, taskId, localDate, context.deviceId, now));
-  } catch {
-    const existing = await db.prepare(`${claimSelect()}
-      WHERE household_id = ? AND child_profile_id = ? AND task_id = ?
-        AND due_date = ? AND status IN ('pending', 'approved')
-      LIMIT 1`).bind(context.householdId, context.profileId, taskId, localDate).first<ClaimRecord>();
-    if (existing) throw new ClaimConflictError();
-    throw new LedgerAtomicityError();
+      VALUES (?, ?, ?, ?, ?, 'companion', ?, 'approved', ?, ?, NULL)`)
+      .bind(id, context.householdId, context.profileId, taskId, localDate, context.deviceId, now, now);
+    const insertLedger = db.prepare(`INSERT INTO point_ledger
+      (id, household_id, child_profile_id, event_type, stars_delta,
+       source_type, source_id, reason, actor_user_id, local_date, created_at)
+      SELECT ?, c.household_id, c.child_profile_id, 'task_approved', t.stars,
+             'task_claim', c.id, 'Routine completed in companion mode', NULL,
+             c.due_date, ?
+      FROM task_claims AS c
+      INNER JOIN tasks AS t
+        ON t.household_id = c.household_id AND t.id = c.task_id
+      WHERE c.id = ? AND c.household_id = ? AND c.status = 'approved'
+        AND NOT EXISTS (
+          SELECT 1 FROM point_ledger AS existing
+          WHERE existing.source_type = 'task_claim' AND existing.source_id = c.id
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM point_ledger AS parent_event
+          WHERE parent_event.source_type = 'task_occurrence'
+            AND parent_event.source_id = ?
+        )`)
+      .bind(createId(), now, id, context.householdId, occurrenceSource);
+    try {
+      await db.batch([insertClaim, insertLedger]);
+    } catch {
+      const existing = await db.prepare(`${claimSelect()}
+        WHERE household_id = ? AND child_profile_id = ? AND task_id = ?
+          AND due_date = ? AND status IN ('pending', 'approved')
+        LIMIT 1`).bind(context.householdId, context.profileId, taskId, localDate).first<ClaimRecord>();
+      if (existing) throw new ClaimConflictError();
+      throw new LedgerAtomicityError();
+    }
   }
   const claim = await db.prepare(`${claimSelect()} WHERE id = ? AND household_id = ? LIMIT 1`).bind(id, context.householdId).first<ClaimRecord>();
   if (!claim) throw new LedgerAtomicityError();
+  if (!reviewEnabled) {
+    const occurrenceSource = occurrenceSourceId(context.householdId, context.profileId, taskId, localDate);
+    const award = await db.prepare(`SELECT 1 AS present
+      FROM point_ledger
+      WHERE household_id = ? AND child_profile_id = ?
+        AND ((source_type = 'task_claim' AND source_id = ?)
+          OR (source_type = 'task_occurrence' AND source_id = ?))
+      LIMIT 1`).bind(context.householdId, context.profileId, claim.id, occurrenceSource).first<{ present: number }>();
+    if (claim.status !== "approved" || !award) throw new LedgerAtomicityError();
+  }
   const { getCompanionToday } = await import("./companion");
   return { claim, today: await getCompanionToday(db, context, { now: nowDate }) };
 }

@@ -203,6 +203,24 @@ test("companion claims are due, profile-scoped, duplicate-safe, and return autho
   ]);
 });
 
+test("direct companion completion awards once while the review path remains available", async () => {
+  const { database, db } = createDb();
+  const completed = await claimCompanionTask(db, companion(), "t1", {
+    now: new Date(timestamp),
+    claimId: "claim-direct",
+    reviewEnabled: false,
+  });
+  assert.equal(completed.claim.status, "approved");
+  assert.equal(completed.today.tasks.find((task) => task.id === "t1")?.state, "completed");
+  assert.equal(database.prepare("SELECT count(*) AS count FROM point_ledger WHERE source_type = 'task_claim'").get()?.count, 1);
+  assert.equal(database.prepare("SELECT COALESCE(sum(stars_delta), 0) AS balance FROM point_ledger WHERE child_profile_id = 'p1'").get()?.balance, 2);
+  await assert.rejects(
+    claimCompanionTask(db, companion(), "t1", { now: new Date(timestamp), reviewEnabled: false }),
+    /active claim|already/i,
+  );
+  assert.equal((await listPendingClaimsForParent(db, parent())).length, 0);
+});
+
 test("approval is one transaction, repeated/concurrent approval awards exactly once, and rejection awards nothing", async () => {
   const { database, db } = createDb();
   await claimCompanionTask(db, companion(), "t1", { now: new Date(timestamp), claimId: "claim-approve" });

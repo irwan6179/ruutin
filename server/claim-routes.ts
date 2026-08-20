@@ -5,6 +5,7 @@ import {
 } from "./auth-context";
 import {
   claimCompanionTask,
+  COMPANION_PARENT_REVIEW_ENABLED,
   completeTaskForParent,
   createManualAdjustmentForParent,
   getLedgerForParent,
@@ -57,7 +58,7 @@ export async function handleCompanionClaim(
     const context = await requireCompanionContext(request, dependencies.db, { sessionSecret: dependencies.sessionSecret, now: dependencies.now });
     const body = await readBody(request);
     onlyKeys(body, ["taskId"]);
-    const result = await claimCompanionTask(dependencies.db, context, body.taskId, { now: dependencies.now });
+    const result = await claimCompanionTask(dependencies.db, context, body.taskId, { now: dependencies.now, reviewEnabled: COMPANION_PARENT_REVIEW_ENABLED });
     return jsonResponse(result, { status: 201 }, { private: true });
   } catch (error) {
     return publicErrorResponse(error);

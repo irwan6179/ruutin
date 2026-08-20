@@ -612,6 +612,11 @@ body {
 .companion-today-balance p { min-width: 0; max-width: 210px; margin: 0 0 0 auto; color: var(--br-muted); font-size: 11px; line-height: 1.45; overflow-wrap: anywhere; text-align: right; }
 .ruutin-companion-shell .companion-today-heading { padding-top: 0; padding-bottom: 2px; }
 .ruutin-companion-shell .companion-today-heading h1 { font-size: clamp(30px, 8vw, 42px); }
+.companion-heading-actions { display: flex; min-width: 0; align-items: center; gap: 8px; }
+.companion-header-balance { display: inline-flex; min-height: 36px; align-items: center; gap: 5px; padding: 7px 11px; border: 1px solid #d9c4e8; border-radius: 999px; color: var(--br-deep-purple); background: #f8f1fd; font-size: 13px; font-weight: 800; text-decoration: none; white-space: nowrap; transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
+.companion-header-balance:hover { background: #eee2f8; box-shadow: 0 5px 14px rgb(84 56 129 / .1); transform: translateY(-1px); }
+.companion-header-balance span { color: #7b4db1; font-size: 15px; }
+.companion-rewards-heading { padding-bottom: 0; }
 .companion-routines { display: grid; gap: 10px; }
 .companion-routines .ruutin-section-heading { align-items: center; }
 .companion-routines-hint { max-width: 420px; margin: 5px 0 0; color: var(--br-muted); font-size: 12px; line-height: 1.45; }
@@ -621,7 +626,6 @@ body {
 .companion-task-row.is-completed { border-color: #cce5d7; background: #f3fbf6; }
 .companion-task-copy { display: grid; min-width: 0; gap: 2px; }
 .companion-task-copy strong { overflow: visible; color: var(--br-ink); font-size: 15px; line-height: 1.3; overflow-wrap: anywhere; text-overflow: clip; white-space: normal; }
-.companion-task-copy small { color: var(--br-muted); font-size: 12px; font-weight: 750; }
 .companion-done-button { min-width: 82px; min-height: 44px; gap: 7px; padding: 9px 13px; }
 .companion-waiting-summary { margin: 1px 0 0; padding: 10px 13px; border-radius: 14px; color: #7a5b36; background: #fff5df; font-size: 12px; font-weight: 700; line-height: 1.45; }
 .companion-all-done { display: flex; min-width: 0; align-items: center; gap: 13px; padding: 16px; border: 1px solid #bfe2ce; border-radius: 20px; background: linear-gradient(135deg, #edf9f2, #fffaf4); box-shadow: 0 9px 22px rgb(75 151 122 / .08); animation: ruutin-feedback-pop 220ms ease-out both; }
