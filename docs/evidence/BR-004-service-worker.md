@@ -30,7 +30,7 @@ served. They do not establish browser service-worker support.
 Verified with a real Chromium session on 2026-08-18 at approximately 11:30 UTC:
 
 ```text
-Origin: https://bintang-rumah.irwan-katsana.chatgpt.site
+Origin: https://ruutin.irwan.cc
 Page: /runtime-probe
 Result: Supported
 Accepted scope: /runtime-probe/

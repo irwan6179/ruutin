@@ -18,8 +18,15 @@ export default function SignInPage() {
 
       <header className="br-header br-signin-header">
         <Link className="br-signin-brand" href="/" prefetch={false} aria-label="Ruutin home">
-          <strong>Ruutin</strong>
-          <span>family routines</span>
+          <span className="br-signin-brand-mark" aria-hidden="true">
+            {/* Keep the wordmark and app icon in sync with the installable app icon. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon-192.png" alt="" width={40} height={40} />
+          </span>
+          <span className="br-signin-brand-copy">
+            <strong>Ruutin</strong>
+            <span>family routines</span>
+          </span>
         </Link>
 
         <nav className="br-nav" aria-label="Sign-in navigation">

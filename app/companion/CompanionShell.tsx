@@ -49,7 +49,10 @@ export function CompanionShell({
           aria-label="Ruutin companion Today"
           onClick={(event) => beginNavigation(event, "/companion/today", "Today")}
         >
-          <span className="ruutin-app-mark" aria-hidden="true">✦</span>
+          <span className="ruutin-app-mark" aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon-192.png" alt="" width={40} height={40} />
+          </span>
           <span>Ruutin</span>
         </a>
         <p className="ruutin-companion-greeting" aria-label={`Signed in as ${profile.nickname}`}>

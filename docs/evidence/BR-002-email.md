@@ -39,8 +39,7 @@ HTTPS-only configuration, timeout mapping, and sanitized errors.
 
 ## Hosted verification
 
-- Sites project: `appgprj_6a843d7213f48191a018dcd53f819afb`
-- Public origin: `https://bintang-rumah.irwan-katsana.chatgpt.site`
+- Public origin: `https://ruutin.irwan.cc`
 - Saved/deployed version: 8, deployment
   `appgdep_6a8445d1210c8191b5aaad9bba4126eb`
 - Deployment completed: 2026-08-18 11:44 UTC

@@ -504,17 +504,17 @@ test("local demo login seeds one scoped household and requires an exact developm
   assert.equal(databaseValue(fixture, "SELECT count(*) AS count FROM households"), beforeHouseholds);
 
   const tailnetWithoutAllowlist = await handleDevelopmentLogin(
-    new Request("https://mohds-mac-mini.tail25cde9.ts.net/api/dev/login"),
+    new Request("https://ruutin-tailnet.example.test/api/dev/login"),
     { db: fixture.db, sessionSecret: SESSION_SECRET, enabled: true, now: NOW },
   );
   assert.equal(tailnetWithoutAllowlist.status, 404);
   const tailnetAvailability = await handleDevelopmentLogin(
-    new Request("https://mohds-mac-mini.tail25cde9.ts.net/api/dev/login"),
+    new Request("https://ruutin-tailnet.example.test/api/dev/login"),
     {
       db: fixture.db,
       sessionSecret: SESSION_SECRET,
       enabled: true,
-      allowedHostnames: ["mohds-mac-mini.tail25cde9.ts.net"],
+      allowedHostnames: ["ruutin-tailnet.example.test"],
       now: NOW,
     },
   );

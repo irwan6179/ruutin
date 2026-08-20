@@ -1,6 +1,6 @@
 import { sites } from "@openai/sites-vite-plugin";
 import vinext from "vinext";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
@@ -12,7 +12,13 @@ const { d1, r2 } = hostingConfig;
 const usePollingForFileChanges =
   process.env.CODEX_SANDBOX === "seatbelt" || process.env.RUUTIN_DEV_WATCH_POLLING === "true";
 
-export default defineConfig(async ({ command }) => {
+export default defineConfig(async ({ command, mode }) => {
+  const localEnv = loadEnv(mode, process.cwd(), "");
+  const localDemoEnabled = localEnv.RUUTIN_LOCAL_DEMO_LOGIN === "enabled";
+  const localDemoHosts = (localEnv.RUUTIN_LOCAL_DEMO_HOSTS ?? "")
+    .split(",")
+    .map((hostname) => hostname.trim().toLowerCase())
+    .filter(Boolean);
   // Keep Wrangler and Miniflare state project-local. These are non-secret tool
   // settings; application environment belongs in ignored `.env*` files.
   process.env.WRANGLER_WRITE_LOGS ??= "false";
@@ -45,20 +51,19 @@ export default defineConfig(async ({ command }) => {
           },
         ]
       : [],
-    // These known, non-production values make the private local demo login
-    // self-contained. They are omitted from builds and never enable email
-    // delivery; hosted Sites variables remain mandatory in production. The
-    // Tailnet hostname is HTTPS so the browser can retain Secure cookies.
+    // Local-only values come from an ignored .env.local file. They are omitted
+    // from builds and never enable email delivery; hosted Sites variables
+    // remain mandatory in production.
     ...(command === "serve"
       ? {
           vars: {
-            RUUTIN_LOCAL_DEMO_LOGIN: "enabled",
-            RUUTIN_LOCAL_DEMO_HOSTS: "mohds-mac-mini.tail25cde9.ts.net",
-            EMAIL_API_URL: "https://api.resend.com/emails",
-            EMAIL_API_KEY: "local-demo-email-disabled",
-            EMAIL_FROM: "demo@ruutin.local",
-            AUTH_HMAC_SECRET: "local-demo-auth-hmac-secret-not-for-production",
-            SESSION_SECRET: "local-demo-session-secret-not-for-production",
+            RUUTIN_LOCAL_DEMO_LOGIN: localDemoEnabled ? "enabled" : "disabled",
+            RUUTIN_LOCAL_DEMO_HOSTS: localDemoHosts.join(","),
+            EMAIL_API_URL: localEnv.EMAIL_API_URL ?? "",
+            EMAIL_API_KEY: localEnv.EMAIL_API_KEY ?? "",
+            EMAIL_FROM: localEnv.EMAIL_FROM ?? "",
+            AUTH_HMAC_SECRET: localEnv.AUTH_HMAC_SECRET ?? "",
+            SESSION_SECRET: localEnv.SESSION_SECRET ?? "",
           },
         }
       : {}),
@@ -66,7 +71,7 @@ export default defineConfig(async ({ command }) => {
 
   return {
     server: {
-      allowedHosts: ["mohds-mac-mini.tail25cde9.ts.net"],
+      allowedHosts: localDemoHosts,
       ...(usePollingForFileChanges
         ? { watch: { useFsEvents: false, usePolling: true } }
         : {}),

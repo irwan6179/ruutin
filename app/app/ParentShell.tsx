@@ -42,7 +42,10 @@ export function ParentShell({ children }: { children: ReactNode }) {
       <header className="ruutin-app-header">
         {onboarding ? (
           <span className="ruutin-app-brand" aria-label="Ruutin setup">
-            <span className="ruutin-app-mark" aria-hidden="true">✦</span>
+            <span className="ruutin-app-mark" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon-192.png" alt="" width={40} height={40} />
+            </span>
             <span>Ruutin</span>
           </span>
         ) : (
@@ -52,7 +55,10 @@ export function ParentShell({ children }: { children: ReactNode }) {
             aria-label="Ruutin Today"
             onClick={(event) => beginNavigation(event, "/app/today", "Today")}
           >
-            <span className="ruutin-app-mark" aria-hidden="true">✦</span>
+            <span className="ruutin-app-mark" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon-192.png" alt="" width={40} height={40} />
+            </span>
             <span>Ruutin</span>
           </a>
         )}

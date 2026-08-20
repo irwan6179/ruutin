@@ -31,9 +31,11 @@ Open `/signin` on the `Local` URL printed by the dev server
 (`http://localhost:3100` by default) and choose **Enter demo parent space** for a one-click
 authenticated preview with sample household data. The demo entry is enabled
 only by `vite dev`, accepts loopback or the explicitly configured private
-Tailnet HTTPS hostname, and is omitted from production build configuration. It
-does not send email. Use the normal email-code form with real `.dev.vars`
-credentials when testing delivery.
+Tailnet HTTPS hostname, and is omitted from production build configuration. To
+use it from another Tailnet device, add your own hostname and local-only values
+to the ignored `.env.local` file; never commit that file. It does not send
+email. Use the normal email-code form with real `.dev.vars` credentials when
+testing delivery.
 
 For a persistent OrbStack preview that restarts independently of the terminal:
 

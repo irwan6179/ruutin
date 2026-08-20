@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource/fraunces/latin-600.css";
+import "@fontsource/fraunces/latin-600-italic.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,7 +44,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#543881",
+  themeColor: "#694477",
 };
 
 export default function RootLayout({
