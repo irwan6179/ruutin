@@ -27,6 +27,24 @@ The public landing page does not require secrets. Server capabilities must use
 the typed loader in `server/config.ts` and fail closed when required hosted
 configuration is missing.
 
+Open `/signin` on the `Local` URL printed by the dev server
+(`http://localhost:3100` by default) and choose **Enter demo parent space** for a one-click
+authenticated preview with sample household data. The demo entry is enabled
+only by `vite dev`, accepts loopback or the explicitly configured private
+Tailnet HTTPS hostname, and is omitted from production build configuration. It
+does not send email. Use the normal email-code form with real `.dev.vars`
+credentials when testing delivery.
+
+For a persistent OrbStack preview that restarts independently of the terminal:
+
+```bash
+npm run local:up
+```
+
+The container publishes `http://localhost:3100`, watches the working tree for
+changes, and keeps Miniflare's local data under `.wrangler`. Use
+`npm run local:logs` to follow its output and `npm run local:down` to stop it.
+
 ## Quality commands
 
 Run individual checks while iterating:

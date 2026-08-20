@@ -8,6 +8,8 @@ const migrationFiles = [
   "drizzle/0001_cool_lake.sql",
   "drizzle/0002_old_ben_parker.sql",
   "drizzle/0003_g01_integrity.sql",
+  "drizzle/0004_sleepy_power_pack.sql",
+  "drizzle/0005_past_shadow_king.sql",
 ] as const;
 
 function createDatabase(): DatabaseSync {
@@ -91,6 +93,7 @@ test("G01 migration creates every durable table and expected lookup indexes", ()
     "auth_challenges",
     "child_devices",
     "child_profiles",
+    "experience_events",
     "household_users",
     "households",
     "pairing_codes",
@@ -114,12 +117,20 @@ test("G01 migration creates every durable table and expected lookup indexes", ()
     "pairing_codes_token_hash_unique",
     "child_devices_token_hash_unique",
     "reward_requests_pending_unique",
+    "experience_events_household_dedupe_unique",
+    "experience_events_household_event_date_idx",
+    "experience_events_actor_date_idx",
   ]) {
     const row = database
       .prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?")
       .get(indexName);
     assert.ok(row, `missing index ${indexName}`);
   }
+  const eventForeignKeys = database
+    .prepare("PRAGMA foreign_key_list(experience_events)")
+    .all()
+    .map((row) => row as { table: string; on_delete: string });
+  assert.ok(eventForeignKeys.some((key) => key.table === "households" && key.on_delete === "CASCADE"));
 });
 
 test("normalized emails, memberships, token hashes, and foreign keys are database-enforced", () => {

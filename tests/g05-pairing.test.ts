@@ -35,6 +35,8 @@ const MIGRATIONS = [
   "drizzle/0001_cool_lake.sql",
   "drizzle/0002_old_ben_parker.sql",
   "drizzle/0003_g01_integrity.sql",
+  "drizzle/0004_sleepy_power_pack.sql",
+  "drizzle/0005_past_shadow_king.sql",
 ] as const;
 
 class SqliteD1Shim implements D1DatabaseLike {

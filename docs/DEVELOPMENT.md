@@ -153,6 +153,44 @@ not appear in `dist/`.
 - Use database uniqueness constraints as the final idempotency guard; application checks improve errors but do not replace constraints.
 - Never use a mutable balance column as the source of truth. Balance is `SUM(point_ledger.stars_delta)` for the profile.
 
+### First-party experience signals
+
+Ruutin records a deliberately small, first-party signal set in the
+`experience_events` table to answer product questions about the core loop. The
+allow-list is fixed in server code and the database:
+
+| Signal | Actor | Meaning |
+| --- | --- | --- |
+| `onboarding_completed` | Parent | Household has its first profile and three starter routines and the parent reaches Today |
+| `parent_today_opened` | Parent | Parent Today screen was opened |
+| `companion_today_opened` | Assigned companion device | Companion Today screen was opened |
+| `install_guidance_opened` | Assigned companion device | The companion opened the home-screen installation guidance |
+| `reward_goal_selected` | Parent | Parent selected an active reward goal; the reward ID is an existing D1 ID |
+
+Signals contain only the event name, actor kind, an opaque server-known actor
+key, an optional existing reward ID, the household-local date, and a server
+timestamp. The actor key is used for server-side daily deduplication and is
+omitted from household exports. No nickname, task/reward title, child text,
+free-form metadata, browser/device fingerprint, URL, IP address, or client
+supplied timestamp is accepted. Parent and companion scope is resolved from
+their authenticated session/device records; an event cannot name a sibling or
+another household.
+
+Each `(event, actor, household-local date)` is unique. Browser signal writes
+are fire-and-forget and never delay navigation, tasks, or claims. The route
+accepts only the client-safe subset of the allow-list; reward-goal signals are
+recorded best-effort inside the scoped parent reward mutation so a client
+cannot fabricate them and a measurement failure cannot fail the mutation.
+
+For retention and cohort reporting, use the first household-local date of
+`onboarding_completed` as the activation date. **Day 1** is the next local
+calendar day, **Day 7** is activation plus seven local days, and **Day 28** is
+activation plus twenty-eight local days. A Today return on a target day means
+at least one `parent_today_opened` or `companion_today_opened` signal for that
+household on that date. Install-guidance opens and reward-goal starts are
+reported as their own event counts; existing claim and reward ledger
+timestamps remain the source for completion and redemption timing.
+
 ### Schedule representation
 
 Only these schedule types are valid:
@@ -183,6 +221,7 @@ Create versioned, reviewable migrations using the Sites-supported D1 workflow. M
 | `point_ledger` | `id`, `household_id`, `child_profile_id`, `event_type`, `stars_delta`, `source_type`, `source_id`, `reason`, `actor_user_id`, `local_date`, `created_at` | Append-only; unique source event |
 | `rewards` | `id`, `household_id`, `child_profile_id`, `title`, `emoji`, `star_cost`, `archived_at`, `created_at`, `updated_at` | Positive cost; no more than five active per profile |
 | `reward_requests` | `id`, `household_id`, `child_profile_id`, `reward_id`, `status`, `requested_by_device_id`, `requested_at`, `resolved_at`, `resolved_by_user_id` | Valid state; idempotent resolution |
+| `experience_events` | `id`, `household_id`, `actor_kind`, `actor_key`, `event_name`, `subject_type`, `subject_id`, `local_date`, `dedupe_key`, `created_at` | Fixed first-party event/actor allow-list; one event per actor and household-local day; household cascade delete; no free-form payload |
 | `pairing_codes` | `id`, `household_id`, `child_profile_id`, `code_hash`, `token_hash`, `expires_at`, `attempt_count`, `consumed_at`, `cancelled_at`, `created_by_user_id`, `created_at` | No plaintext code/token; single use |
 | `child_devices` | `id`, `household_id`, `child_profile_id`, `device_label`, `token_hash`, `created_at`, `last_seen_at`, `revoked_at` | Unique `token_hash`; immutable assigned profile |
 
@@ -234,14 +273,17 @@ State-changing routes also need CSRF protection appropriate to the Sites-generat
 
 ## 10. Household onboarding and profile privacy
 
-First login launches a setup flow intended to finish in under three minutes:
+First login launches a three-step setup flow intended to reach a useful Today
+screen quickly:
 
-1. Create household and choose timezone.
+1. Create the household and choose its timezone.
 2. Add the first profile using nickname, emoji, and optional broad age band only.
-3. Select routine categories and suggested tasks.
-4. Review schedules and one-to-three-star values.
-5. Select or create rewards.
-6. Optionally pair an eligible companion device.
+3. Choose at least three starter routines, reviewing their schedules and one-to-three-star values before saving.
+
+Rewards and eligible companion-device pairing are contextual follow-up actions,
+not setup gates. Durable progress is derived from household, profile, and task
+rows, so refreshing resumes at the first incomplete boundary without relying on
+browser-owned onboarding state.
 
 The MVP exposes one household per parent and one parent account in the UI, while `household_users` remains extensible. The parent must explicitly confirm that the intended companion user meets the applicable age requirement. The server persists and checks `companion_access_eligible`; hiding a button is insufficient.
 
@@ -439,7 +481,7 @@ Sites capability decision.
 
 ## 18. Data export and deletion
 
-Export JSON includes household settings, profiles, tasks, claims, rewards, reward requests, ledger rows, and linked-device metadata without session tokens.
+Export JSON includes household settings, profiles, tasks, claims, rewards, reward requests, ledger rows, linked-device metadata, and coarse first-party experience signals without session tokens. Signal exports include event name, actor kind, existing opaque subject ID where applicable, household-local date, and server timestamp; they omit actor keys and dedupe keys.
 
 It excludes TAC hashes, session/device token hashes, pairing hashes, secrets, and internal authentication material. The response is household-scoped with private/no-store headers.
 
@@ -458,7 +500,12 @@ Every protected handler:
 
 Required defenses include cross-household and sibling isolation tests, CSRF/origin protection, rate limiting, generic auth/pairing errors, secure headers, output encoding, transaction/idempotency tests, secret scanning, private caching, and sanitized logs without codes, tokens, parent email where avoidable, or child profile details.
 
-No external analytics SDK is permitted. First-party operational logs, if Sites supports them, contain only coarse result identifiers needed to diagnose delivery, rate limiting, authorization denials, and transaction failures.
+No external analytics SDK is permitted. The first-party experience route uses
+CSRF/origin checks and private/no-store responses, accepts only the fixed event
+name, and does not block core UX when a write fails. First-party operational
+logs, if Sites supports them, contain only coarse result identifiers needed to
+diagnose delivery, rate limiting, authorization denials, and transaction
+failures.
 
 ## 20. Testing strategy
 

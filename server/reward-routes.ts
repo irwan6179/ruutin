@@ -176,6 +176,7 @@ export async function handleParentActiveReward(
       context,
       body.profileId,
       body.rewardId,
+      { now: dependencies.now },
     );
     return jsonResponse({ reward }, { status: 200 }, { private: true });
   } catch (error) {

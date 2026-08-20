@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 };
 
 const trustNotes = [
-  { icon: "◌", label: "Parent-led" },
-  { icon: "⌁", label: "Privacy-forward" },
-  { icon: "✦", label: "Made for real homes" },
+  { icon: "◌", label: "Parents stay in control" },
+  { icon: "⌁", label: "No exact birth dates" },
+  { icon: "✦", label: "No rankings or pressure" },
 ] as const;
 
 export default function Home() {
@@ -42,7 +42,7 @@ export default function Home() {
         <section className="br-hero br-container" aria-labelledby="hero-title">
           <div className="br-hero-copy">
             <p className="br-eyebrow">
-              <span className="br-eyebrow-dot" aria-hidden="true" /> A calmer rhythm for home
+              <span className="br-eyebrow-dot" aria-hidden="true" /> Parent-led routines and rewards
             </p>
             <h1 id="hero-title">
               Small routines.
@@ -50,12 +50,16 @@ export default function Home() {
               <em>More ease.</em>
             </h1>
             <p className="br-hero-description">
-              A gentler rhythm for home.
+              Plan a few routines, celebrate progress with stars, and keep every
+              reward calmly parent-controlled.
             </p>
             <div className="br-hero-actions">
               <a className="br-button br-button-primary" href="/signin">
                 Sign in with email <span aria-hidden="true">↗</span>
               </a>
+              <p className="br-hero-note">
+                New here? Your private household is created after sign-in.
+              </p>
             </div>
           </div>
 
@@ -76,7 +80,7 @@ export default function Home() {
 
         <section className="br-trust-bar" aria-label="Ruutin principles">
           <div className="br-container br-trust-inner">
-            <p>A gentler rhythm for real homes.</p>
+            <p>Shared wins without turning home into a competition.</p>
             <div className="br-trust-notes">
               {trustNotes.map((note) => (
                 <span key={note.label}>
@@ -99,13 +103,15 @@ export default function Home() {
                 Your home.<br /><em>Your pace.</em>
               </h2>
               <p>
-                Sign in with your email. We&apos;ll send a one-time code.
+                Start with a profile and three routines. Add rewards or a companion
+                device whenever your family is ready.
               </p>
             </div>
             <div className="br-static-auth-cta">
               <strong>Ready when you are.</strong>
               <p>
-                Use your email to sign in or create your household. We&apos;ll send a one-time code.
+                Use your email to sign in or create your household. We&apos;ll send a
+                one-time code—there is no password to remember.
               </p>
               <a className="br-button br-button-light" href="/signin">
                 Continue with email <span aria-hidden="true">↗</span>

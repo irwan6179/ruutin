@@ -6,6 +6,7 @@ const parentUi = readFileSync("app/app/rewards/RewardsManager.tsx", "utf8");
 const companionUi = readFileSync("app/companion/rewards/CompanionRewardsManager.tsx", "utf8");
 const todayUi = readFileSync("app/app/today/TodayManager.tsx", "utf8");
 const pageCss = readFileSync("app/globals.css", "utf8");
+const familyUi = readFileSync("app/app/family/FamilyManager.tsx", "utf8");
 
 test("parent rewards UI exposes catalogue, templates, active goal, archive, and authoritative request refresh", () => {
   assert.match(parentUi, /REWARD_TEMPLATES/);
@@ -20,9 +21,14 @@ test("parent rewards UI exposes catalogue, templates, active goal, archive, and 
 test("companion rewards UI remains assigned-profile friendly and shows progress, requests, and history", () => {
   assert.match(companionUi, /Progress towards/);
   assert.match(companionUi, /more to go/);
+  assert.match(companionUi, /more stars to go/);
+  assert.match(companionUi, /Goal reached/);
+  assert.match(companionUi, /Request pending/);
+  assert.match(companionUi, /Approved/);
   assert.match(companionUi, /Ask parent/);
   assert.match(companionUi, /Waiting for parent review/);
   assert.match(companionUi, /A clear record/);
+  assert.match(companionUi, /history\.length/);
   assert.match(companionUi, /api\/companion\/rewards\/requests/);
   assert.match(companionUi, /assigned-profile|parent chooses|no rush/i);
 });
@@ -43,4 +49,20 @@ test("reward UI motion is brief and reduced-motion safe", () => {
   assert.match(pageCss, /ruutin-reward-card/);
   assert.match(pageCss, /prefers-reduced-motion/);
   assert.match(pageCss, /transition: transform 160ms ease/);
+});
+
+test("parent clarity keeps the next action, advanced corrections, focused family views, and explicit reward state", () => {
+  assert.match(todayUi, /Review \{pendingReviewCount\} pending/);
+  assert.match(todayUi, /Log a routine/);
+  assert.match(todayUi, /Advanced star history/);
+  assert.match(todayUi, /today-rhythm-title/);
+  assert.match(todayUi, /tomorrowTaskCount/);
+  assert.match(familyUi, /role="tablist"/);
+  assert.match(familyUi, /role="tab"/);
+  assert.match(familyUi, /href="#tasks"/);
+  assert.match(familyUi, /href="#pairing"/);
+  assert.match(parentUi, /ruutin-reward-card-header/);
+  assert.match(parentUi, /Available idea/);
+  assert.match(parentUi, /Waiting for your decision/);
+  assert.match(parentUi, /starCost/);
 });

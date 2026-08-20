@@ -32,6 +32,8 @@ const migrations = [
   "drizzle/0001_cool_lake.sql",
   "drizzle/0002_old_ben_parker.sql",
   "drizzle/0003_g01_integrity.sql",
+  "drizzle/0004_sleepy_power_pack.sql",
+  "drizzle/0005_past_shadow_king.sql",
 ] as const;
 
 class SqliteD1Shim implements D1DatabaseLike {
@@ -380,12 +382,18 @@ test("claims UI has direct action/refetch states and reduced-motion design guard
   assert.doesNotMatch(companionUi, /Pick a routine|Your parent reviews|take a breath/);
   assert.ok(
     companionUi.indexOf('className="companion-routines"') < companionUi.indexOf('className="ruutin-card companion-today-summary"')
-      && companionUi.indexOf('className="companion-routines"') < companionUi.indexOf("<InstallGuidance />"),
-    "routines should appear before secondary summary and install guidance",
+      && companionUi.indexOf('className="companion-routines"') < companionUi.indexOf("<InstallGuidance"),
+    "routines should appear before the summary and contextual install guidance",
   );
   assert.match(companionUi, /await refreshToday\(\)/);
   assert.match(companionUi, /role="progressbar"/);
   assert.match(companionUi, /task\.state === "completed" \? "Done" : "Waiting"/);
+  assert.match(companionUi, /companion-unfinished-routines/);
+  assert.match(companionUi, /companion-completed-routines/);
+  assert.match(companionUi, /Waiting for parent/);
+  assert.match(companionUi, /companion-all-done/);
+  assert.match(companionUi, /data-motion="gentle"/);
+  assert.match(companionUi, /companion-active-goal/);
   assert.ok(companionUi.includes("/api/companion/today"));
   assert.ok(parentUi.includes("/api/parent/claims"));
   assert.ok(parentUi.includes("/api/parent/completions"));

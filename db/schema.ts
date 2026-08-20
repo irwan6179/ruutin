@@ -512,6 +512,80 @@ export const rewardRequests = sqliteTable(
   ],
 );
 
+/**
+ * First-party, allow-listed experience signals used to evaluate whether the
+ * calm family loop is becoming easier to start and return to. The table keeps
+ * only opaque IDs already present in D1, a coarse local date, and the event
+ * name; it accepts no free-form client metadata or child-facing content.
+ */
+export const experienceEvents = sqliteTable(
+  "experience_events",
+  {
+    id: text("id").primaryKey(),
+    householdId: text("household_id").notNull(),
+    actorKind: text("actor_kind").notNull(),
+    actorKey: text("actor_key").notNull(),
+    eventName: text("event_name").notNull(),
+    subjectType: text("subject_type"),
+    subjectId: text("subject_id"),
+    localDate: text("local_date").notNull(),
+    dedupeKey: text("dedupe_key").notNull(),
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("experience_events_household_dedupe_unique").on(
+      table.householdId,
+      table.dedupeKey,
+    ),
+    index("experience_events_household_event_date_idx").on(
+      table.householdId,
+      table.eventName,
+      table.localDate,
+    ),
+    index("experience_events_actor_date_idx").on(
+      table.householdId,
+      table.actorKind,
+      table.actorKey,
+      table.localDate,
+    ),
+    foreignKey({
+      columns: [table.householdId],
+      foreignColumns: [households.id],
+      name: "experience_events_household_fk",
+    }).onDelete("cascade"),
+    check(
+      "experience_events_actor_kind_check",
+      sql`${table.actorKind} IN ('parent', 'companion')`,
+    ),
+    check(
+      "experience_events_name_check",
+      sql`${table.eventName} IN ('parent_today_opened', 'companion_today_opened', 'onboarding_completed', 'reward_goal_selected', 'install_guidance_opened')`,
+    ),
+    check(
+      "experience_events_subject_check",
+      sql`(${table.subjectType} IS NULL AND ${table.subjectId} IS NULL) OR (${table.subjectType} = 'reward' AND length(trim(${table.subjectId})) > 0)`,
+    ),
+    check(
+      "experience_events_shape_check",
+      sql`(
+        (${table.eventName} = 'reward_goal_selected' AND ${table.subjectType} = 'reward' AND ${table.subjectId} IS NOT NULL)
+        OR (${table.eventName} <> 'reward_goal_selected' AND ${table.subjectType} IS NULL AND ${table.subjectId} IS NULL)
+      ) AND (
+        (${table.actorKind} = 'parent' AND ${table.eventName} IN ('parent_today_opened', 'onboarding_completed', 'reward_goal_selected'))
+        OR (${table.actorKind} = 'companion' AND ${table.eventName} IN ('companion_today_opened', 'install_guidance_opened'))
+      )`,
+    ),
+    check(
+      "experience_events_local_date_check",
+      sql`${table.localDate} GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND date(${table.localDate}) IS NOT NULL AND date(${table.localDate}) = ${table.localDate}`,
+    ),
+    check(
+      "experience_events_dedupe_non_empty",
+      sql`length(trim(${table.dedupeKey})) > 0 AND ${table.dedupeKey} = ${table.eventName} || ':' || ${table.actorKind} || ':' || ${table.actorKey} || ':' || ${table.localDate}`,
+    ),
+  ],
+);
+
 /** Durable, coarse-grained counters used by generic request rate limiting. */
 export const rateLimitBuckets = sqliteTable(
   "rate_limit_buckets",

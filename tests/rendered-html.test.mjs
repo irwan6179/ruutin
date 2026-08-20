@@ -52,9 +52,9 @@ test("server-renders the email sign-in route", async () => {
   const html = await response.text();
   assert.match(html, /<title>Sign in \| Ruutin<\/title>/i);
   assert.match(html, /Parent access/);
-  assert.match(html, /Parent sign-in/);
+  assert.match(html, /Sign in with email/);
   assert.match(html, /id="ruutin-email"/);
-  assert.match(html, /one-time code/i);
+  assert.match(html, /six-digit code/i);
 });
 
 test("starter preview infrastructure is removed from the finished slice", async () => {

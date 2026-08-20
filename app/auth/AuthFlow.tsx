@@ -7,6 +7,7 @@ import {
 } from "../components/ActionPendingOverlay";
 
 type AuthStep = "email" | "code";
+type PendingAction = "email" | "code" | "demo" | null;
 const CODE_LENGTH = 6;
 
 const GENERIC_ERROR = "We couldn’t complete that just yet. Please try again.";
@@ -16,6 +17,8 @@ type ApiPayload = {
   csrfToken?: string;
   message?: string;
   error?: string;
+  available?: boolean;
+  redirectTo?: string;
 };
 
 async function readPayload(response: Response): Promise<ApiPayload> {
@@ -35,13 +38,33 @@ export function AuthFlow() {
   const [csrfToken, setCsrfToken] = useState("");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
+  const [demoLoginAvailable, setDemoLoginAvailable] = useState(false);
   const codeInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const code = codeDigits.join("");
+  const busy = pendingAction !== null;
 
   useEffect(() => {
     if (step === "code") codeInputRefs.current[0]?.focus();
   }, [step]);
+
+  useEffect(() => {
+    let active = true;
+    void fetch("/api/dev/login", {
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+    })
+      .then(async (response) => ({ response, payload: await readPayload(response) }))
+      .then(({ response, payload }) => {
+        if (!active || !response.ok || !payload.available || !payload.csrfToken) return;
+        setCsrfToken(payload.csrfToken);
+        setDemoLoginAvailable(true);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const bootstrapCsrf = useCallback(async () => {
     const response = await fetch("/api/auth/request", {
@@ -57,7 +80,7 @@ export function AuthFlow() {
   async function submitEmail(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
-    setBusy(true);
+    setPendingAction("email");
     setError("");
     setStatus("");
     try {
@@ -85,14 +108,14 @@ export function AuthFlow() {
     } catch {
       setError(GENERIC_ERROR);
     } finally {
-      setBusy(false);
+      setPendingAction(null);
     }
   }
 
   async function submitCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
-    setBusy(true);
+    setPendingAction("code");
     setError("");
     setStatus("");
     try {
@@ -118,13 +141,13 @@ export function AuthFlow() {
     } catch {
       setError(GENERIC_ERROR);
     } finally {
-      setBusy(false);
+      setPendingAction(null);
     }
   }
 
   async function requestAnotherCode() {
     if (busy) return;
-    setBusy(true);
+    setPendingAction("email");
     setError("");
     setStatus("");
     try {
@@ -152,7 +175,41 @@ export function AuthFlow() {
     } catch {
       setError(GENERIC_ERROR);
     } finally {
-      setBusy(false);
+      setPendingAction(null);
+    }
+  }
+
+  async function enterDemoParentSpace() {
+    if (busy) return;
+    setPendingAction("demo");
+    setError("");
+    setStatus("");
+    try {
+      const token = csrfToken || (await bootstrapCsrf());
+      const response = await fetch("/api/dev/login", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          Accept: "application/json",
+          "x-ruutin-csrf": token,
+        },
+      });
+      const payload = await readPayload(response);
+      if (!response.ok) {
+        setError(
+          response.status === 404
+            ? "Demo login isn't available at this address."
+            : payload.message ?? GENERIC_ERROR,
+        );
+        return;
+      }
+      navigate(payload.redirectTo ?? "/app/today", "Opening the demo family space…", {
+        replace: true,
+      });
+    } catch {
+      setError(GENERIC_ERROR);
+    } finally {
+      setPendingAction(null);
     }
   }
 
@@ -201,14 +258,20 @@ export function AuthFlow() {
     <div className="br-auth-flow" aria-label="Parent email sign-in" aria-busy={busy}>
       <ActionPendingOverlay
         active={busy || Boolean(pendingLabel)}
-        label={pendingLabel || (step === "email" ? "Sending your sign-in code…" : "Checking your code…")}
+        label={
+          pendingLabel ||
+          (pendingAction === "demo"
+            ? "Preparing the demo household…"
+            : step === "email"
+              ? "Sending your sign-in code…"
+              : "Checking your code…")
+        }
         detail="Your secure parent session is being prepared."
       />
       <div className="br-sign-in-heading">
-        <div className="br-sign-in-icon" aria-hidden="true">✦</div>
         <div>
-          <strong>Parent sign-in</strong>
-          <p>{step === "email" ? "One-time code · no password" : `Code sent to ${email}`}</p>
+          <strong>{step === "email" ? "Sign in with email" : "Check your inbox"}</strong>
+          <p>{step === "email" ? "We’ll send a six-digit code." : `Code sent to ${email}`}</p>
         </div>
       </div>
 
@@ -234,8 +297,22 @@ export function AuthFlow() {
             required
           />
           <button className="br-button br-button-light" type="submit" disabled={busy}>
-            {busy ? "Sending…" : "Send my code"} <span aria-hidden="true">↗</span>
+            {pendingAction === "email" ? "Sending…" : "Send my code"}
           </button>
+          {demoLoginAvailable && (
+            <div className="br-demo-login">
+              <span>Local preview</span>
+              <button
+                className="br-demo-login-button"
+                type="button"
+                onClick={enterDemoParentSpace}
+                disabled={busy}
+              >
+                {pendingAction === "demo" ? "Preparing demo…" : "Enter demo parent space"}
+              </button>
+              <small>Uses sample family data. No email needed.</small>
+            </div>
+          )}
         </form>
       ) : (
         <form className="br-auth-form" onSubmit={submitCode}>
@@ -266,7 +343,7 @@ export function AuthFlow() {
           </div>
           <span id="ruutin-code-help" className="br-auth-help">It expires in 10 minutes and works once.</span>
           <button className="br-button br-button-light" type="submit" disabled={busy || code.length !== CODE_LENGTH}>
-            {busy ? "Checking…" : "Verify and continue"} <span aria-hidden="true">↗</span>
+            {pendingAction === "code" ? "Checking…" : "Verify and continue"}
           </button>
           <button className="br-auth-back" type="button" onClick={requestAnotherCode} disabled={busy}>
             Send a new code

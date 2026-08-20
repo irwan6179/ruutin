@@ -75,6 +75,7 @@ export type HouseholdExport = Readonly<{
   rewardRequests: readonly Record<string, unknown>[];
   ledger: readonly Record<string, unknown>[];
   linkedDevices: readonly Record<string, unknown>[];
+  experienceSignals: readonly Record<string, unknown>[];
 }>;
 
 type UserEmailRow = { email: string; emailNormalized: string };
@@ -217,7 +218,7 @@ export async function exportHouseholdForParent(
   if (!household) throw new ScopeError();
 
   const householdId = context.householdId;
-  const [profilesResult, tasksResult, claimsResult, rewardsResult, requestsResult, ledgerResult, devicesResult] =
+  const [profilesResult, tasksResult, claimsResult, rewardsResult, requestsResult, ledgerResult, devicesResult, experienceResult] =
     await Promise.all([
       db
         .prepare(
@@ -298,6 +299,17 @@ export async function exportHouseholdForParent(
         )
         .bind(householdId)
         .all<Record<string, unknown>>(),
+      db
+        .prepare(
+          `SELECT actor_kind AS actorKind, event_name AS eventName,
+                  subject_type AS subjectType, subject_id AS subjectId,
+                  local_date AS localDate, created_at AS createdAt
+           FROM experience_events
+           WHERE household_id = ?
+           ORDER BY created_at ASC, id ASC`,
+        )
+        .bind(householdId)
+        .all<Record<string, unknown>>(),
     ]);
 
   return {
@@ -309,6 +321,7 @@ export async function exportHouseholdForParent(
     rewardRequests: rows(requestsResult),
     ledger: rows(ledgerResult),
     linkedDevices: rows(devicesResult),
+    experienceSignals: rows(experienceResult),
   };
 }
 

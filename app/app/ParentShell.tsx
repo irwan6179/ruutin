@@ -33,25 +33,33 @@ function DestinationLabel({
 
 export function ParentShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const onboarding = pathname === "/app/onboarding";
   const { pendingLabel, beginNavigation } = usePendingDocumentNavigation();
   return (
-    <div className="ruutin-parent-shell">
+    <div className={`ruutin-parent-shell${onboarding ? " is-onboarding" : ""}`}>
       <ActionPendingOverlay active={Boolean(pendingLabel)} label={pendingLabel} />
       <a className="ruutin-skip-link" href="#parent-main">Skip to content</a>
       <header className="ruutin-app-header">
-        <a
-          className="ruutin-app-brand"
-          href="/app/today"
-          aria-label="Ruutin Today"
-          onClick={(event) => beginNavigation(event, "/app/today", "Today")}
-        >
-          <span className="ruutin-app-mark" aria-hidden="true">✦</span>
-          <span>Ruutin</span>
-        </a>
-        <span className="ruutin-parent-label">Parent space</span>
+        {onboarding ? (
+          <span className="ruutin-app-brand" aria-label="Ruutin setup">
+            <span className="ruutin-app-mark" aria-hidden="true">✦</span>
+            <span>Ruutin</span>
+          </span>
+        ) : (
+          <a
+            className="ruutin-app-brand"
+            href="/app/today"
+            aria-label="Ruutin Today"
+            onClick={(event) => beginNavigation(event, "/app/today", "Today")}
+          >
+            <span className="ruutin-app-mark" aria-hidden="true">✦</span>
+            <span>Ruutin</span>
+          </a>
+        )}
+        <span className="ruutin-parent-label">{onboarding ? "Quick setup" : "Parent space"}</span>
       </header>
       <main id="parent-main" className="ruutin-app-main">{children}</main>
-      <nav className="ruutin-bottom-nav" aria-label="Parent navigation">
+      {!onboarding && <nav className="ruutin-bottom-nav" aria-label="Parent navigation">
         {destinations.map((destination) => {
           const active = pathname === destination.href || (destination.href !== "/app/today" && pathname.startsWith(`${destination.href}/`));
           return (
@@ -68,7 +76,7 @@ export function ParentShell({ children }: { children: ReactNode }) {
             </a>
           );
         })}
-      </nav>
+      </nav>}
     </div>
   );
 }

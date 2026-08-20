@@ -35,10 +35,12 @@ function createDb(): { database: DatabaseSync; db: SqliteD1Shim } {
   database.exec("PRAGMA foreign_keys = ON");
   for (const migration of [
     "drizzle/0000_careless_colossus.sql",
-    "drizzle/0001_cool_lake.sql",
-    "drizzle/0002_old_ben_parker.sql",
-    "drizzle/0003_g01_integrity.sql",
-  ]) database.exec(readFileSync(migration, "utf8").replaceAll("--> statement-breakpoint", ""));
+  "drizzle/0001_cool_lake.sql",
+  "drizzle/0002_old_ben_parker.sql",
+  "drizzle/0003_g01_integrity.sql",
+  "drizzle/0004_sleepy_power_pack.sql",
+  "drizzle/0005_past_shadow_king.sql",
+]) database.exec(readFileSync(migration, "utf8").replaceAll("--> statement-breakpoint", ""));
   database.prepare("INSERT INTO users (id, email, email_normalized, created_at) VALUES (?, ?, ?, ?)").run("u1", "parent@example.test", "parent@example.test", timestamp);
   return { database, db: new SqliteD1Shim(database) };
 }
@@ -123,9 +125,15 @@ test("onboarding derives resume state without browser-owned persistence", () => 
   assert.equal(resumed.activeStep, "profile");
   const taskBoundary = deriveOnboardingState({ hasHousehold: true, profileCount: 2, taskCount: 0, rewardCount: 0 }, { requestedStep: "rewards" });
   assert.equal(taskBoundary.activeStep, "tasks");
-  const complete = deriveOnboardingState({ hasHousehold: true, profileCount: 2, taskCount: 4, rewardCount: 2 });
+  assert.equal(deriveOnboardingState({ hasHousehold: true, profileCount: 1, taskCount: 2 }).isComplete, false);
+  const complete = deriveOnboardingState({ hasHousehold: true, profileCount: 2, taskCount: 4, rewardCount: 0 });
   assert.equal(complete.isComplete, true);
-  assert.equal(complete.canSkip, true);
+  assert.deepEqual(complete.completedSteps, ["household", "profile", "tasks"]);
+  assert.equal(complete.totalSteps, 3);
+  assert.equal(complete.canSkip, false);
+  const malformed = deriveOnboardingState({ hasHousehold: false, profileCount: 2, taskCount: 4, rewardCount: 2 });
+  assert.deepEqual(malformed.completedSteps, []);
+  assert.equal(malformed.activeStep, "household");
 });
 
 test("profile API requires a parent session, rejects prohibited fields, and uses private responses", async () => {
@@ -157,10 +165,10 @@ test("G03 client contracts keep mutation semantics and accessibility safeguards 
   const onboarding = readFileSync("app/app/onboarding/OnboardingFlow.tsx", "utf8");
   assert.match(onboarding, /useSyncExternalStore/);
   assert.match(onboarding, /Keep the server render and first browser render deterministic/);
-  assert.match(onboarding, /<RewardsManager/);
-  assert.match(onboarding, /onActiveRewardChange/);
-  assert.match(onboarding, /<PairingManager/);
-  assert.match(onboarding, /eligibleProfiles/);
+  assert.match(onboarding, /Continue to Today/);
+  assert.match(onboarding, /state\.isComplete/);
+  assert.match(onboarding, /recordExperienceSignal\("onboarding_completed"\)/);
+  assert.doesNotMatch(onboarding, /<RewardsManager|<PairingManager|initialRewards|initialDevices/);
   assert.doesNotMatch(today, /today&apos;s rhythm/);
   assert.match(signOut, /aria-live="assertive"/);
   assert.doesNotMatch(onboarding, /Progress is saved after each step/);

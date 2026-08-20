@@ -51,6 +51,8 @@ function createDb(): { database: DatabaseSync; db: SqliteD1Shim } {
     "drizzle/0001_cool_lake.sql",
     "drizzle/0002_old_ben_parker.sql",
     "drizzle/0003_g01_integrity.sql",
+    "drizzle/0004_sleepy_power_pack.sql",
+    "drizzle/0005_past_shadow_king.sql",
   ]) database.exec(readFileSync(migration, "utf8").replaceAll("--> statement-breakpoint", ""));
   database.prepare("INSERT INTO users (id, email, email_normalized, created_at) VALUES (?, ?, ?, ?)").run("u1", "parent@example.test", "parent@example.test", timestamp);
   return { database, db: new SqliteD1Shim(database) };

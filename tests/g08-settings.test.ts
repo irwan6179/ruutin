@@ -39,6 +39,8 @@ const migrations = [
   "drizzle/0001_cool_lake.sql",
   "drizzle/0002_old_ben_parker.sql",
   "drizzle/0003_g01_integrity.sql",
+  "drizzle/0004_sleepy_power_pack.sql",
+  "drizzle/0005_past_shadow_king.sql",
 ] as const;
 
 class SqliteD1Shim implements D1DatabaseLike {
@@ -181,11 +183,20 @@ test("settings and export are parent-scoped, private, and omit auth material", a
     (id, household_id, child_profile_id, code_hash, token_hash, expires_at, created_by_user_id, created_at)
     VALUES ('pair-1', 'h1', 'p1', 'pair-code-secret', 'pair-token-secret', '2027-01-01T00:00:00.000Z', 'u1', ?)`)
     .run(timestamp);
+  database.prepare(`INSERT INTO experience_events
+    (id, household_id, actor_kind, actor_key, event_name, subject_type,
+     subject_id, local_date, dedupe_key, created_at)
+    VALUES ('experience-1', 'h1', 'parent', 'u1', 'parent_today_opened', NULL,
+            NULL, '2026-08-18', 'parent_today_opened:parent:u1:2026-08-18', ?)`)
+    .run(timestamp);
   const payload = await exportHouseholdForParent(db, parent());
   const text = JSON.stringify(payload);
-  assert.deepEqual(Object.keys(payload).sort(), ["claims", "household", "ledger", "linkedDevices", "profiles", "rewardRequests", "rewards", "tasks"].sort());
+  assert.deepEqual(Object.keys(payload).sort(), ["claims", "experienceSignals", "household", "ledger", "linkedDevices", "profiles", "rewardRequests", "rewards", "tasks"].sort());
   assert.equal(payload.tasks[0]?.title, "Brush teeth");
   assert.equal(payload.linkedDevices[0]?.deviceLabel, "Ari tablet");
+  assert.equal(payload.experienceSignals[0]?.eventName, "parent_today_opened");
+  assert.equal(payload.experienceSignals[0]?.actorKind, "parent");
+  assert.equal(payload.experienceSignals[0]?.actorKey, undefined);
   assert.doesNotMatch(text, /should-not-export|pair-code-secret|pair-token-secret|token_hash|code_hash|session/i);
   assert.doesNotMatch(text, /Other|Cai|h2|p3/);
 

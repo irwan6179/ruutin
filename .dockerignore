@@ -1,0 +1,14 @@
+.git
+.next
+.vinext
+.wrangler
+.playwright-cli
+dist
+node_modules
+output
+outputs
+work
+*.log
+*.tsbuildinfo
+.env*
+!.env.example

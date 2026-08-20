@@ -1,5 +1,9 @@
 import type { D1DatabaseLike, ParentContext } from "./auth-context";
-import { localDateFor } from "./validation";
+import {
+  isTaskDueOnLocalDate,
+  localDateFor,
+  scheduleFromStorage,
+} from "./validation";
 import { getParentHousehold } from "./households";
 import { listProfilesForParent, type ParentProfile } from "./profiles";
 import { listTaskOccurrencesForParent, type TaskOccurrence } from "./tasks";
@@ -18,6 +22,12 @@ export type TodayProfileCard = ParentProfile & {
 export type TodayOverview = {
   localDate: string;
   household: { id: string; name: string; timezone: string };
+  rhythm: {
+    completedThisWeek: number;
+    activeDaysThisWeek: number;
+    tomorrowTaskCount: number;
+    rewardsCelebratedThisWeek: number;
+  };
   profiles: TodayProfileCard[];
   pendingClaims: Array<{
     id: string;
@@ -32,6 +42,81 @@ export type TodayOverview = {
   pendingRewardRequests: RewardRequestView[];
 };
 
+function shiftLocalDate(localDate: string, days: number): string {
+  const [year, month, day] = localDate.split("-").map(Number);
+  const shifted = new Date(Date.UTC(year, month - 1, day + days));
+  return shifted.toISOString().slice(0, 10);
+}
+
+async function getRhythmSummary(
+  db: D1DatabaseLike,
+  householdId: string,
+  localDate: string,
+): Promise<TodayOverview["rhythm"]> {
+  const weekStart = shiftLocalDate(localDate, -6);
+  const tomorrow = shiftLocalDate(localDate, 1);
+  const [completedThisWeek, activeDaysThisWeek, rewardsCelebratedThisWeek, taskRows] =
+    await Promise.all([
+      firstNumber(
+        db,
+        `SELECT count(*) AS value FROM task_claims
+         WHERE household_id = ? AND status = 'approved'
+           AND due_date BETWEEN ? AND ?`,
+        householdId,
+        weekStart,
+        localDate,
+      ),
+      firstNumber(
+        db,
+        `SELECT count(DISTINCT due_date) AS value FROM task_claims
+         WHERE household_id = ? AND status = 'approved'
+           AND due_date BETWEEN ? AND ?`,
+        householdId,
+        weekStart,
+        localDate,
+      ),
+      firstNumber(
+        db,
+        `SELECT count(*) AS value FROM point_ledger
+         WHERE household_id = ? AND event_type = 'reward_redeemed'
+           AND local_date BETWEEN ? AND ?`,
+        householdId,
+        weekStart,
+        localDate,
+      ),
+      db
+        .prepare(
+          `SELECT schedule_type AS scheduleType, schedule_data AS scheduleData
+           FROM tasks AS t
+           INNER JOIN child_profiles AS p
+             ON p.household_id = t.household_id AND p.id = t.child_profile_id
+           WHERE t.household_id = ? AND t.archived_at IS NULL
+             AND p.archived_at IS NULL`,
+        )
+        .bind(householdId)
+        .all<{ scheduleType: string; scheduleData: string }>(),
+    ]);
+  const tomorrowTaskCount = (taskRows.results ?? []).reduce((count, task) => {
+    try {
+      return count +
+        (isTaskDueOnLocalDate(
+          scheduleFromStorage(task.scheduleType, task.scheduleData),
+          tomorrow,
+        )
+          ? 1
+          : 0);
+    } catch {
+      return count;
+    }
+  }, 0);
+  return {
+    completedThisWeek,
+    activeDaysThisWeek,
+    tomorrowTaskCount,
+    rewardsCelebratedThisWeek,
+  };
+}
+
 async function firstNumber(db: D1DatabaseLike, query: string, ...values: unknown[]): Promise<number> {
   const row = await db.prepare(query).bind(...values).first<{ value: number | null }>();
   return Number(row?.value ?? 0);
@@ -44,7 +129,10 @@ export async function getTodayOverview(
 ): Promise<TodayOverview> {
   const household = await getParentHousehold(db, context);
   const localDate = localDateFor(options.now ?? new Date(), household.timezone);
-  const profiles = await listProfilesForParent(db, context);
+  const [profiles, rhythm] = await Promise.all([
+    listProfilesForParent(db, context),
+    getRhythmSummary(db, household.id, localDate),
+  ]);
   const cards: TodayProfileCard[] = [];
   for (const profile of profiles) {
     const [taskView, pendingClaimCount, balance, activeReward] = await Promise.all([
@@ -104,6 +192,7 @@ export async function getTodayOverview(
   return {
     localDate,
     household: { id: household.id, name: household.name, timezone: household.timezone },
+    rhythm,
     profiles: cards,
     pendingClaims: pending.results ?? [],
     pendingRewardRequests,

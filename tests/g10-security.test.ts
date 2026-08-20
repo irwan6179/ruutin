@@ -7,12 +7,14 @@ import {
   hashOpaqueToken,
   PARENT_SESSION_COOKIE,
   resolveCompanionContext,
+  resolveParentContext,
   type D1DatabaseLike,
   type D1StatementLike,
   type ParentContext,
 } from "../server/auth-context";
 import { getCompanionRewards, getCompanionToday } from "../server/companion";
 import { handleCompanionClaim, handleParentClaims, handleParentCompletion, handleParentLedger } from "../server/claim-routes";
+import { handleDevelopmentLogin } from "../server/dev-auth";
 import { DeterministicEmailAdapter } from "../server/email-adapter";
 import { handleTacRequest } from "../server/auth-routes";
 import { issueCsrfToken } from "../server/http-security";
@@ -63,6 +65,7 @@ const MIGRATIONS = [
   "drizzle/0002_old_ben_parker.sql",
   "drizzle/0003_g01_integrity.sql",
   "drizzle/0004_sleepy_power_pack.sql",
+  "drizzle/0005_past_shadow_king.sql",
 ] as const;
 
 class SqliteD1Shim implements D1DatabaseLike {
@@ -153,6 +156,16 @@ async function createFixture(): Promise<Fixture> {
   device.run("d1", "h1", "p1", "Ari tablet", companionHash, TIMESTAMP, TIMESTAMP);
   device.run("d2", "h1", "p2", "Bea tablet", "device-hash-2", TIMESTAMP, TIMESTAMP);
   device.run("d3", "h2", "p3", "Cai tablet", "device-hash-3", TIMESTAMP, TIMESTAMP);
+  database.prepare(`INSERT INTO experience_events
+    (id, household_id, actor_kind, actor_key, event_name, subject_type,
+     subject_id, local_date, dedupe_key, created_at)
+    VALUES ('e1', 'h1', 'parent', 'u1', 'parent_today_opened', NULL, NULL,
+            '2026-08-18', 'parent_today_opened:parent:u1:2026-08-18', ?)`).run(TIMESTAMP);
+  database.prepare(`INSERT INTO experience_events
+    (id, household_id, actor_kind, actor_key, event_name, subject_type,
+     subject_id, local_date, dedupe_key, created_at)
+    VALUES ('e2', 'h2', 'parent', 'u2', 'parent_today_opened', NULL, NULL,
+            '2026-08-18', 'parent_today_opened:parent:u2:2026-08-18', ?)`).run(TIMESTAMP);
 
   const claim = database.prepare(`INSERT INTO task_claims
     (id, household_id, child_profile_id, task_id, due_date, submitted_by_type,
@@ -341,7 +354,7 @@ test("BR-100 parent route matrix denies foreign IDs and returns only own househo
   assert.equal(exportResponse.status, 200);
   assertPrivate(exportResponse);
   assert.equal(exportResponse.headers.get("referrer-policy"), "no-referrer");
-  assert.doesNotMatch(await exportResponse.text(), /Cai|h2|d3|device-hash-3|token_hash|code_hash/u);
+  assert.doesNotMatch(await exportResponse.text(), /Cai|h2|d3|device-hash-3|token_hash|code_hash|actorKey|actor_key|u1/u);
 
   assert.equal(databaseValue(fixture, "SELECT count(*) AS count FROM child_profiles WHERE id = 'p3'"), 1);
   fixture.database.close();
@@ -472,6 +485,117 @@ test("BR-102 auth and pairing errors are generic, expiring, one-use, five-attemp
   assert.doesNotMatch(await confirm.text(), /222222|g{43}|token_hash|code_hash/u);
   const reused = await handlePairing(jsonRequest("https://ruutin.test/api/pair", "POST", { Origin: "https://ruutin.test", "Content-Type": "application/json" }, { token: pairing.pairingToken, confirm: true }), { db: fixture.db, authHmacSecret: AUTH_SECRET, sessionSecret: SESSION_SECRET, now: NOW });
   assert.equal(reused.status, 400);
+  fixture.database.close();
+});
+
+test("local demo login seeds one scoped household and requires an exact development hostname", async () => {
+  const fixture = await createFixture();
+  const beforeHouseholds = databaseValue(fixture, "SELECT count(*) AS count FROM households");
+  const disabled = await handleDevelopmentLogin(
+    new Request("http://localhost/api/dev/login"),
+    { db: fixture.db, sessionSecret: SESSION_SECRET, enabled: false, now: NOW },
+  );
+  assert.equal(disabled.status, 404);
+  const nonLoopback = await handleDevelopmentLogin(
+    new Request("http://192.168.1.20/api/dev/login"),
+    { db: fixture.db, sessionSecret: SESSION_SECRET, enabled: true, now: NOW },
+  );
+  assert.equal(nonLoopback.status, 404);
+  assert.equal(databaseValue(fixture, "SELECT count(*) AS count FROM households"), beforeHouseholds);
+
+  const tailnetWithoutAllowlist = await handleDevelopmentLogin(
+    new Request("https://mohds-mac-mini.tail25cde9.ts.net/api/dev/login"),
+    { db: fixture.db, sessionSecret: SESSION_SECRET, enabled: true, now: NOW },
+  );
+  assert.equal(tailnetWithoutAllowlist.status, 404);
+  const tailnetAvailability = await handleDevelopmentLogin(
+    new Request("https://mohds-mac-mini.tail25cde9.ts.net/api/dev/login"),
+    {
+      db: fixture.db,
+      sessionSecret: SESSION_SECRET,
+      enabled: true,
+      allowedHostnames: ["mohds-mac-mini.tail25cde9.ts.net"],
+      now: NOW,
+    },
+  );
+  assert.equal(tailnetAvailability.status, 200);
+  assert.match(tailnetAvailability.headers.get("set-cookie") ?? "", /Secure/u);
+
+  const availability = await handleDevelopmentLogin(
+    new Request("http://localhost/api/dev/login"),
+    { db: fixture.db, sessionSecret: SESSION_SECRET, enabled: true, now: NOW },
+  );
+  assert.equal(availability.status, 200);
+  assert.match(availability.headers.get("set-cookie") ?? "", /^__Host-ruutin_csrf=/u);
+
+  const csrf = issueCsrfToken();
+  const loginRequest = () =>
+    new Request("http://localhost/api/dev/login", {
+      method: "POST",
+      headers: {
+        Origin: "http://localhost",
+        Cookie: csrf.cookie.split(";", 1)[0] ?? "",
+        "x-ruutin-csrf": csrf.token,
+      },
+    });
+  const login = await handleDevelopmentLogin(loginRequest(), {
+    db: fixture.db,
+    sessionSecret: SESSION_SECRET,
+    enabled: true,
+    now: NOW,
+  });
+  assert.equal(login.status, 200);
+  const firstParentCookie = (login.headers.get("set-cookie") ?? "").split(";", 1)[0] ?? "";
+  assert.match(firstParentCookie, /^__Host-ruutin_parent_session=/u);
+  const firstContext = await resolveParentContext(
+    new Request("http://localhost/app/today", { headers: { Cookie: firstParentCookie } }),
+    fixture.db,
+    { sessionSecret: SESSION_SECRET, now: NOW },
+  );
+  assert.equal(firstContext?.householdId, "dev-demo-household");
+  assert.equal(firstContext?.role, "parent");
+  assert.equal(
+    databaseValue(
+      fixture,
+      "SELECT count(*) AS count FROM child_profiles WHERE household_id = 'dev-demo-household'",
+    ),
+    2,
+  );
+  assert.equal(
+    databaseValue(
+      fixture,
+      "SELECT count(*) AS count FROM tasks WHERE household_id = 'dev-demo-household'",
+    ),
+    5,
+  );
+  assert.equal(
+    databaseValue(
+      fixture,
+      "SELECT count(*) AS count FROM task_claims WHERE household_id = 'dev-demo-household' AND status = 'pending'",
+    ),
+    1,
+  );
+
+  const secondLogin = await handleDevelopmentLogin(loginRequest(), {
+    db: fixture.db,
+    sessionSecret: SESSION_SECRET,
+    enabled: true,
+    now: new Date(NOW.getTime() + 1_000),
+  });
+  assert.equal(secondLogin.status, 200);
+  assert.equal(
+    databaseValue(
+      fixture,
+      "SELECT count(*) AS count FROM child_profiles WHERE household_id = 'dev-demo-household'",
+    ),
+    2,
+  );
+  const staleContext = await resolveParentContext(
+    new Request("http://localhost/app/today", { headers: { Cookie: firstParentCookie } }),
+    fixture.db,
+    { sessionSecret: SESSION_SECRET, now: new Date(NOW.getTime() + 1_000) },
+  );
+  assert.equal(staleContext, null);
   fixture.database.close();
 });
 

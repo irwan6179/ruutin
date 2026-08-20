@@ -5,6 +5,7 @@ import type {
   ParentContext,
 } from "./auth-context";
 import { ScopeError } from "./scoped-data";
+import { recordExperienceEvent } from "./experience-events";
 import {
   createId,
   localDateFor,
@@ -396,6 +397,7 @@ export async function setActiveRewardForParent(
   context: ParentContext,
   profileIdValue: unknown,
   rewardIdValue: unknown,
+  options: { now?: Date } = {},
 ): Promise<RewardRecord | null> {
   const profileId = validateId(profileIdValue, "profileId");
   const profile = await parentProfile(db, context, profileId);
@@ -417,6 +419,12 @@ export async function setActiveRewardForParent(
       .bind(reward.id, householdId, profile.id)
       .first<RewardRecord>();
     if (!selected) throw new RewardAtomicityError();
+    await recordExperienceEvent(db, context, "reward_goal_selected", {
+      now: options.now,
+      subject: { type: "reward", id: selected.id },
+    }).catch(() => {
+      // Measurement is best effort and must never block reward setup.
+    });
     return selected;
   }
   await runStatement(db.prepare(`UPDATE child_profiles

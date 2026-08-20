@@ -10,12 +10,14 @@ const migrationFiles = [
   "drizzle/0002_old_ben_parker.sql",
   "drizzle/0003_g01_integrity.sql",
   "drizzle/0004_sleepy_power_pack.sql",
+  "drizzle/0005_past_shadow_king.sql",
 ] as const;
 
 const requiredTables = [
   "auth_challenges",
   "child_devices",
   "child_profiles",
+  "experience_events",
   "household_users",
   "households",
   "pairing_codes",
@@ -87,6 +89,9 @@ test("G10 migration sequence replays deterministically with required indexes and
     "reward_requests_pending_unique",
     "reward_requests_pending_parent_idx",
     "rewards_active_profile_idx",
+    "experience_events_household_dedupe_unique",
+    "experience_events_household_event_date_idx",
+    "experience_events_actor_date_idx",
   ]) assert.ok(indexes.includes(index), index);
   const triggers = first.prepare("SELECT name FROM sqlite_master WHERE type = 'trigger' ORDER BY name").all().map((row) => String((row as { name: string }).name));
   for (const trigger of [
@@ -95,12 +100,17 @@ test("G10 migration sequence replays deterministically with required indexes and
     "reward_requests_state_transition",
     "point_ledger_no_update",
     "point_ledger_no_delete",
+    "experience_events_parent_actor_scope_insert",
+    "experience_events_companion_actor_scope_insert",
+    "experience_events_reward_scope_insert",
+    "experience_events_no_update",
   ]) assert.ok(triggers.includes(trigger), trigger);
 
   assert.ok(foreignKeys(first, "point_ledger").some((key) => key.table === "child_profiles" && key.onDelete === "CASCADE"));
   assert.ok(foreignKeys(first, "reward_requests").some((key) => key.table === "rewards" && key.onDelete === "CASCADE"));
   assert.ok(foreignKeys(first, "reward_requests").some((key) => key.table === "child_devices" && key.onDelete === "CASCADE"));
   assert.ok(foreignKeys(first, "sessions").some((key) => key.table === "users" && key.onDelete === "CASCADE"));
+  assert.ok(foreignKeys(first, "experience_events").some((key) => key.table === "households" && key.onDelete === "CASCADE"));
 
   const upgraded = new DatabaseSync(":memory:");
   applyMigrations(upgraded, migrationFiles.slice(0, 4));
@@ -143,6 +153,7 @@ test("G10 deletion semantics remove household app data and revoke retained sessi
     INSERT INTO task_claims (id, household_id, child_profile_id, task_id, due_date, submitted_by_type, submitted_by_device_id, status, submitted_at) VALUES ('c1', 'h1', 'p1', 't1', '2026-08-19', 'companion', 'd1', 'pending', '${now}');
     INSERT INTO reward_requests (id, household_id, child_profile_id, reward_id, requested_by_device_id, requested_at) VALUES ('q1', 'h1', 'p1', 'r1', 'd1', '${now}');
     INSERT INTO point_ledger (id, household_id, child_profile_id, event_type, stars_delta, source_type, source_id, local_date, created_at) VALUES ('l1', 'h1', 'p1', 'manual_adjustment', 1, 'manual_adjustment', 'source-1', '2026-08-19', '${now}');
+    INSERT INTO experience_events (id, household_id, actor_kind, actor_key, event_name, local_date, dedupe_key, created_at) VALUES ('e1', 'h1', 'parent', 'u1', 'parent_today_opened', '2026-08-19', 'parent_today_opened:parent:u1:2026-08-19', '${now}');
     INSERT INTO sessions (id, user_id, token_hash, expires_at, created_at, last_seen_at) VALUES ('s1', 'u1', 'session-hash', '2027-01-01T00:00:00.000Z', '${now}', '${now}');
     INSERT INTO auth_challenges (id, email_normalized, code_hash, purpose, expires_at, created_at) VALUES ('a1', 'parent@example.test', 'tac-hash', 'sign_in', '2027-01-01T00:00:00.000Z', '${now}');
   `);
@@ -155,7 +166,7 @@ test("G10 deletion semantics remove household app data and revoke retained sessi
 
   assert.equal(database.prepare("SELECT count(*) AS count FROM households WHERE id = 'h1'").get()?.count, 0);
   assert.equal(database.prepare("SELECT count(*) AS count FROM households WHERE id = 'h2'").get()?.count, 1);
-  for (const table of ["child_profiles", "tasks", "task_claims", "rewards", "reward_requests", "point_ledger", "child_devices", "pairing_codes"]) {
+  for (const table of ["child_profiles", "tasks", "task_claims", "rewards", "reward_requests", "point_ledger", "child_devices", "pairing_codes", "experience_events"]) {
     assert.equal(database.prepare(`SELECT count(*) AS count FROM ${table} WHERE household_id = 'h1'`).get()?.count, 0, table);
   }
   assert.equal(database.prepare("SELECT revoked_at FROM sessions WHERE id = 's1'").get()?.revoked_at, now);
@@ -193,10 +204,14 @@ test("G10 focused suites cover the required release scenarios", () => {
   const claims = readFileSync("tests/g06-claims.test.ts", "utf8");
   const rewards = readFileSync("tests/g07-rewards.test.ts", "utf8");
   const settings = readFileSync("tests/g08-settings.test.ts", "utf8");
+  const experience = readFileSync("tests/experience-events.test.ts", "utf8");
   assert.match(claims, /approval is one transaction, repeated\/concurrent approval awards exactly once/);
   assert.match(claims, /parent completion resolves a pending companion claim once and reversal is compensating/);
   assert.match(rewards, /reward approval is idempotent across independent database connections/);
   assert.match(rewards, /reward approval never goes negative/);
   assert.match(settings, /deletion requires fresh session-bound proof and deletes household data atomically/);
   assert.match(settings, /deletion fails closed without D1 batch and rolls back partial revocation/);
+  assert.match(experience, /idempotent per actor and household-local day/);
+  assert.match(experience, /allow-listed client events cannot cross parent\/companion scope/);
+  assert.match(readFileSync("docs/DEVELOPMENT.md", "utf8"), /Day 1[\s\S]*Day 7[\s\S]*Day 28/);
 });

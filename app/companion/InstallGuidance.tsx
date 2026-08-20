@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { recordExperienceSignal } from "../components/ExperiencePing";
 
 function readStandalone(): boolean {
   if (typeof window === "undefined") return false;
@@ -8,7 +9,7 @@ function readStandalone(): boolean {
     || ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
 }
 
-export function InstallGuidance() {
+export function InstallGuidance({ placement = "bottom", compact = false }: { placement?: "top" | "after-first-completion" | "bottom"; compact?: boolean }) {
   const [standalone, setStandalone] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -23,10 +24,10 @@ export function InstallGuidance() {
   if (standalone) return null;
 
   return (
-    <section className="ruutin-card companion-install-note" aria-label="Install guidance">
+    <section className={`ruutin-card companion-install-note companion-install-note-${placement}${compact ? " companion-install-note-compact" : ""}`} aria-label="Install guidance">
       <div className="ruutin-install-heading">
         <strong>Add to home screen</strong>
-        <button className="ruutin-text-button compact" type="button" aria-expanded={open} aria-controls="install-guidance-details" onClick={() => setOpen((current) => !current)}>
+        <button className="ruutin-text-button compact" type="button" aria-expanded={open} aria-controls="install-guidance-details" onClick={() => { setOpen((current) => !current); if (!open) void recordExperienceSignal("install_guidance_opened"); }}>
           {open ? "Close" : "How"}
         </button>
       </div>

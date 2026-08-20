@@ -16,14 +16,10 @@ export default function SignInPage() {
         Skip to sign in
       </a>
 
-      <header className="br-header">
-        <Link className="br-brand" href="/" prefetch={false} aria-label="Ruutin home">
-          <span className="br-brand-mark" aria-hidden="true">
-            <span>✦</span>
-          </span>
-          <span className="br-brand-name">
-            <strong>Ruutin</strong>
-          </span>
+      <header className="br-header br-signin-header">
+        <Link className="br-signin-brand" href="/" prefetch={false} aria-label="Ruutin home">
+          <strong>Ruutin</strong>
+          <span>family routines</span>
         </Link>
 
         <nav className="br-nav" aria-label="Sign-in navigation">
@@ -39,21 +35,33 @@ export default function SignInPage() {
         aria-labelledby="signin-title"
       >
         <div className="br-cta-card br-signin-card">
-          <div className="br-cta-copy">
-            <p className="br-eyebrow">Parent access</p>
-            <h1 id="signin-title">
-              A calm way <em>in.</em>
-            </h1>
-            <p>
-              Enter your email and we&apos;ll send a secure six-digit code. New parents can create
-              their household after signing in.
-            </p>
+          <div className="br-signin-preview">
+            {/* This product collage is the same real UI imagery used on the landing page. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/ruutin-hero-collage.webp"
+              alt="Ruutin family routine screens showing today, progress, and rewards"
+              width={1536}
+              height={1024}
+              fetchPriority="high"
+              decoding="async"
+            />
+            <div className="br-signin-preview-caption">
+              <span>A calmer view of today</span>
+              <strong>Small routines. Shared wins.</strong>
+            </div>
           </div>
-          <AuthFlow />
+
+          <div className="br-signin-form-panel">
+            <div className="br-signin-copy">
+              <p className="br-signin-kicker">Parent access</p>
+              <h1 id="signin-title">Welcome home.</h1>
+              <p>See today&apos;s routines and keep the little wins moving.</p>
+            </div>
+            <AuthFlow />
+            <p className="br-signin-privacy">No password. Your secure code works once.</p>
+          </div>
         </div>
-        <p className="br-signin-note">
-          No password to remember. Your code expires in 10 minutes and works once.
-        </p>
       </section>
     </main>
   );

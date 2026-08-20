@@ -67,7 +67,7 @@ export type TaskOccurrence = ParentTask & {
 };
 
 export type OnboardingState = {
-  activeStep: "household" | "profile" | "tasks" | "review" | "rewards" | "pairing";
+  activeStep: "household" | "profile" | "tasks";
   completedSteps: readonly string[];
   progressIndex: number;
   totalSteps: number;
