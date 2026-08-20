@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 const trustNotes = [
   { icon: "◌", label: "Parents stay in control" },
-  { icon: "⌁", label: "No exact birth dates" },
+  { icon: "⌁", label: "Link a companion device" },
   { icon: "✦", label: "No rankings or pressure" },
 ] as const;
 
