@@ -1,0 +1,74 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ruutin-local",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-09-09",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "binding": "ASSETS",
+    "not_found_handling": "none"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ruutin-staging",
+      "database_id": "15b65d21-3307-4a14-964d-06f9e1619edd",
+      "migrations_dir": "./drizzle"
+    }
+  ],
+  "vars": {
+    "EMAIL_API_URL": "https://api.resend.com/emails",
+    "EMAIL_FROM": "noreply@ruutin.irwan.cc"
+  },
+  "secrets": {
+    "required": ["EMAIL_API_KEY", "AUTH_HMAC_SECRET", "SESSION_SECRET"]
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.05 }
+  },
+  "env": {
+    "staging": {
+      "name": "ruutin-staging",
+      "workers_dev": true,
+      "preview_urls": false,
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "ruutin-staging",
+          "database_id": "15b65d21-3307-4a14-964d-06f9e1619edd",
+          "migrations_dir": "./drizzle"
+        }
+      ],
+      "vars": {
+        "EMAIL_API_URL": "https://api.resend.com/emails",
+        "EMAIL_FROM": "noreply@ruutin.irwan.cc"
+      },
+      "secrets": {
+        "required": ["EMAIL_API_KEY", "AUTH_HMAC_SECRET", "SESSION_SECRET"]
+      }
+    },
+    "production": {
+      "name": "ruutin",
+      "workers_dev": true,
+      "preview_urls": false,
+      "routes": [{ "pattern": "ruutin.irwan.cc", "custom_domain": true }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "ruutin-production",
+          "database_id": "56cecdec-aa15-437c-9d61-0ad8953bfc97",
+          "migrations_dir": "./drizzle"
+        }
+      ],
+      "vars": {
+        "EMAIL_API_URL": "https://api.resend.com/emails",
+        "EMAIL_FROM": "noreply@ruutin.irwan.cc"
+      },
+      "secrets": {
+        "required": ["EMAIL_API_KEY", "AUTH_HMAC_SECRET", "SESSION_SECRET"]
+      }
+    }
+  }
+}

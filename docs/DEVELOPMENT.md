@@ -1,7 +1,7 @@
 # Ruutin Development Specification
 
-Status: G02 code complete; live Sites email validation pending; G03 implementation next  
-Source: supplied “Updated @Sites Build Prompt — Bintang Rumah”; product renamed to **Ruutin**  
+Status: infrastructure migrated to Cloudflare Workers; email credential validation pending
+Source: supplied “Updated @Sites Build Prompt — Bintang Rumah”; product renamed to **Ruutin**
 Companion tracker: [`../TASKS.md`](../TASKS.md)
 
 ## 1. Purpose
@@ -14,20 +14,23 @@ This document is the implementation contract. The source brief remains the produ
 
 ## 2. Deployment constraint
 
-ChatGPT Sites is the exclusive build, runtime, hosting, saved-preview, and public-deployment target. Do not introduce or document a fallback host such as Vercel, Cloudflare Pages, Netlify, or a self-hosted runtime.
-
-Platform-dependent behavior must be tested in ChatGPT Sites itself. If Sites cannot securely call the chosen transactional email API from server-side code, stop and report the incompatibility; do not move authentication or deployment elsewhere and do not substitute Sign in with ChatGPT. Lack of service-worker support is the sole defined graceful degradation: retain the manifest, icons, standalone metadata, and install guidance without offline caching.
+Cloudflare Workers with Static Assets and D1 is the supported runtime and
+public deployment target. Staging and production use separate Workers, D1
+databases, and secrets. Platform-dependent behavior must be tested on the
+deployed Worker before production cutover. The former ChatGPT Sites deployment
+is retained temporarily as a rollback source during migration; historical
+evidence under `docs/evidence/` remains valid for the behavior it recorded.
 
 ## 3. Product principles and non-negotiable rules
 
 1. **Parent control:** only a parent may configure profiles, tasks, star values, rewards, approvals, and device access.
 2. **Data minimization:** a profile contains only a parent-selected nickname, emoji, optional broad age band, eligibility state, and application settings.
 3. **No independent access below the applicable threshold:** parents can manage and record completions, but a companion session cannot be created for an ineligible profile.
-4. **Server authority:** all authentication, authorization, validation, and mutations run on Sites server routes. Browser-supplied household or profile identifiers are never authorization evidence.
+4. **Server authority:** all authentication, authorization, validation, and mutations run on Worker server routes. Browser-supplied household or profile identifiers are never authorization evidence.
 5. **Ledger integrity:** the append-only point ledger is the source of truth. Every award or deduction is idempotent and attributable.
 6. **Private-by-default caching:** authenticated HTML and private API responses are never stored in service-worker caches.
 7. **Neutral authentication responses:** TAC endpoints do not reveal whether an email is registered.
-8. **No deployment shortcuts:** email delivery, authorization, pairing/revocation, migrations, and published Sites PWA behavior must be verified before public deployment.
+8. **No deployment shortcuts:** email delivery, authorization, pairing/revocation, migrations, and deployed Worker PWA behavior must be verified before public deployment.
 
 ### Prohibited child data
 
@@ -45,7 +48,7 @@ Platform-dependent behavior must be tested in ChatGPT Sites itself. If Sites can
 - Cash, banking, gift cards, purchases, negative points for missed tasks, streak penalties, loot boxes, leaderboards, and sibling rankings
 - Caregiver invitations in the UI, despite a schema that can support multiple household users later
 - Required offline operation
-- Any non-Sites deployment configuration or hosting adapter
+- Any additional hosting adapter outside the native Cloudflare Worker setup
 
 ## 4. MVP actors and permission boundaries
 
@@ -65,13 +68,13 @@ Platform-dependent behavior must be tested in ChatGPT Sites itself. If Sites can
 
 The companion authorization context is the device record and its assigned profile. A route must not broaden that scope based on a profile ID supplied in a URL, form, or JSON body.
 
-## 5. Sites architecture
+## 5. Cloudflare architecture
 
 ```mermaid
 flowchart LR
-    P["Parent browser / PWA"] --> S["ChatGPT Sites server routes"]
+    P["Parent browser / PWA"] --> S["Cloudflare Worker server routes"]
     C["Companion browser / PWA"] --> S
-    S --> D[("Sites D1")]
+    S --> D[("Cloudflare D1")]
     S --> E["Transactional email API"]
     S -. "secure parent cookie" .-> P
     S -. "profile-scoped device cookie" .-> C
@@ -79,28 +82,28 @@ flowchart LR
 
 ### Required components
 
-- ChatGPT Sites build, server routes, saved versions, hosting, and deployment
+- Cloudflare Worker runtime, Static Assets, server routes, and deployment
 - D1 for all durable structured application data
 - Server-side routes for authentication, authorization, reads, and mutations
 - Transactional email API for parent TAC delivery
-- Sites-hosted secrets/environment variables
+- Wrangler-managed Worker secrets/environment variables
 - Secure, opaque cookie sessions
 - Static, version-controlled task and reward templates
 
-### Mandatory Sites runtime preflight gates
+### Mandatory Cloudflare runtime preflight gates
 
 These are the first implementation tasks and produce written evidence in `docs/evidence/`.
 
-1. **Server-side email gate:** prove that a Sites server route can securely call the selected transactional email API using hosted secrets. If unavailable, stop. Do not substitute another host or Sign in with ChatGPT.
-2. **D1 gate:** prove the supported Sites binding and migration workflow locally and in a saved Sites version.
-3. **Service-worker gate:** verify service-worker support on a saved/published Sites origin. If unsupported, retain the manifest, icons, standalone metadata, and install guidance but omit offline caching.
+1. **Server-side email gate:** prove that a Worker route can securely call the selected transactional email API using Worker secrets.
+2. **D1 gate:** apply versioned migrations and verify foreign keys, schema, and representative persistence in each environment.
+3. **PWA gate:** verify the manifest, icons, private caching rules, and installed behavior on the deployed Worker origin.
 
-The repository uses the Sites-generated vinext/Vite framework and emits a
-Cloudflare Worker-compatible ESM bundle. The canonical local commands are:
+The repository uses vinext/Vite and emits a Cloudflare Worker ESM bundle. The
+canonical local commands are:
 
 ```text
 npm ci                 # install the lockfile exactly
-npm run dev            # retained local Sites preview
+npm run dev            # local Worker/D1 simulation
 npm run format:check   # dependency-free LF/trailing-whitespace check
 npm run lint           # ESLint + React/Next accessibility rules
 npm run typecheck      # TypeScript, no emit
@@ -115,13 +118,12 @@ does not import server configuration and does not require local credentials.
 The temporary starter `SkeletonPreview`, its `codex-preview` marker, and its
 `react-loading-skeleton` dependency are removed from the finished slice.
 
-The project keeps the Sites binding declaration in `.openai/hosting.json` and
-the local simulation in `vite.config.ts`; no alternate-host adapter or
-configuration is permitted.
+The project keeps its Worker, Static Assets, D1, environment, and observability
+declarations in `wrangler.jsonc`; `vite.config.ts` supplies local simulation.
 
 ## 6. Configuration and secrets
 
-Required Sites-hosted variables:
+Required Worker variables and secrets:
 
 | Name | Secret | Browser-visible | Purpose |
 | --- | --- | --- | --- |
@@ -133,7 +135,7 @@ Required Sites-hosted variables:
 
 Production must fail closed when required configuration is missing. No secret or derivative that enables authentication may appear in client bundles, HTML, logs, exports, or error responses.
 
-The typed boundary is `server/runtime-config.ts` plus the Sites runtime adapter
+The typed boundary is `server/runtime-config.ts` plus the Worker runtime adapter
 in `server/config.ts`. `loadServerConfig` validates non-empty values, minimum
 length for authentication secrets, the email API URL, and the sender address
 without returning secret values in an error. `getServerConfig` uses strict
@@ -206,7 +208,7 @@ Weekday numbering must be defined once and shared by server validation and UI la
 
 ## 8. D1 schema and invariants
 
-Create versioned, reviewable migrations using the Sites-supported D1 workflow. Make all foreign-key behavior and indexes explicit.
+Create versioned, reviewable migrations using Wrangler's D1 workflow. Make all foreign-key behavior and indexes explicit.
 
 | Table | Required fields | Critical constraints |
 | --- | --- | --- |
@@ -248,7 +250,7 @@ Only a transition from `pending` may create a ledger event. A repeated approval 
 3. Generate a cryptographically secure six-digit code.
 4. Store only an HMAC/protected hash with purpose, ten-minute expiry, and zero attempts.
 5. Invalidate previous active TACs for the same email and purpose.
-6. Send through the configured email API from a Sites server route.
+6. Send through the configured email API from a Worker server route.
 7. Return the same neutral response regardless of account existence.
 
 ### TAC verification
@@ -269,7 +271,7 @@ Only a transition from `pending` may create a ledger event. A repeated approval 
 - Support explicit sign-out and server-side revocation.
 - Throttle `last_seen_at` writes rather than writing on every request.
 
-State-changing routes also need CSRF protection appropriate to the Sites-generated framework and cookie policy, plus origin checks where supported.
+State-changing routes also need CSRF protection appropriate to the Worker framework and cookie policy, plus origin checks where supported.
 
 ## 10. Household onboarding and profile privacy
 
@@ -413,7 +415,7 @@ Reward approval is one server transaction that verifies parent ownership, pendin
 
 ## 15. Route and navigation map
 
-Names may adapt to Sites-generated framework conventions, but capability boundaries remain distinct.
+Names may adapt to framework conventions, but capability boundaries remain distinct.
 
 ### Public/authentication
 
@@ -470,14 +472,14 @@ Required assets and metadata:
 - Post-pairing message: “Save Ruutin to this device’s home screen for easier access.”
 - Guidance for Safari or Chrome on iPhone and common Android browsers, including reinstall and in-app re-pair fallback
 
-The current Sites probe confirms that the origin accepts service-worker
-registration, but Ruutin deliberately does not ship an application service
+The historical Sites probe confirmed service-worker registration, and the
+Cloudflare origin must retain that support. Ruutin deliberately does not ship an application service
 worker or offline cache. The disposable `/runtime-probe/` worker is scoped,
 has no fetch/cache behavior, and unregisters after the check. This keeps
 authenticated HTML, private API data, TAC/pairing responses, and mutations on
 the normal private network path; no stale app worker can preserve access after
 revocation. Revisit immutable-static caching only as a separately verified
-Sites capability decision.
+Cloudflare capability decision.
 
 ## 18. Data export and deletion
 
@@ -503,7 +505,7 @@ Required defenses include cross-household and sibling isolation tests, CSRF/orig
 No external analytics SDK is permitted. The first-party experience route uses
 CSRF/origin checks and private/no-store responses, accepts only the fixed event
 name, and does not block core UX when a write fails. First-party operational
-logs, if Sites supports them, contain only coarse result identifiers needed to
+Worker logs contain only coarse result identifiers needed to
 diagnose delivery, rate limiting, authorization denials, and transaction
 failures.
 
@@ -514,7 +516,7 @@ failures.
 - **Route authorization:** unauthenticated, wrong role, cross-household, sibling/profile injection, revoked/expired sessions.
 - **End-to-end:** TAC, onboarding, templates, pairing, claims, approvals, redemption, export/deletion, second-device persistence.
 - **UI/accessibility:** 360 px, touch targets, keyboard/focus, contrast, reduced motion, safe areas.
-- **Saved Sites version/origin:** email API, cookie behavior, manifest/icons, service worker, foreground refresh, secret/client-bundle audit.
+- **Deployed Worker origin:** email API, cookie behavior, manifest/icons, service worker, foreground refresh, secret/client-bundle audit.
 
 The 30 source acceptance cases are mirrored in the release gate in `TASKS.md`. A feature is not complete solely because its happy path renders.
 
@@ -533,16 +535,16 @@ Work in goal-sized batches listed in `TASKS.md`:
 
 | Decision | Owner | Status | Blocks | Evidence |
 | --- | --- | --- | --- | --- |
-| Sites-generated project/framework and supported server APIs | Engineering | Resolved | Implementation | Scaffold and saved-version smoke test |
-| Resend transactional email credentials, verified sender, and secure Sites server-side reachability | Engineering | Reachability resolved; production credential/sender pending | Parent auth | `docs/evidence/BR-002-email.md` |
+| Worker framework and supported server APIs | Engineering | Resolved | Implementation | Staging smoke test |
+| Resend transactional email credentials, verified sender, and secure Worker reachability | Engineering | Reachability resolved; production credential/sender pending | Parent auth | `docs/evidence/BR-002-email.md` |
 | Applicable age-of-digital-consent policy and age-band copy | Product/legal | Resolved for MVP: never under 13; require parent local-threshold confirmation | Pairing | Server mapping, UI copy, and tests |
-| Service-worker support on saved/published Sites origin | Engineering | Resolved | Optional caching | `docs/evidence/BR-004-service-worker.md` |
+| Service-worker support on deployed origin | Engineering | Resolved historically; reverify after cutover | Optional caching | `docs/evidence/BR-004-service-worker.md` |
 | Timezone defaults and household naming copy | Product | Pending before onboarding release | Onboarding | Approved copy/defaults |
 | Retention/deletion semantics and statutory wording | Product/legal | Pending before public release | Public launch | Reviewed copy and deletion test |
-| Sites custom domain `ruutin.irwan.cc` | Engineering | Attached; DNS/SSL validation pending | Public launch | `docs/evidence/SITES-custom-domain.md` |
+| Worker custom domain `ruutin.irwan.cc` | Engineering | Migration in progress | Public launch | `docs/CLOUDFLARE-DEPLOYMENT.md` |
 
-If the email gate fails, implementation pauses at that incompatibility. If the service-worker gate fails, development continues without offline caching. Neither result authorizes a non-Sites deployment.
+If the email gate fails, implementation pauses at that incompatibility. If the service-worker gate fails, development continues without offline caching.
 
 ## 23. Definition of done
 
-A task is complete only when implementation, tests, documentation, and required evidence are present; relevant checks pass; no unrelated changes are included; and its tracker checkbox is updated. The MVP is ready for a saved, reviewable Sites version only after release-blocking tracker items pass. Public deployment is a separate, explicitly authorized Sites action.
+A task is complete only when implementation, tests, documentation, and required evidence are present; relevant checks pass; no unrelated changes are included; and its tracker checkbox is updated. Public deployment requires a reviewed production Worker, migrated D1 data, and an explicitly authorized custom-domain cutover.

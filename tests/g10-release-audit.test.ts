@@ -174,17 +174,25 @@ test("G10 deletion semantics remove household app data and revoke retained sessi
   database.close();
 });
 
-test("G10 prohibited-scope inventory remains Sites-only and free of prohibited capabilities", () => {
+test("G10 prohibited-scope inventory remains Cloudflare-native and free of prohibited capabilities", () => {
   const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as { dependencies: Record<string, string>; devDependencies: Record<string, string> };
   const allDependencies = Object.keys({ ...packageJson.dependencies, ...packageJson.devDependencies }).join(" ").toLowerCase();
   for (const dependency of ["stripe", "posthog", "segment", "analytics", "firebase", "aws-sdk"]) {
     assert.doesNotMatch(allDependencies, new RegExp(`(^|[-@])${dependency.replace("-", "\\-")}(?:$|[-/])`), dependency);
   }
 
-  const hosting = JSON.parse(readFileSync(".openai/hosting.json", "utf8")) as { project_id?: string; r2?: unknown };
-  assert.ok(hosting.project_id);
-  assert.equal(hosting.r2, null);
-  assert.match(readFileSync("README.md", "utf8"), /ChatGPT Sites is the only supported deployment\s+target/);
+  const wrangler = JSON.parse(readFileSync("wrangler.jsonc", "utf8")) as {
+    assets?: { binding?: string };
+    env?: Record<string, { name?: string; d1_databases?: Array<{ database_id?: string }> }>;
+    r2_buckets?: unknown;
+  };
+  assert.equal(wrangler.assets?.binding, "ASSETS");
+  assert.equal(wrangler.env?.staging?.name, "ruutin-staging");
+  assert.equal(wrangler.env?.production?.name, "ruutin");
+  assert.notEqual(wrangler.env?.staging?.d1_databases?.[0]?.database_id, wrangler.env?.production?.d1_databases?.[0]?.database_id);
+  assert.equal(wrangler.r2_buckets, undefined);
+  assert.doesNotMatch(allDependencies, /@openai\/sites-vite-plugin/);
+  assert.match(readFileSync("README.md", "utf8"), /native Cloudflare Worker with Static Assets and D1/);
 
   const source = [
     ...sourceFiles("app"),
