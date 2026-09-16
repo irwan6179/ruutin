@@ -443,6 +443,9 @@ body {
 .ruutin-icon-action { display: inline-grid; width: 44px; height: 44px; flex: 0 0 44px; place-items: center; border: 0; border-radius: 14px; color: #fff; background: var(--br-deep-purple); box-shadow: 0 5px 12px rgb(84 56 129 / .15); cursor: pointer; font: inherit; font-size: 21px; font-weight: 800; transition: transform 140ms ease, filter 140ms ease; }
 .ruutin-icon-action:hover { filter: brightness(1.05); transform: translateY(-1px); }
 .ruutin-icon-action.task { color: #fff; background: var(--profile-accent); }
+.ruutin-profile-card .ruutin-button.ruutin-parent-done-button { width: 46px; min-width: 46px; min-height: 46px; margin-left: auto; padding: 0; border: 1px solid color-mix(in srgb, var(--profile-accent) 38%, #ddd); border-radius: 15px; color: var(--profile-accent); background: color-mix(in srgb, var(--profile-accent) 5%, #fff); box-shadow: none; }
+.ruutin-profile-card .ruutin-button.ruutin-parent-done-button:hover { border-color: color-mix(in srgb, var(--profile-accent) 70%, #bbb); background: color-mix(in srgb, var(--profile-accent) 10%, #fff); box-shadow: 0 5px 12px color-mix(in srgb, var(--profile-accent) 15%, transparent); }
+.ruutin-parent-done-check { display: block; width: 21px; height: 21px; border: 2px solid currentcolor; border-radius: 7px; background: #fff; box-shadow: inset 0 0 0 2px color-mix(in srgb, currentcolor 5%, transparent); }
 .ruutin-icon-action.queue-approve { color: #2f765f; background: #dff4e9; box-shadow: none; }
 .ruutin-icon-action.danger { color: #a44f62; background: #fff0f2; box-shadow: none; }
 .ruutin-icon-action:disabled { cursor: wait; opacity: .55; transform: none; }

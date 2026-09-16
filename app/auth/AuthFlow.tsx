@@ -221,37 +221,56 @@ export function AuthFlow() {
     setStatus("");
   }
 
-  function setCodeDigit(index: number, value: string) {
-    const digit = value.replace(/\D/gu, "").slice(-1);
-    setCodeDigits((previous) => {
-      const digits = [...previous];
-      digits[index] = digit;
-      return digits;
-    });
-    if (digit && index < CODE_LENGTH - 1) codeInputRefs.current[index + 1]?.focus();
+  function focusCodeInput(index: number) {
+    requestAnimationFrame(() => codeInputRefs.current[index]?.focus());
   }
 
-  function handleCodeKeyDown(index: number, event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Backspace" && !codeDigits[index] && index > 0) {
-      event.preventDefault();
-      codeInputRefs.current[index - 1]?.focus();
-    } else if (event.key === "ArrowLeft" && index > 0) {
-      event.preventDefault();
-      codeInputRefs.current[index - 1]?.focus();
-    } else if (event.key === "ArrowRight" && index < CODE_LENGTH - 1) {
-      event.preventDefault();
-      codeInputRefs.current[index + 1]?.focus();
+  function setCodeInput(index: number, value: string) {
+    const enteredDigits = value.replace(/\D/gu, "").slice(0, CODE_LENGTH - index);
+    setCodeDigits((previous) => {
+      const digits = [...previous];
+      if (!enteredDigits) {
+        digits[index] = "";
+        return digits;
+      }
+      enteredDigits.split("").forEach((digit, offset) => {
+        digits[index + offset] = digit;
+      });
+      return digits;
+    });
+    if (enteredDigits) {
+      focusCodeInput(Math.min(index + enteredDigits.length, CODE_LENGTH - 1));
     }
   }
 
-  function handleCodePaste(event: React.ClipboardEvent<HTMLInputElement>) {
+  function handleCodeKeyDown(index: number, event: React.KeyboardEvent<HTMLInputElement>) {
+    if (/^[0-9]$/u.test(event.key) && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      setCodeInput(index, event.key);
+    } else if (event.key === "Backspace" && codeDigits[index]) {
+      event.preventDefault();
+      setCodeDigits((previous) => previous.map((digit, digitIndex) => digitIndex === index ? "" : digit));
+    } else if (event.key === "Backspace" && index > 0) {
+      event.preventDefault();
+      setCodeDigits((previous) => previous.map((digit, digitIndex) => digitIndex === index - 1 ? "" : digit));
+      focusCodeInput(index - 1);
+    } else if (event.key === "ArrowLeft" && index > 0) {
+      event.preventDefault();
+      focusCodeInput(index - 1);
+    } else if (event.key === "ArrowRight" && index < CODE_LENGTH - 1) {
+      event.preventDefault();
+      focusCodeInput(index + 1);
+    }
+  }
+
+  function handleCodePaste(event: React.ClipboardEvent<HTMLDivElement>) {
     const pastedCode = event.clipboardData.getData("text").replace(/\D/gu, "").slice(0, CODE_LENGTH);
     if (!pastedCode) return;
     event.preventDefault();
     const digits = Array(CODE_LENGTH).fill("");
     pastedCode.split("").forEach((digit, index) => { digits[index] = digit; });
     setCodeDigits(digits);
-    codeInputRefs.current[Math.min(pastedCode.length, CODE_LENGTH) - 1]?.focus();
+    focusCodeInput(Math.min(pastedCode.length, CODE_LENGTH) - 1);
   }
 
   return (
@@ -320,22 +339,22 @@ export function AuthFlow() {
             <label htmlFor="ruutin-code-0">Verification code</label>
             <span>Enter the six-digit code sent to {email}.</span>
           </div>
-          <div className="br-auth-code-inputs" role="group" aria-label="Six-digit verification code" aria-describedby="ruutin-code-help">
+          <div className="br-auth-code-inputs" role="group" aria-label="Six-digit verification code" aria-describedby="ruutin-code-help" onPaste={handleCodePaste}>
             {Array.from({ length: CODE_LENGTH }, (_, index) => (
               <input
                 className="br-auth-code-input"
                 id={`ruutin-code-${index}`}
                 key={index}
+                ref={(element) => { codeInputRefs.current[index] = element; }}
                 name={`code-${index}`}
                 type="text"
                 autoComplete={index === 0 ? "one-time-code" : "off"}
                 inputMode="numeric"
-                pattern="[0-9]"
-                maxLength={1}
+                pattern="[0-9]*"
+                maxLength={CODE_LENGTH}
                 value={codeDigits[index] ?? ""}
-                onChange={(event) => setCodeDigit(index, event.target.value)}
+                onChange={(event) => setCodeInput(index, event.target.value)}
                 onKeyDown={(event) => handleCodeKeyDown(index, event)}
-                onPaste={handleCodePaste}
                 required
                 aria-label={`Digit ${index + 1} of ${CODE_LENGTH}`}
               />
